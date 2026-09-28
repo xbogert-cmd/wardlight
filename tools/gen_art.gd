@@ -9,6 +9,7 @@ const Bgs = preload("res://tools/art/backgrounds_art.gd")
 const Enemies = preload("res://tools/art/enemies_art.gd")
 const Fx = preload("res://tools/art/fx_art.gd")
 const Icons = preload("res://tools/art/icons_art.gd")
+const Props = preload("res://tools/art/props_art.gd")
 
 
 func _init() -> void:
@@ -31,6 +32,11 @@ func _init() -> void:
 		Fx.rune_ring(24, 3).save_png(OUT + "rune24.png")
 		Fx.rune_ring(40, 7).save_png(OUT + "rune40.png")
 		Fx.rune_ring(64, 11).save_png(OUT + "rune64.png")
+	if want.call("props"):
+		var pr: Dictionary = Props.build()
+		(pr.image as Image).save_png(OUT + "props_woods.png")
+		var f := FileAccess.open(OUT + "props_woods.json", FileAccess.WRITE)
+		f.store_string(JSON.stringify(pr.props, "\t"))
 	if want.call("icons"):
 		Icons.build().save_png(OUT + "icons.png")
 	if want.call("icon"):

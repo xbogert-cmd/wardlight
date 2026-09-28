@@ -18,7 +18,6 @@ godot --path "/Users/alexanderbogert/wizard game"
 | --- | --- |
 | Move | A / D (arrow keys also work) |
 | Jump / float | Space (hold for higher jump) |
-| Drop through planks | S + Space |
 | Dodge | Shift |
 | Staff attack (free) | Trackpad tap / left click, or J — hold to repeat |
 | Spells | 1 2 3 4 |

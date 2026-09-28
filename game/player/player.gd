@@ -8,8 +8,6 @@ signal perfect_dodge
 
 enum { NORMAL, DODGE, HURT, DEAD, LOCKED }
 
-const ONEWAY_BIT := 32
-
 @export var tuning: PlayerTuning = preload("res://data/tuning/player.tres")
 
 var health: Health
@@ -38,7 +36,6 @@ var _iframes := 0.0
 var _flash := 0.0
 var _was_on_floor := true
 var _land_t := 0.0
-var _drop_t := 0.0
 var _release_t := 0.0
 var _release_pose := 2
 var _step_frame := -1
@@ -47,8 +44,10 @@ var _step_frame := -1
 func _ready() -> void:
 	add_to_group(&"player")
 	collision_layer = 2
-	collision_mask = 1 | ONEWAY_BIT
-	floor_snap_length = 4.0
+	collision_mask = 1
+	floor_snap_length = 6.0
+	floor_max_angle = deg_to_rad(47.0)
+	floor_constant_speed = true
 	var cs := CollisionShape2D.new()
 	var sh := RectangleShape2D.new()
 	sh.size = Vector2(10, 30)
@@ -113,10 +112,6 @@ func _physics_process(delta: float) -> void:
 	_dodge_cd = maxf(0.0, _dodge_cd - delta)
 	_release_t = maxf(0.0, _release_t - delta)
 	_land_t = maxf(0.0, _land_t - delta)
-	if _drop_t > 0.0:
-		_drop_t -= delta
-		if _drop_t <= 0.0:
-			collision_mask |= ONEWAY_BIT
 	match state:
 		NORMAL:
 			_normal(delta)
@@ -166,14 +161,9 @@ func _normal(delta: float) -> void:
 	if ix != 0.0 and not caster.busy():
 		face(int(signf(ix)))
 
-	# jumping (with coyote time, buffer, drop-through and double jump)
+	# jumping (with coyote time, buffer and double jump)
 	if _buffer > 0.0:
-		if Input.is_action_pressed(&"down") and on_floor and _on_oneway():
-			collision_mask &= ~ONEWAY_BIT
-			_drop_t = 0.25
-			position.y += 1
-			_buffer = 0.0
-		elif _coyote > 0.0:
+		if _coyote > 0.0:
 			_jump(tuning.jump_height)
 		elif has_double_jump and not _air_jump_used:
 			_air_jump_used = true
@@ -216,11 +206,6 @@ func _jump(h: float) -> void:
 	_buffer = 0.0
 	Sfx.play("jump", -8.0)
 	FX.burst(global_position, 5, Pal.DUST, Vector2(10, 40), Vector2(0.2, 0.35), {"dir": Vector2.UP, "spread": 2.4, "add": false, "front": false, "gravity": 60.0})
-
-
-func _on_oneway() -> bool:
-	var q := PhysicsRayQueryParameters2D.create(global_position + Vector2(0, -2), global_position + Vector2(0, 4), ONEWAY_BIT)
-	return not get_world_2d().direct_space_state.intersect_ray(q).is_empty()
 
 
 func _start_dodge(ix: float) -> void:

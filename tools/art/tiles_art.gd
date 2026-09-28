@@ -1,33 +1,48 @@
 extends RefCounted
-## Terrain tiles. Each terrain is drawn for all 16 neighbour masks
-## (bit 1 = solid above, 2 = right, 4 = below, 8 = left) in 2 variants.
+## Terrain tiles. Columns 0–15: the 16 neighbour masks (bit 1 = solid above,
+## 2 = right, 4 = below, 8 = left). Columns 16–21: slopes (see SLOPES).
+## Two variant rows per terrain.
 
 const T := 16
+const MASK_COLS := 16
 
 const TERRAINS := {
 	"ruin": {"hi": "6c6c92", "mid": "45425f", "lo": "2e2c45", "mortar": "1d1b2e", "cap": "7c7ea4", "moss": "4d6e52", "moss_hi": "6f9a62"},
 	"earth": {"hi": "6b5652", "mid": "4a3a3c", "lo": "33272d", "mortar": "241b22", "cap": "7da04e", "moss": "4d7c3a", "moss_hi": "a2c45e"},
-	"wood": {"hi": "a8784a", "mid": "7a5234", "lo": "4e3222", "mortar": "2c1c16", "cap": "c49a62", "moss": "4d6e52", "moss_hi": "6f9a62"},
+	"rock": {"hi": "7a7a8c", "mid": "575868", "lo": "3c3c4c", "mortar": "25242f", "cap": "6f9a4c", "moss": "4a7038", "moss_hi": "98c05a"},
 	"village": {"hi": "a08a70", "mid": "7a6a58", "lo": "54483e", "mortar": "362c28", "cap": "86a85a", "moss": "5a8040", "moss_hi": "a6c86a"},
 	"ward": {"hi": "8a88b8", "mid": "5c5a86", "lo": "3c3a5e", "mortar": "22203a", "cap": "9e9cd0", "moss": "5e4a7a", "moss_hi": "8a6ab0"},
 }
-const ORDER := ["ruin", "earth", "wood", "village", "ward"]
+const ORDER := ["ruin", "earth", "rock", "village", "ward"]
+## slope id -> surface height function kind; order = atlas column 16 + index
+const SLOPES := ["/", "\\", "1", "2", "3", "4"]
+
+
+static func surface_y(kind: String, x: int) -> int:
+	match kind:
+		"/": return T - 1 - x
+		"\\": return x
+		"1": return T - 1 - x / 2
+		"2": return 7 - x / 2
+		"3": return x / 2
+		"4": return 8 + x / 2
+	return 0
 
 
 static func build() -> Image:
-	var img := Image.create_empty(16 * T, ORDER.size() * 2 * T, false, Image.FORMAT_RGBA8)
+	var img := Image.create_empty((MASK_COLS + SLOPES.size()) * T, ORDER.size() * 2 * T, false, Image.FORMAT_RGBA8)
 	for ti in ORDER.size():
+		var name: String = ORDER[ti]
+		var p: Dictionary = TERRAINS[name]
 		for v in 2:
 			for mask in 16:
 				var c := PixelCanvas.new(T, T)
-				var name: String = ORDER[ti]
-				if name == "wood":
-					_plank(c, mask, v, TERRAINS[name])
-				elif name == "earth":
-					_earth(c, mask, v, TERRAINS[name])
-				else:
-					_bricks(c, mask, v, TERRAINS[name], name)
+				_fill(c, name, mask, v, p)
 				c.blit_into(img, mask * T, (ti * 2 + v) * T)
+			for si in SLOPES.size():
+				var c := PixelCanvas.new(T, T)
+				_slope(c, name, SLOPES[si], v, p)
+				c.blit_into(img, (MASK_COLS + si) * T, (ti * 2 + v) * T)
 	return img
 
 
@@ -41,8 +56,19 @@ static func _rng(mask: int, v: int, salt: int) -> RandomNumberGenerator:
 	return r
 
 
-static func _bricks(c: PixelCanvas, mask: int, v: int, p: Dictionary, name: String) -> void:
+static func _fill(c: PixelCanvas, name: String, mask: int, v: int, p: Dictionary) -> void:
 	var r := _rng(mask, v, name.hash())
+	match name:
+		"earth":
+			_earth(c, r, p)
+		"rock":
+			_rock(c, r, p)
+		_:
+			_bricks(c, r, p, name)
+	_edges(c, mask, p, r, name != "village")
+
+
+static func _bricks(c: PixelCanvas, r: RandomNumberGenerator, p: Dictionary, name: String) -> void:
 	c.rect(0, 0, T, T, _col(p, "mid"))
 	# 8x4 running bond, aligned so tiles join seamlessly
 	for row in 4:
@@ -54,11 +80,9 @@ static func _bricks(c: PixelCanvas, mask: int, v: int, p: Dictionary, name: Stri
 			var x0: int = bx % T
 			for yy in range(y, y + 4):
 				c.put(x0, yy, _col(p, "mortar"))
-			# light top-left edge, dark bottom edge on each brick
 			for xx in range(x0 + 1, x0 + 7):
 				c.put(xx % T, y + 1, _col(p, "hi").lerp(_col(p, "mid"), 0.55))
 				c.put(xx % T, y + 3, _col(p, "lo"))
-	# speckles and cracks
 	for i in 6:
 		c.put(r.randi_range(0, T - 1), r.randi_range(0, T - 1), _col(p, "lo"))
 	if r.randf() < 0.5:
@@ -70,11 +94,9 @@ static func _bricks(c: PixelCanvas, mask: int, v: int, p: Dictionary, name: Stri
 		var y := r.randi_range(5, 10)
 		for d: Vector2i in [Vector2i(0, 0), Vector2i(1, 1), Vector2i(2, 0), Vector2i(1, -1), Vector2i(1, 0)]:
 			c.put(x + d.x, y + d.y, Color.html("7a6ad0"))
-	_edges(c, mask, p, r, name != "village")
 
 
-static func _earth(c: PixelCanvas, mask: int, v: int, p: Dictionary) -> void:
-	var r := _rng(mask, v, 77)
+static func _earth(c: PixelCanvas, r: RandomNumberGenerator, p: Dictionary) -> void:
 	c.rect(0, 0, T, T, _col(p, "mid"))
 	for i in 18:
 		var col := _col(p, "lo") if r.randf() < 0.6 else _col(p, "hi")
@@ -88,29 +110,30 @@ static func _earth(c: PixelCanvas, mask: int, v: int, p: Dictionary) -> void:
 	if r.randf() < 0.5:
 		var rx := r.randi_range(0, 10)
 		c.line(rx, 6, rx + 5, 9, _col(p, "lo"))
-	_edges(c, mask, p, r, true)
 
 
-static func _plank(c: PixelCanvas, mask: int, v: int, p: Dictionary) -> void:
-	var r := _rng(mask, v, 5)
-	# one-way plank: 5px deck at the top, posts below where nothing is to the side
-	c.rect(0, 0, T, 5, _col(p, "mid"))
-	for x in T:
-		c.put(x, 0, _col(p, "cap"))
-		c.put(x, 4, _col(p, "lo"))
-	for x in [r.randi_range(3, 6), r.randi_range(10, 13)]:
-		c.put(x, 2, _col(p, "lo"))
-	if not (mask & 8):
-		c.rect(0, 0, 1, 5, _col(p, "mortar"))
-		c.rect(2, 5, 2, 6, _col(p, "lo"))
-	if not (mask & 2):
-		c.rect(T - 1, 0, 1, 5, _col(p, "mortar"))
-		c.rect(T - 4, 5, 2, 6, _col(p, "lo"))
-	c.line(0, 5, T - 1, 5, _col(p, "mortar"))
+## Natural rock: irregular stones with cracks, no grid.
+static func _rock(c: PixelCanvas, r: RandomNumberGenerator, p: Dictionary) -> void:
+	c.rect(0, 0, T, T, _col(p, "mid"))
+	for i in 5:
+		var cx := r.randf_range(1, 15)
+		var cy := r.randf_range(1, 15)
+		var rx := r.randf_range(2.5, 5.0)
+		var ry := r.randf_range(2.0, 3.5)
+		c.ellipse(cx, cy, rx, ry, _col(p, "hi").lerp(_col(p, "mid"), r.randf_range(0.35, 0.8)))
+		# lower-right shadow lip on each stone
+		for x in range(int(cx - rx) + 1, int(cx + rx)):
+			c.put(x, int(cy + ry), _col(p, "lo"))
+	for i in 2:
+		var x := r.randi_range(1, 14)
+		var y := r.randi_range(1, 14)
+		var dx := r.randi_range(-1, 1)
+		c.line(x, y, x + dx * 3, y + r.randi_range(2, 5), _col(p, "mortar"))
+	for i in 8:
+		c.put(r.randi_range(0, T - 1), r.randi_range(0, T - 1), _col(p, "lo"))
 
 
 static func _edges(c: PixelCanvas, mask: int, p: Dictionary, r: RandomNumberGenerator, mossy: bool) -> void:
-	var open_up := not (mask & 1)
 	if not (mask & 8):
 		for y in T:
 			c.put(0, y, _col(p, "mortar"))
@@ -123,23 +146,45 @@ static func _edges(c: PixelCanvas, mask: int, p: Dictionary, r: RandomNumberGene
 		for x in T:
 			c.put(x, T - 1, _col(p, "mortar"))
 			c.put(x, T - 2, _col(p, "lo"))
-	if open_up:
-		# cap / grass layer with a ragged underside
-		for x in T:
-			var depth := 3 + (1 if r.randf() < 0.35 else 0)
-			for y in depth:
-				c.put(x, y, _col(p, "cap") if y > 0 else _col(p, "cap").lightened(0.15))
-			c.put(x, depth, _col(p, "moss") if mossy else _col(p, "lo"))
-		if mossy:
-			for i in 5:
-				var x := r.randi_range(0, T - 1)
-				c.put(x, 0, _col(p, "moss_hi"))
-			for i in 3:  # hanging moss drips
-				var x := r.randi_range(1, T - 2)
-				var ln := r.randi_range(1, 3)
-				for y in range(3, 4 + ln):
-					c.put(x, y, _col(p, "moss"))
+	if not (mask & 1):
+		var surf := PackedInt32Array()
+		surf.resize(T)
+		_cap(c, surf, p, r, mossy)
 		if not (mask & 8):
 			c.erase(0, 0)
 		if not (mask & 2):
 			c.erase(T - 1, 0)
+
+
+## Grass / cap band that follows a surface line (surf[x] = top pixel row).
+static func _cap(c: PixelCanvas, surf: PackedInt32Array, p: Dictionary, r: RandomNumberGenerator, mossy: bool) -> void:
+	for x in T:
+		var s := surf[x]
+		var depth := 3 + (1 if r.randf() < 0.35 else 0)
+		for d in depth:
+			c.put(x, s + d, _col(p, "cap").lightened(0.15) if d == 0 else _col(p, "cap"))
+		c.put(x, s + depth, _col(p, "moss") if mossy else _col(p, "lo"))
+		if mossy and r.randf() < 0.3:
+			c.put(x, s, _col(p, "moss_hi"))
+		if mossy and r.randf() < 0.18:  # hanging moss drip
+			for y in range(s + depth, s + depth + r.randi_range(1, 3)):
+				c.put(x, y, _col(p, "moss"))
+
+
+static func _slope(c: PixelCanvas, name: String, kind: String, v: int, p: Dictionary) -> void:
+	var r := _rng(20 + SLOPES.find(kind), v, name.hash())
+	# interior texture everywhere, then carve away the air above the surface
+	match name:
+		"earth":
+			_earth(c, r, p)
+		"rock":
+			_rock(c, r, p)
+		_:
+			_bricks(c, r, p, name)
+	var surf := PackedInt32Array()
+	surf.resize(T)
+	for x in T:
+		surf[x] = surface_y(kind, x)
+		for y in surf[x]:
+			c.erase(x, y)
+	_cap(c, surf, p, r, name != "village")

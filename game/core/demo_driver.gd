@@ -19,6 +19,14 @@ const DEMOS := {
 		[9.8, "shot", "d08"], [10.2, "tap", "spell_1"], [10.5, "shot", "d09"], [11.0, "shot", "d10"],
 		[11.5, "quit", ""],
 	],
+	"tour": [
+		[0.1, "freeze", ""], [0.3, "shot", "t01"], [0.4, "hold", "move_left"], [1.0, "shot", "t02_slope"],
+		[1.3, "tap", "jump"], [1.8, "tap", "jump"], [2.4, "shot", "t03_climb"], [2.8, "release", "move_left"], [3.0, "shot", "t04_plateau"],
+		[3.2, "hold", "move_right"], [4.0, "shot", "t05"], [5.0, "shot", "t06_hill"], [6.0, "shot", "t07"],
+		[6.9, "tap", "jump"], [7.2, "shot", "t08_jump"], [7.6, "shot", "t09_outcrop"], [8.5, "shot", "t10"],
+		[9.5, "shot", "t11"], [10.5, "shot", "t12"], [11.2, "tap", "jump"], [11.8, "shot", "t13_hill"], [12.5, "shot", "t14"],
+		[13.0, "quit", ""],
+	],
 	"idle_die": [
 		[0.1, "hold", "move_right"], [0.8, "release", "move_right"], [40.0, "quit", ""],
 	],

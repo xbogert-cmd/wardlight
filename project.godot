@@ -37,7 +37,6 @@ window/energy_saving/keep_screen_on=true
 2d_physics/layer_3="enemy"
 2d_physics/layer_4="pickup"
 2d_physics/layer_5="companion"
-2d_physics/layer_6="oneway"
 
 [physics]
 

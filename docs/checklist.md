@@ -1,6 +1,6 @@
 # Implementation checklist
 
-Status: **Stage 1 complete — waiting for combat-feel and visuals review.**
+Status: **Stage 1 approved (with natural-terrain change). Stage 2 in progress.**
 
 ## Agreed changes to the original brief
 - Cross-relic recipes cut; same-relic tier fusion (I → II → III) kept.
@@ -8,6 +8,8 @@ Status: **Stage 1 complete — waiting for combat-feel and visuals review.**
 - Trackpad tap/hold = staff attack (J alternative); the cursor aims attacks and spells.
 - Hat and beard appearance options added.
 - "People need you" beats: named villager asks for help in the opening; rescued travellers reappear.
+- No floating/Mario-style platforms: natural terrain only (hills, 45° and gentle slopes, rock
+  cliffs and outcrops, scenery props). One-way planks removed from the engine.
 - Aim with an active mouse never redirects to an enemy behind the cursor's direction; the
   facing-direction fallback is used when the mouse is idle (keyboard play).
 
@@ -16,7 +18,7 @@ Status: **Stage 1 complete — waiting for combat-feel and visuals review.**
 - [x] Remappable input map (Settings autoload), key labels from physical keys
 - [x] Layered wizard generated from appearance (robe, skin, hair, beard, hat, staff) — idle, run,
       jump, fall, land, raise, gather, 5 aimed releases, recover, dodge, hurt, death
-- [x] Movement: acceleration, variable jump, coyote 100 ms, buffer 120 ms, drop-through planks,
+- [x] Movement: acceleration, variable jump, coyote 100 ms, buffer 120 ms, slopes,
       directional dodge with i-frames, air dodge once, double jump / float hooks (locked)
 - [x] Pixel FX system (particles, rings, arcs, lightning, textured glows, telegraph layer on top)
 - [x] Arc Lance (gather → rune circle → bolt → impact) + Forked upgrade logic
@@ -26,8 +28,9 @@ Status: **Stage 1 complete — waiting for combat-feel and visuals review.**
 - [x] HUD, reticle, target brackets, failed-cast feedback, pause + focus-loss pause
 - [x] Checkpoint respawn resets the encounter, keeps progress
 - [x] Synthesised SFX set + exploration music loop, original pixel font
-- [ ] **User review: combat feel**
-- [ ] **User review: visuals**
+- [x] User review: combat feel — approved
+- [x] User review: visuals — approved after replacing platforms with natural terrain
+- [x] Natural terrain: slopes (45°, 22.5°), rock terrain, scattered scenery props
 
 ## Stage 2 — combat toolkit
 - [ ] Pyromancer, Hexbinder, Stormcaller: 4 spells each + upgrades, 3 basics

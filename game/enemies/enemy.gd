@@ -29,8 +29,10 @@ var _knock := Vector2.ZERO
 func _ready() -> void:
 	add_to_group(&"enemy")
 	collision_layer = 4
-	collision_mask = 1 | 32
-	floor_snap_length = 4.0
+	collision_mask = 1
+	floor_snap_length = 6.0
+	floor_max_angle = deg_to_rad(47.0)
+	floor_constant_speed = true
 	home = global_position
 	health = Health.new()
 	health.max_hp = data.max_hp

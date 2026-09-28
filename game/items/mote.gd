@@ -40,7 +40,7 @@ func _physics_process(delta: float) -> void:
 	if not homing:
 		velocity.y = minf(velocity.y + 420.0 * delta, 200.0)
 		velocity.x = move_toward(velocity.x, 0.0, 120.0 * delta)
-		var q := PhysicsRayQueryParameters2D.create(global_position, global_position + velocity * delta + Vector2(0, 3), 1 | 32)
+		var q := PhysicsRayQueryParameters2D.create(global_position, global_position + velocity * delta + Vector2(0, 3), 1)
 		var hit := get_world_2d().direct_space_state.intersect_ray(q)
 		if not hit.is_empty() and velocity.y > 0.0:
 			global_position.y = hit.position.y - 3.0
