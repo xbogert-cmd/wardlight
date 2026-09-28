@@ -67,3 +67,26 @@ func test_restoration_applies_idempotently() -> void:
 		t.check(not r.visible, "roots cleared from the road")
 	v.queue_free()
 	GameState.reset()
+
+
+## Every walk-off exit must be reachable inside the edge walls, lead to an
+## entry that exists, and no entry may stand inside an exit.
+func test_exits_reachable() -> void:
+	var reach := 0.3 + 0.32 + 0.05   # half wall + wizard radius + slack
+	var paths: Dictionary = load("res://game/main.gd").REGIONS
+	var regions := {}
+	for id: StringName in paths:
+		var r: Region = load(paths[id]).new()
+		r._layout()
+		regions[id] = r
+	for id: StringName in regions:
+		var r: Region = regions[id]
+		for ex: Dictionary in r.exits:
+			t.check((ex.rect as Rect2).intersects(r.bounds.grow(-reach)), "%s exit to %s can be walked into" % [id, ex.to])
+			t.check((regions[ex.to] as Region).entries.has(ex.entry), "%s exit to %s:%s has a landing" % [id, ex.to, ex.entry])
+		for en: StringName in r.entries:
+			var p: Vector3 = r.entries[en][0]
+			for ex: Dictionary in r.exits:
+				t.check(not (ex.rect as Rect2).has_point(Vector2(p.x, p.z)), "%s entry %s is clear of exits" % [id, en])
+	for r: Region in regions.values():
+		r.free()

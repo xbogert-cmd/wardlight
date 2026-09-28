@@ -34,8 +34,8 @@ func _layout() -> void:
 	dirt_spots = [[0, 0, 6.0], [12.5, -4.8, 2.5]]
 	entries = {&"west": [Vector3(-21.5, 0, 2.0), 1.0], &"start": [Vector3(-21.5, 0, 2.0), 1.0], &"east": [Vector3(21.5, 0, -1.0), -1.0],
 		&"square": [Vector3(-2.5, 0, 3.0), 1.0]}
-	exits = [{"rect": Rect2(-25, -3, 1.5, 10), "to": &"sanctuary", "entry": &"east"},
-		{"rect": Rect2(23.5, -6, 1.5, 10), "to": &"briarwood", "entry": &"west"}]
+	exits = [{"rect": Rect2(-25, -3, 2.5, 10), "to": &"sanctuary", "entry": &"east"},
+		{"rect": Rect2(22.5, -6, 2.5, 10), "to": &"briarwood", "entry": &"west"}]
 	respawn_entry = &"square"
 
 

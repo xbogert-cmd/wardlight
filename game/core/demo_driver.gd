@@ -54,6 +54,12 @@ const DEMOS := {
 		[1.7, "tp", "0,11"], [1.9, "mouse", "320,60"], [2.1, "aimprint", "up_near_south_edge"],
 		[2.2, "mouse", "600,200"], [2.4, "aimprint", "right_near_south_edge"], [2.5, "quit", ""],
 	],
+	# walk out of Hearthmere both ways
+	"walkexits": [
+		[0.3, "travel", "hearthmere:square"], [1.5, "tp", "20,-1"], [1.6, "hold", "move_right"], [3.5, "release", "move_right"],
+		[5.0, "state", "after_east"], [5.1, "travel", "hearthmere:square"], [6.3, "tp", "-20,2"], [6.4, "hold", "move_left"],
+		[8.3, "release", "move_left"], [9.8, "state", "after_west"], [9.9, "quit", ""],
+	],
 	"check": [
 		[0.1, "freeze", ""], [0.2, "learn", ""], [0.3, "tp", "-12,2"], [1.0, "shot", "k01_behind_tree"],
 		[1.1, "school", "hex"], [1.2, "tp", "-16.5,1"], [1.8, "tap", "spell_3"], [2.3, "shot", "k02_siphon_slope"],
