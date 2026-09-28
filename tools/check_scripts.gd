@@ -8,7 +8,7 @@ var failed := 0
 
 
 func _ready() -> void:
-	for root in ["res://game", "res://data", "res://tools"]:
+	for root in ["res://game", "res://game3d", "res://data", "res://tools"]:
 		_scan(root)
 	print("CHECK %s %d files, %d failed" % ["OK" if failed == 0 else "FAILED", count, failed])
 	get_tree().quit(1 if failed > 0 else 0)

@@ -69,6 +69,15 @@ const DEMOS := {
 		[1.2, "key", "4194321"], [1.4, "shot", "book1"], [1.6, "key", "4194309"], [1.8, "shot", "book2"],
 		[2.0, "key", "4194322"], [2.2, "shot", "book3"], [2.4, "key", "4194306"], [2.6, "shot", "book4"], [2.8, "quit", ""],
 	],
+	"mock": [
+		[0.8, "shot", "m01"], [1.0, "aim3", ""], [1.2, "hold", "move_right"], [1.9, "shot", "m02"], [2.2, "release", "move_right"],
+		[2.4, "tap", "spell_1"], [2.46, "shot", "m03"], [2.56, "shot", "m04"], [2.62, "shot", "m05"], [2.72, "shot", "m06"],
+		[2.85, "shot", "m07"], [3.3, "hold", "attack"], [3.4, "shot", "m08"], [3.7, "shot", "m09"], [4.2, "release", "attack"],
+		[4.4, "hold", "up"], [4.4, "hold", "move_left"], [5.4, "shot", "m10"], [6.2, "release", "up"], [6.2, "release", "move_left"],
+		[6.4, "shot", "m11"], [6.6, "tap", "spell_1"], [6.9, "shot", "m12"],
+		[7.2, "tp3", "-2,-11"], [7.8, "shot", "m13_cliff"], [8.0, "tp3", "-14,1.5"], [8.6, "shot", "m14_ruins"],
+		[8.8, "tp3", "14,-2"], [9.4, "shot", "m15_east"], [9.6, "tp3", "7,-11"], [10.2, "shot", "m16_edge"], [10.5, "quit", ""],
+	],
 	"idle_die": [
 		[0.1, "hold", "move_right"], [0.8, "release", "move_right"], [40.0, "quit", ""],
 	],
@@ -158,6 +167,7 @@ func _run(s: Array) -> void:
 				if cmd == "freeze":
 					e.sprite.play(&"idle")
 		"quit":
+			print("DEMO fps=%d" % Engine.get_frames_per_second())
 			get_tree().quit()
 		"learn":
 			for sc in WizardState.SCHOOLS:
@@ -188,6 +198,19 @@ func _run(s: Array) -> void:
 			var up := ev.duplicate()
 			up.pressed = false
 			Input.parse_input_event.call_deferred(up)
+		"tp3":
+			var pp = get_tree().get_first_node_in_group(&"player")
+			var xz: PackedStringArray = (s[2] as String).split(",")
+			pp.global_position = Vector3(float(xz[0]), pp.global_position.y + 6.0, float(xz[1]))
+			pp.velocity = Vector3.ZERO
+		"aim3":
+			var p3 = get_tree().get_first_node_in_group(&"player")
+			var best: Node3D = null
+			for e in get_tree().get_nodes_in_group(&"enemy3d"):
+				if best == null or p3.global_position.distance_to(e.global_position) < p3.global_position.distance_to(best.global_position):
+					best = e
+			if best:
+				p3.aim_override = best.global_position
 		"tp":
 			var pl3 := _player()
 			pl3.global_position = Vector2(float(s[2]) * 16.0 + 8.0, pl3.global_position.y - 120.0)
