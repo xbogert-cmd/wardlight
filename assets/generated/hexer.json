@@ -1,0 +1,72 @@
+{
+	"anims": {
+		"cast": {
+			"fps": 10.0,
+			"frames": [
+				11,
+				12
+			],
+			"loop": false
+		},
+		"death": {
+			"fps": 8.0,
+			"frames": [
+				16,
+				17,
+				18,
+				19,
+				20
+			],
+			"loop": false
+		},
+		"hurt": {
+			"fps": 10.0,
+			"frames": [
+				15
+			],
+			"loop": false
+		},
+		"idle": {
+			"fps": 5.0,
+			"frames": [
+				0,
+				1,
+				2,
+				3
+			],
+			"loop": true
+		},
+		"move": {
+			"fps": 8.0,
+			"frames": [
+				4,
+				5,
+				6,
+				7
+			],
+			"loop": true
+		},
+		"recover": {
+			"fps": 4.0,
+			"frames": [
+				13,
+				14
+			],
+			"loop": true
+		},
+		"windup": {
+			"fps": 5.0,
+			"frames": [
+				8,
+				9,
+				10
+			],
+			"loop": false
+		}
+	},
+	"cell": [
+		40,
+		56
+	],
+	"hframes": 8
+}

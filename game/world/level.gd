@@ -2,12 +2,17 @@ class_name Level
 extends Node2D
 ## A playable location built from an ASCII map: terrain, backdrop, scenery,
 ## actors, effects and camera. Terrain legend: see Terrain. Also:
-##   P player start   h Gloamhound
+##   P player start   h Gloamhound   s Briar Raider (shield)   c Hollow Hexer (caster)
+##   k Briar Knot (roots)   n Hollow Sentinel (elite)
 
 signal player_respawned
 
 const ENEMIES := {
 	"h": [preload("res://game/enemies/hound.gd"), preload("res://data/enemies/hound.tres")],
+	"s": [preload("res://game/enemies/raider.gd"), preload("res://data/enemies/raider.tres")],
+	"c": [preload("res://game/enemies/hexer.gd"), preload("res://data/enemies/hexer.tres")],
+	"k": [preload("res://game/enemies/knot.gd"), preload("res://data/enemies/knot.tres")],
+	"n": [preload("res://game/enemies/sentinel.gd"), preload("res://data/enemies/sentinel.tres")],
 }
 
 @export var map_file := "res://data/maps/arena.txt"

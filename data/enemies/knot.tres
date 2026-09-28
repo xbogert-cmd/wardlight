@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://game/enemies/enemy_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"knot"
+display_name = "Briar Knot"
+sheet = "knot"
+origin = Vector2(24, 38)
+body_size = Vector2(22, 26)
+max_hp = 80.0
+damage = 14.0
+move_speed = 0.0
+poise = 30.0
+knock_resist = 1.0
+flinch_cooldown = 2.0
+motes = 3
+aggro_range = 280.0
+params = {
+"exposed": 1.2,
+"reach": 230.0,
+"rest": 1.4,
+"root_resist": 1.0,
+"width": 48.0,
+"windup": 0.85
+}

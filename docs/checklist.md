@@ -1,6 +1,6 @@
 # Implementation checklist
 
-Status: **Stage 1 approved (with natural-terrain change). Stage 2 in progress.**
+Status: **Stage 2 complete. Stage 3 (adventure) in progress.**
 
 ## Agreed changes to the original brief
 - Cross-relic recipes cut; same-relic tier fusion (I → II → III) kept.
@@ -33,11 +33,17 @@ Status: **Stage 1 approved (with natural-terrain change). Stage 2 in progress.**
 - [x] Natural terrain: slopes (45°, 22.5°), rock terrain, scattered scenery props
 
 ## Stage 2 — combat toolkit
-- [ ] Pyromancer, Hexbinder, Stormcaller: 4 spells each + upgrades, 3 basics
-- [ ] Class passives (Heat, Soul Echo, Conduction), foreign affinity 75/85/95/100
-- [ ] Spell wheel (Tab, 15% time) and loadouts per class
-- [ ] Statuses (burn, curse, root, shock) and the three bounded interactions
-- [ ] Shield raider, hex caster, root creature, hollow knight
+- [x] Pyromancer, Hexbinder, Stormcaller: 4 spells each + visibly different upgrades, 3 basics
+- [x] Class passives (Heat, Soul Echo, Conduction) — only the active school's, native spells only
+- [x] Foreign affinity 75/85/95/100% (scales positive effects only), shown in the spellbook
+- [x] Spellbook (Tab, world at 15%), per-school saved loadouts, unique slots, keyboard + trackpad
+- [x] Statuses: burn, curse, root (bosses resist); status marks drawn on enemies
+- [x] Interactions: Haunted Embers, Grave Current, Cinderflight — all proc damage, non-recursive
+- [x] Briar Raider (shield, guards casters, guard break), Hollow Hexer (telegraphed bolt, punish
+      window), Briar Knot (ground control, burrows), Hollow Sentinel (poise, stagger, slam/sweep)
+- [x] Mixed-encounter gauntlet (data/maps/arena.txt, regenerate with tools/maps/gen_arena.py)
+- [x] Automated rule tests (tests/): 14 passing
+- Dev keys (debug builds): F5 next school, F6 toggle upgrades, F7 train affinity, F8 learn all
 
 ## Stage 3 — adventure
 - [ ] Sanctuary, Hearthmere, Briarwood, Old Ward ruins; exits and animated journey

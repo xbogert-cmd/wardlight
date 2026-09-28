@@ -404,6 +404,67 @@ func sfx_ui_open() -> PackedFloat32Array:
 	return fin(b, 0.5, 0.3)
 
 
+# ---------------------------------------------------------------- enemies
+func sfx_block() -> PackedFloat32Array:
+	var b := S.buf(0.3)
+	S.tone(b, 0, 0.25, 420, 380, "square", 0.25, 0.001, 0.07)
+	S.tone(b, 0, 0.25, 1260, 1200, "sine", 0.3, 0.001, 0.05)
+	S.noise(b, 0, 0.1, 0.6, 3000, 1500, 0.001, 0.03, 500)
+	S.tone(b, 0, 0.15, 120, 80, "sine", 0.5, 0.001, 0.04)
+	return fin(b, 0.8, 0.15)
+
+
+func sfx_guard_break() -> PackedFloat32Array:
+	var b := S.buf(0.6)
+	S.noise(b, 0, 0.4, 1.0, 2500, 400, 0.001, 0.12)
+	S.tone(b, 0, 0.3, 300, 140, "square", 0.3, 0.001, 0.1)
+	S.crackle(b, 0.02, 0.3, 80, 0.5)  # splintering wood
+	S.tone(b, 0, 0.3, 90, 45, "sine", 0.7, 0.001, 0.1)
+	return fin(b, 0.9, 0.2)
+
+
+func sfx_raider_grunt() -> PackedFloat32Array:
+	var b := S.buf(0.3)
+	S.tone(b, 0, 0.25, 150, 110, "saw", 0.4, 0.01, 0.1, 0.05, 0.02)
+	S.noise(b, 0, 0.2, 0.3, 900, 500, 0.01, 0.08)
+	S.lowpass(b, 1200)
+	return fin(b, 0.7)
+
+
+func sfx_slash() -> PackedFloat32Array:
+	var b := S.buf(0.3)
+	S.noise(b, 0, 0.28, 1.0, 1500, 7000, 0.01, 0.07, 800)
+	S.tone(b, 0.02, 0.15, 1800, 900, "sine", 0.15, 0.001, 0.05)
+	return fin(b, 0.8)
+
+
+func sfx_knot_creak() -> PackedFloat32Array:
+	var b := S.buf(0.8)
+	S.tone(b, 0, 0.8, 140, 95, "saw", 0.25, 0.1, 0.0, 0.15, 0.03)
+	S.crackle(b, 0.0, 0.8, 35, 0.5)
+	S.noise(b, 0, 0.8, 0.4, 500, 250, 0.2, 0.0, 60, 0.2)
+	S.lowpass(b, 1500)
+	return fin(b, 0.8)
+
+
+func sfx_sentinel_windup() -> PackedFloat32Array:
+	var b := S.buf(0.9)
+	S.tone(b, 0, 0.9, 55, 70, "saw", 0.3, 0.2, 0.0, 0.1, 0.02)
+	S.tone(b, 0, 0.9, hz(74), hz(81), "sine", 0.15, 0.3, 0.0, 0.1)
+	S.noise(b, 0, 0.9, 0.3, 300, 1200, 0.3, 0.0, 80, 0.1)   # armour grinding
+	S.crackle(b, 0.1, 0.7, 25, 0.3)
+	S.lowpass(b, 2000)
+	return fin(b, 0.75, 0.2)
+
+
+func sfx_sentinel_slam() -> PackedFloat32Array:
+	var b := S.buf(1.0)
+	S.noise(b, 0, 0.08, 1.0, 6000, 2000, 0.0005, 0.02, 400)
+	S.tone(b, 0, 0.6, 55, 28, "sine", 1.0, 0.001, 0.25)
+	S.noise(b, 0.02, 0.9, 0.7, 700, 90, 0.01, 0.3)
+	S.tone(b, 0, 0.4, 900, 850, "square", 0.08, 0.001, 0.15)   # ringing steel
+	return fin(b, 0.95, 0.3)
+
 # ---------------------------------------------------------------- music
 ## Tense night-woods loop: D minor, 80 bpm, 8 bars.
 func mus_explore() -> PackedFloat32Array:

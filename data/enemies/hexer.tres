@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://game/enemies/enemy_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"hexer"
+display_name = "Hollow Hexer"
+sheet = "hexer"
+origin = Vector2(20, 55)
+body_size = Vector2(14, 40)
+max_hp = 50.0
+damage = 14.0
+move_speed = 55.0
+poise = 18.0
+knock_resist = 0.1
+flinch_cooldown = 1.0
+motes = 3
+aggro_range = 300.0
+params = {
+"bolt_speed": 170.0,
+"far": 210.0,
+"recover": 1.1,
+"rest": 1.6,
+"too_close": 90.0,
+"windup": 0.85
+}

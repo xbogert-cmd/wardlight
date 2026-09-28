@@ -1,0 +1,73 @@
+{
+	"anims": {
+		"attack": {
+			"fps": 8.0,
+			"frames": [
+				12,
+				13,
+				14
+			],
+			"loop": false
+		},
+		"burrow": {
+			"fps": 10.0,
+			"frames": [
+				4,
+				5,
+				6,
+				7
+			],
+			"loop": false
+		},
+		"death": {
+			"fps": 7.0,
+			"frames": [
+				18,
+				19,
+				20,
+				21
+			],
+			"loop": false
+		},
+		"emerge": {
+			"fps": 10.0,
+			"frames": [
+				8,
+				9,
+				10,
+				11
+			],
+			"loop": false
+		},
+		"exposed": {
+			"fps": 5.0,
+			"frames": [
+				15,
+				16
+			],
+			"loop": true
+		},
+		"hurt": {
+			"fps": 10.0,
+			"frames": [
+				17
+			],
+			"loop": false
+		},
+		"idle": {
+			"fps": 5.0,
+			"frames": [
+				0,
+				1,
+				2,
+				3
+			],
+			"loop": true
+		}
+	},
+	"cell": [
+		48,
+		40
+	],
+	"hframes": 8
+}

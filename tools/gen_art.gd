@@ -26,6 +26,10 @@ func _init() -> void:
 				(layers[k] as Image).save_png(OUT + "bg_%s_%s.png" % [region, k])
 	if want.call("enemies"):
 		_save_sheet("hound", Enemies.hound())
+		_save_sheet("raider", Enemies.raider())
+		_save_sheet("hexer", Enemies.hexer())
+		_save_sheet("knot", Enemies.knot())
+		_save_sheet("sentinel", Enemies.sentinel())
 	if want.call("fx"):
 		for s in [16, 32, 64]:
 			Fx.glow(s).save_png(OUT + "glow%d.png" % s)

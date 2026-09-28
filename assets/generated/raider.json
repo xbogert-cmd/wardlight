@@ -1,0 +1,96 @@
+{
+	"anims": {
+		"bash": {
+			"fps": 12.0,
+			"frames": [
+				14,
+				15
+			],
+			"loop": false
+		},
+		"bash_windup": {
+			"fps": 8.0,
+			"frames": [
+				12,
+				13
+			],
+			"loop": false
+		},
+		"death": {
+			"fps": 8.0,
+			"frames": [
+				23,
+				24,
+				25,
+				26
+			],
+			"loop": false
+		},
+		"guard": {
+			"fps": 6.0,
+			"frames": [
+				10,
+				11
+			],
+			"loop": true
+		},
+		"hurt": {
+			"fps": 10.0,
+			"frames": [
+				22
+			],
+			"loop": false
+		},
+		"idle": {
+			"fps": 6.0,
+			"frames": [
+				0,
+				1,
+				2,
+				3
+			],
+			"loop": true
+		},
+		"slash": {
+			"fps": 14.0,
+			"frames": [
+				18,
+				19
+			],
+			"loop": false
+		},
+		"slash_windup": {
+			"fps": 8.0,
+			"frames": [
+				16,
+				17
+			],
+			"loop": false
+		},
+		"stagger": {
+			"fps": 6.0,
+			"frames": [
+				20,
+				21
+			],
+			"loop": true
+		},
+		"walk": {
+			"fps": 9.0,
+			"frames": [
+				4,
+				5,
+				6,
+				7,
+				8,
+				9
+			],
+			"loop": true
+		}
+	},
+	"cell": [
+		48,
+		48
+	],
+	"hframes": 8
+}

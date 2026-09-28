@@ -49,6 +49,26 @@ const DEMOS := {
 		[9.5, "shot", "t11"], [10.5, "shot", "t12"], [11.2, "tap", "jump"], [11.8, "shot", "t13_hill"], [12.5, "shot", "t14"],
 		[13.0, "quit", ""],
 	],
+	"gauntlet": [
+		[0.3, "hold", "move_right"], [2.2, "release", "move_right"], [2.3, "aim_enemy", ""],
+		[2.4, "tap", "spell_1"], [2.6, "shot", "g01"], [3.2, "hold", "attack"], [3.4, "shot", "g02"], [4.4, "release", "attack"],
+		[4.5, "tap", "spell_2"], [4.7, "shot", "g03"], [5.2, "tap", "dodge"], [5.4, "shot", "g04"], [5.8, "tap", "spell_1"],
+		[6.2, "hold", "attack"], [6.5, "shot", "g05"], [7.5, "release", "attack"], [7.6, "tap", "spell_4"], [8.0, "shot", "g06"],
+		[8.4, "hold", "attack"], [9.5, "release", "attack"], [9.6, "shot", "g07"],
+		[9.7, "tp", "72"], [10.0, "shot", "g08"], [10.3, "tap", "spell_1"], [10.6, "shot", "g09"], [11.0, "shot", "g10"],
+		[11.4, "tap", "spell_2"], [11.6, "shot", "g11"], [12.0, "shot", "g12"], [12.5, "hold", "attack"], [13.0, "shot", "g13"],
+		[13.5, "release", "attack"], [13.8, "shot", "g14"],
+		[14.0, "tp", "104"], [14.3, "shot", "g15"], [15.0, "shot", "g16"], [15.3, "hold", "move_left"], [15.6, "shot", "g17"], [15.9, "release", "move_left"],
+		[16.0, "tap", "spell_1"], [16.4, "shot", "g18"],
+		[17.0, "tp", "136"], [17.3, "shot", "g19"], [17.8, "shot", "g20"], [18.3, "shot", "g21"], [18.6, "tap", "dodge"], [18.8, "shot", "g22"],
+		[19.2, "shot", "g23"], [19.6, "hold", "attack"], [20.2, "shot", "g24"], [21.0, "shot", "g25"], [21.5, "release", "attack"],
+		[21.6, "tap", "spell_2"], [22.0, "shot", "g26"], [22.6, "shot", "g27"], [23.0, "quit", ""],
+	],
+	"book": [
+		[0.5, "learn", ""], [0.6, "upg", "1"], [0.8, "book", ""], [1.0, "key", "50"], [1.1, "key", "4194322"],
+		[1.2, "key", "4194321"], [1.4, "shot", "book1"], [1.6, "key", "4194309"], [1.8, "shot", "book2"],
+		[2.0, "key", "4194322"], [2.2, "shot", "book3"], [2.4, "key", "4194306"], [2.6, "shot", "book4"], [2.8, "quit", ""],
+	],
 	"idle_die": [
 		[0.1, "hold", "move_right"], [0.8, "release", "move_right"], [40.0, "quit", ""],
 	],
@@ -158,6 +178,21 @@ func _run(s: Array) -> void:
 			for e in get_tree().get_nodes_in_group(&"enemy"):
 				e.health.reset()
 				e.statuses.clear()
+		"book":
+			get_tree().root.get_node("Main").spellbook.open()
+		"key":
+			var ev := InputEventKey.new()
+			ev.physical_keycode = int(s[2])
+			ev.pressed = true
+			Input.parse_input_event(ev)
+			var up := ev.duplicate()
+			up.pressed = false
+			Input.parse_input_event.call_deferred(up)
+		"tp":
+			var pl3 := _player()
+			pl3.global_position = Vector2(float(s[2]) * 16.0 + 8.0, pl3.global_position.y - 120.0)
+			pl3.velocity = Vector2.ZERO
+			pl3.face(1)
 		"tp_near":
 			var pl2 := _player()
 			var e2: Node2D = null

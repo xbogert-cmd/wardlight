@@ -150,7 +150,7 @@ func _confirm() -> void:
 		return
 	if wiz.equip(sel_slot, id):
 		Sfx.play("ui_select", -4.0)
-		_say("%s → slot %d" % [SpellDB.get_spell(id).display_name, sel_slot + 1])
+		_say("%s -> slot %d" % [SpellDB.get_spell(id).display_name, sel_slot + 1])
 		sel_slot = (sel_slot + 1) % 4
 
 
@@ -200,7 +200,7 @@ func _draw() -> void:
 	_t(WizardState.SCHOOL_NAMES[wiz.school], p + Vector2(80, 18), sc)
 	var pas: Array = PASSIVE_TEXT[wiz.school]
 	_t("Passive: " + pas[0], p + Vector2(230, 18), sc)
-	_wrap(pas[1], p + Vector2(230, 30), 212, Color("b8aa94"), 2)
+	_wrap(pas[1], p + Vector2(14, 31), 428, Color("b8aa94"), 2)
 	# slots
 	_t("Loadout", p + Vector2(10, 50), Color("c8b898"))
 	for k in 4:

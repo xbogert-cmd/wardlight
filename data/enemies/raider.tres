@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://game/enemies/enemy_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"raider"
+display_name = "Briar Raider"
+sheet = "raider"
+origin = Vector2(22, 47)
+body_size = Vector2(16, 30)
+max_hp = 90.0
+damage = 14.0
+move_speed = 70.0
+poise = 26.0
+knock_resist = 0.35
+flinch_cooldown = 1.6
+motes = 3
+aggro_range = 260.0
+params = {
+"bash_damage": 12.0,
+"recover": 0.6,
+"rest": 1.3,
+"stagger_time": 1.3,
+"windup": 0.55
+}
