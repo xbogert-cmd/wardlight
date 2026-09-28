@@ -78,6 +78,11 @@ const DEMOS := {
 		[7.2, "tp3", "-2,-11"], [7.8, "shot", "m13_cliff"], [8.0, "tp3", "-14,1.5"], [8.6, "shot", "m14_ruins"],
 		[8.8, "tp3", "14,-2"], [9.4, "shot", "m15_east"], [9.6, "tp3", "7,-11"], [10.2, "shot", "m16_edge"], [10.5, "quit", ""],
 	],
+	"pole": [
+		[0.5, "tp3", "8.6,3.4"], [1.4, "pos", "start"], [1.4, "hold", "up"], [2.6, "pos", "front"], [2.6, "shot", "pole_front"], [2.7, "release", "up"],
+		[2.8, "tp3", "8.6,-1.6"], [3.7, "pos", "start2"], [3.7, "hold", "down"], [4.9, "pos", "behind"], [4.9, "shot", "pole_behind"], [5.0, "release", "down"],
+		[5.1, "tp3", "7.4,3.0"], [6.0, "hold", "up"], [6.6, "shot", "pole_pass"], [6.7, "release", "up"], [6.8, "quit", ""],
+	],
 	"idle_die": [
 		[0.1, "hold", "move_right"], [0.8, "release", "move_right"], [40.0, "quit", ""],
 	],
@@ -203,6 +208,9 @@ func _run(s: Array) -> void:
 			var xz: PackedStringArray = (s[2] as String).split(",")
 			pp.global_position = Vector3(float(xz[0]), pp.global_position.y + 6.0, float(xz[1]))
 			pp.velocity = Vector3.ZERO
+		"pos":
+			var pl3: Node3D = get_tree().get_first_node_in_group(&"player")
+			print("DEMO pos ", s[2], " ", pl3.global_position)
 		"aim3":
 			var p3 = get_tree().get_first_node_in_group(&"player")
 			var best: Node3D = null

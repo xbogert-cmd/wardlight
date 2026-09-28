@@ -63,7 +63,7 @@ func is_alive() -> bool:
 	return state != &"dead"
 
 
-## Staff gem in world space (billboards face the camera, so offset along the camera's axes).
+## Staff gem in world space (matches sprite_lit: upright quad, Y stretched by 1/cos(pitch)).
 func staff_tip() -> Vector3:
 	var info: Dictionary = art.anims.get(String(sprite.anim), {})
 	var t := Vector2(6, -44)
@@ -72,7 +72,9 @@ func staff_tip() -> Vector3:
 	if sprite.flip:
 		t.x = -t.x
 	var b := cam.global_transform.basis
-	return global_position + b.x * t.x * PX + b.y * -t.y * PX
+	var right := Vector3(b.x.x, 0.0, b.x.z).normalized()
+	var stretch := 1.0 / maxf(Vector2(b.z.x, b.z.z).length(), 0.2)
+	return global_position + right * t.x * PX + Vector3.UP * -t.y * PX * stretch
 
 
 func _physics_process(delta: float) -> void:
