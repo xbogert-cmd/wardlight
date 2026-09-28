@@ -1,12 +1,15 @@
 class_name Player
-extends CharacterBody2D
-## The wizard: movement, dodge, damage intake and animation choice.
-## Health, mana, aiming and spells live in child components.
+extends CharacterBody3D
+## The wizard: movement on the ground plane (no jumping — hills are walked),
+## dodge, damage intake and animation choice. Health, mana, aiming and spells
+## live in child components. Side-facing sprite, flipped by `facing`.
 
 signal died
 signal perfect_dodge
 
 enum { NORMAL, DODGE, HURT, DEAD, LOCKED, DASH }
+
+const PX := 1.0 / 24.0
 
 @export var tuning: PlayerTuning = preload("res://data/tuning/player.tres")
 
@@ -17,18 +20,19 @@ var passives: Passives
 var statuses: Statuses
 var caster: SpellCaster
 var aim: Aim
-var sprite: WizardSprite
+var sprite: PixelBillboard
+var art: Dictionary
 
 var state := NORMAL
 var facing := 1
-var has_double_jump := false
+var look_dir := Vector3.RIGHT      # horizontal: last move / aim direction
 var has_float := false
 ## Incoming-damage multiplier from wards, with its remaining time.
 var guard_mult := 1.0
 var guard_t := 0.0
 ## Spirit Lantern wards: each absorbs one enemy hit and retaliates.
 var spirits: Array = []
-var _dash_v := Vector2.ZERO
+var _dash_v := Vector3.ZERO
 var _dash_t := 0.0
 var _dash_step: Callable
 ## False while a menu owns the keyboard. After menus close, the staff attack
@@ -37,38 +41,32 @@ var input_enabled := true
 var _attack_needs_release := false
 var _input_grace := 0.0
 
-var _coyote := 0.0
-var _buffer := 0.0
-var _jumping := false
-var _air_jump_used := false
-var _air_dodge_used := false
-var _float_left := 0.0
 var _dodge_t := 0.0
 var _dodge_cd := 0.0
-var _dodge_dir := 1
+var _dodge_dir := Vector3.RIGHT
 var _dodge_rewarded := false
 var _state_t := 0.0
 var _iframes := 0.0
 var _flash := 0.0
-var _was_on_floor := true
-var _land_t := 0.0
 var _release_t := 0.0
 var _release_pose := 2
 var _step_frame := -1
+var _ghost_t := 0.0
 
 
 func _ready() -> void:
 	add_to_group(&"player")
 	collision_layer = 2
 	collision_mask = 1
-	floor_snap_length = 6.0
-	floor_max_angle = deg_to_rad(47.0)
+	floor_snap_length = 0.4
+	floor_max_angle = deg_to_rad(50.0)
 	floor_constant_speed = true
-	var cs := CollisionShape2D.new()
-	var sh := RectangleShape2D.new()
-	sh.size = Vector2(10, 30)
-	cs.shape = sh
-	cs.position = Vector2(0, -15)
+	var cs := CollisionShape3D.new()
+	var cap := CapsuleShape3D.new()
+	cap.radius = 0.32
+	cap.height = 1.4
+	cs.shape = cap
+	cs.position.y = 0.7
 	add_child(cs)
 
 	health = Health.new()
@@ -87,8 +85,10 @@ func _ready() -> void:
 	statuses = Statuses.new()
 	statuses.owner_actor = self
 	add_child(statuses)
-	sprite = WizardSprite.new()
+	sprite = PixelBillboard.new()
 	add_child(sprite)
+	set_look({})
+	add_child(BlobShadow.make(0.9))
 	aim = Aim.new()
 	aim.player = self
 	add_child(aim)
@@ -99,20 +99,54 @@ func _ready() -> void:
 	add_child(caster)
 
 
-func center() -> Vector2:
-	return global_position + Vector2(0, -16)
+## Rebuild the body from an appearance ({robe, hat, beard...}; see WizardArt).
+func set_look(l: Dictionary) -> void:
+	art = WizardArt.build(l)
+	var cur := sprite.anim if sprite.anim != &"" else &"idle"
+	sprite.setup(art.texture, Vector2i(WizardArt.CELL_W, WizardArt.CELL), WizardArt.COLS, art.anims, Vector2(WizardArt.FOOT))
+	sprite.play(cur, true)
+
+
+func center() -> Vector3:
+	return global_position + Vector3(0, 0.9, 0)
+
+
+func radius() -> float:
+	return 0.32
+
+
+func height() -> float:
+	return 1.7
+
+
+## Staff gem in world space (matches sprite_lit: upright quad, Y stretched by 1/cos(pitch)).
+func staff_tip() -> Vector3:
+	var info: Dictionary = art.anims.get(String(sprite.anim), {})
+	var t := Vector2(6, -44)
+	if not info.is_empty():
+		t = art.tips[info.frames[clampi(sprite.frame, 0, info.frames.size() - 1)]]
+	if sprite.flip:
+		t.x = -t.x
+	var cam := get_viewport().get_camera_3d()
+	var right := Vector3.RIGHT
+	var stretch := 1.0 / cos(deg_to_rad(50.0))
+	if cam:
+		var b := cam.global_transform.basis
+		right = Vector3(b.x.x, 0.0, b.x.z).normalized()
+		stretch = 1.0 / maxf(Vector2(b.z.x, b.z.z).length(), 0.2)
+	return global_position + right * t.x * PX + Vector3.UP * -t.y * PX * stretch
 
 
 ## Staff gem, pulled back if the staff pokes into a wall so spells never
-## spawn on the far side of terrain.
-func cast_origin() -> Vector2:
-	var from := global_position + Vector2(0, -26)
-	var tip := global_position + sprite.tip()
-	var q := PhysicsRayQueryParameters2D.create(from, tip, 1)
-	var hit := get_world_2d().direct_space_state.intersect_ray(q)
+## spawn on the far side of scenery.
+func cast_origin() -> Vector3:
+	var from := global_position + Vector3(0, 1.2, 0)
+	var tip := staff_tip()
+	var q := PhysicsRayQueryParameters3D.create(from, tip, 1)
+	var hit := get_world_3d().direct_space_state.intersect_ray(q)
 	if hit.is_empty():
 		return tip
-	return (hit.position as Vector2) - (tip - from).normalized() * 3.0
+	return (hit.position as Vector3) - (tip - from).normalized() * 0.12
 
 
 func is_alive() -> bool:
@@ -140,7 +174,13 @@ func _held(a: StringName) -> bool:
 func face(dir: int) -> void:
 	if dir != 0:
 		facing = dir
-		sprite.scale.x = facing
+
+
+func move_input() -> Vector3:
+	if not input_enabled:
+		return Vector3.ZERO
+	var v := Vector3(Input.get_axis(&"move_left", &"move_right"), 0, Input.get_axis(&"up", &"down"))
+	return v.normalized() if v.length() > 1.0 else v
 
 
 # ------------------------------------------------------------------ physics
@@ -152,11 +192,14 @@ func _physics_process(delta: float) -> void:
 	_input_grace -= delta
 	if _attack_needs_release and not Input.is_action_pressed(&"attack"):
 		_attack_needs_release = false
-	_land_t = maxf(0.0, _land_t - delta)
 	if guard_t > 0.0:
 		guard_t -= delta
 		if guard_t <= 0.0:
 			guard_mult = 1.0
+	if is_on_floor() and state != DASH:
+		velocity.y = -0.5
+	else:
+		velocity.y -= tuning.gravity * delta
 	match state:
 		NORMAL:
 			_normal(delta)
@@ -165,72 +208,36 @@ func _physics_process(delta: float) -> void:
 		DASH:
 			_spell_dash(delta)
 		HURT:
-			velocity.y = minf(velocity.y + tuning.gravity_down * delta, tuning.max_fall)
-			velocity.x = move_toward(velocity.x, 0.0, tuning.decel * 0.5 * delta)
+			_brake(tuning.decel * 0.3, delta)
 			if _state_t >= tuning.hurt_time:
 				state = NORMAL
-		DEAD:
-			velocity.y = minf(velocity.y + tuning.gravity_down * delta, tuning.max_fall)
-			velocity.x = move_toward(velocity.x, 0.0, tuning.decel * delta)
-		LOCKED:
-			velocity.x = move_toward(velocity.x, 0.0, tuning.decel * delta)
-			velocity.y = minf(velocity.y + tuning.gravity_down * delta, tuning.max_fall)
+		DEAD, LOCKED:
+			_brake(tuning.decel, delta)
 	move_and_slide()
-	var on_floor := is_on_floor()
-	if on_floor and not _was_on_floor:
-		_on_land()
-	_was_on_floor = on_floor
 	_animate(delta)
 
 
+func _brake(rate: float, delta: float) -> void:
+	velocity.x = move_toward(velocity.x, 0.0, rate * delta)
+	velocity.z = move_toward(velocity.z, 0.0, rate * delta)
+
+
 func _normal(delta: float) -> void:
-	var on_floor := is_on_floor()
-	if on_floor:
-		_coyote = tuning.coyote
-		_air_jump_used = false
-		_air_dodge_used = false
-		_float_left = tuning.float_time
-		_jumping = false
-	else:
-		_coyote -= delta
-	_buffer -= delta
-	if _just(&"jump"):
-		_buffer = tuning.jump_buffer
-
-	var ix := Input.get_axis(&"move_left", &"move_right") if input_enabled else 0.0
-	var target := ix * tuning.run_speed
+	var input := move_input()
+	var speed := tuning.run_speed * statuses.move_scale()
 	if caster.state == SpellCaster.WINDUP:
-		target *= tuning.cast_move_mult
-	var a := tuning.accel if on_floor else tuning.air_accel
-	if ix == 0.0:
-		a = tuning.decel if on_floor else tuning.air_accel * 0.6
-	velocity.x = move_toward(velocity.x, target, a * delta)
-	if ix != 0.0 and not caster.busy():
-		face(int(signf(ix)))
+		speed *= tuning.cast_move_mult
+	var target := input * speed
+	var rate := tuning.accel if input != Vector3.ZERO else tuning.decel
+	velocity.x = move_toward(velocity.x, target.x, rate * delta)
+	velocity.z = move_toward(velocity.z, target.z, rate * delta)
+	if input.length() > 0.1 and not caster.busy() and _release_t <= 0.0:
+		look_dir = input.normalized()
+		if absf(input.x) > 0.1:
+			face(int(signf(input.x)))
 
-	# jumping (with coyote time, buffer and double jump)
-	if _buffer > 0.0:
-		if _coyote > 0.0:
-			_jump(tuning.jump_height)
-		elif has_double_jump and not _air_jump_used:
-			_air_jump_used = true
-			_jump(tuning.double_jump_height)
-			FX.ring(global_position, 3, 14, 0.25, Pal.school(&"storm"), 1.0, false)
-			FX.burst(global_position, 8, Pal.MANA, Vector2(30, 70), Vector2(0.2, 0.4), {"dir": Vector2.DOWN, "spread": 2.0})
-	if _jumping and velocity.y < 0.0 and not _held(&"jump"):
-		velocity.y *= tuning.jump_cut
-		_jumping = false
-
-	var g := tuning.gravity_up if velocity.y < 0.0 else tuning.gravity_down
-	velocity.y = minf(velocity.y + g * delta, tuning.max_fall)
-	if has_float and velocity.y > 0.0 and _held(&"jump") and _float_left > 0.0 and not on_floor:
-		_float_left -= delta
-		velocity.y = minf(velocity.y, tuning.float_fall_speed)
-		if randf() < 0.4:
-			FX.burst(global_position + Vector2(randf_range(-6, 6), -2), 1, Pal.HEAL, Vector2(5, 15), Vector2(0.3, 0.5), {"dir": Vector2.DOWN, "spread": 1.0})
-
-	if _just(&"dodge") and _dodge_cd <= 0.0 and (on_floor or not _air_dodge_used):
-		_start_dodge(ix)
+	if _just(&"dodge") and _dodge_cd <= 0.0:
+		_start_dodge(input)
 		return
 
 	if _just(&"spell_1"):
@@ -245,91 +252,66 @@ func _normal(delta: float) -> void:
 		caster.request(SpellCaster.BASIC_SLOT, true)
 
 
-func _jump(h: float) -> void:
-	var g := tuning.gravity_up
-	velocity.y = -sqrt(2.0 * g * h)
-	_jumping = true
-	_coyote = 0.0
-	_buffer = 0.0
-	Sfx.play("jump", -8.0)
-	FX.burst(global_position, 5, Pal.DUST, Vector2(10, 40), Vector2(0.2, 0.35), {"dir": Vector2.UP, "spread": 2.4, "add": false, "front": false, "gravity": 60.0})
-
-
-func _start_dodge(ix: float) -> void:
+func _start_dodge(input: Vector3) -> void:
 	caster.interrupt()
 	state = DODGE
 	_state_t = 0.0
 	_dodge_t = tuning.dodge_time
-	_dodge_dir = int(signf(ix)) if ix != 0.0 else facing
-	face(_dodge_dir)
+	_dodge_dir = input.normalized() if input.length() > 0.1 else look_dir
+	if absf(_dodge_dir.x) > 0.1:
+		face(int(signf(_dodge_dir.x)))
 	_dodge_rewarded = false
 	_iframes = maxf(_iframes, tuning.dodge_iframes)
-	if not is_on_floor():
-		_air_dodge_used = true
-	velocity = Vector2(_dodge_dir * tuning.dodge_speed, 0)
-	sprite.restart(&"dodge")
+	sprite.play(&"dodge", true)
 	Sfx.play("dodge", -4.0)
-	FX.burst(global_position + Vector2(-_dodge_dir * 4, -2), 6, Pal.DUST, Vector2(20, 60), Vector2(0.2, 0.4),
-		{"dir": Vector2(-_dodge_dir, -0.3), "spread": 0.8, "add": false, "front": false, "drag": 3.0})
+	FX3.burst(global_position + Vector3(0, 0.1, 0), 8, Pal.DUST, Vector2(1.0, 3.0), Vector2(0.2, 0.4), {"dir": -_dodge_dir + Vector3(0, 0.3, 0), "spread": 1.2, "gravity": 4.0})
 
 
 func _dodge(delta: float) -> void:
 	_dodge_t -= delta
-	velocity.x = _dodge_dir * tuning.dodge_speed * (0.55 + 0.45 * _dodge_t / tuning.dodge_time)
-	velocity.y = minf(velocity.y + tuning.gravity_down * 0.25 * delta, 60.0)
-	if int(_state_t * 60.0) % 3 == 0:
-		_afterimage()
+	var sp := tuning.dodge_speed * (0.55 + 0.45 * _dodge_t / tuning.dodge_time)
+	velocity.x = _dodge_dir.x * sp
+	velocity.z = _dodge_dir.z * sp
+	_trail_ghosts(delta, Color(0.5, 0.85, 1.0))
 	if _dodge_t <= 0.0:
 		state = NORMAL
 		_dodge_cd = tuning.dodge_cooldown
-		velocity.x *= 0.5
+		velocity.x *= 0.4
+		velocity.z *= 0.4
+
+
+func _trail_ghosts(delta: float, col: Color) -> void:
+	_ghost_t -= delta
+	if _ghost_t <= 0.0:
+		_ghost_t = 0.04
+		sprite.afterimage(col, 0.2)
 
 
 ## Spell-driven dash (Slipstream): fixed velocity, invulnerable, calls
 ## `on_step` every physics frame so the spell can hit things it passes.
-func spell_dash(v: Vector2, time: float, on_step: Callable) -> void:
+func spell_dash(v: Vector3, time: float, on_step: Callable) -> void:
 	state = DASH
 	_state_t = 0.0
-	_dash_v = v
+	_dash_v = Vector3(v.x, 0.0, v.z)
 	_dash_t = time
 	_dash_step = on_step
 	_iframes = maxf(_iframes, time + 0.05)
-	if absf(v.x) > 1.0:
+	if absf(v.x) > 0.1:
 		face(int(signf(v.x)))
+	look_dir = SpellEffect.flat_dir(v, look_dir)
 
 
 func _spell_dash(delta: float) -> void:
 	_dash_t -= delta
-	velocity = _dash_v
+	velocity.x = _dash_v.x
+	velocity.z = _dash_v.z
 	if _dash_step.is_valid():
 		_dash_step.call()
-	if int(_state_t * 60.0) % 2 == 0:
-		_afterimage()
+	_trail_ghosts(delta, Color(0.7, 0.95, 1.0))
 	if _dash_t <= 0.0:
 		state = NORMAL
-		velocity = _dash_v * 0.35
-
-
-func _afterimage() -> void:
-	var tex := sprite.anim.sprite_frames.get_frame_texture(sprite.anim.animation, sprite.anim.frame)
-	var s := Sprite2D.new()
-	s.texture = tex
-	s.centered = false
-	s.offset = -Vector2(WizardArt.FOOT)
-	s.scale.x = facing
-	s.global_position = global_position
-	s.modulate = Color(0.5, 0.85, 1.0, 0.45)
-	s.z_index = -1
-	get_parent().add_child(s)
-	var tw := s.create_tween()
-	tw.tween_property(s, "modulate:a", 0.0, 0.18)
-	tw.tween_callback(s.queue_free)
-
-
-func _on_land() -> void:
-	_land_t = 0.1
-	Sfx.play("land", -10.0)
-	FX.burst(global_position, 4, Pal.DUST, Vector2(10, 35), Vector2(0.15, 0.3), {"dir": Vector2.UP, "spread": 2.8, "add": false, "front": false, "gravity": 80.0})
+		velocity.x = _dash_v.x * 0.3
+		velocity.z = _dash_v.z * 0.3
 
 
 # ------------------------------------------------------------------ damage
@@ -342,8 +324,8 @@ func take_hit(d: Damage) -> void:
 			mana.gain(tuning.perfect_dodge_mana)
 			perfect_dodge.emit()
 			Sfx.play("perfect_dodge", -4.0)
-			FX.ring(center(), 4, 18, 0.3, Pal.MANA, 1.0, true)
-			FX.burst(center(), 10, Pal.MANA, Vector2(30, 80), Vector2(0.2, 0.4), {"glow": true})
+			FX3.ring(center(), 0.2, 0.9, 0.3, Pal.MANA, 1.0, false)
+			FX3.burst(center(), 10, Pal.MANA, Vector2(1.2, 3.3), Vector2(0.2, 0.4))
 		return
 	if not spirits.is_empty() and d.active_attack:
 		var sp: Node = spirits.pop_front()
@@ -354,31 +336,33 @@ func take_hit(d: Damage) -> void:
 	health.damage(d.amount * guard_mult)
 	_flash = 0.75
 	_iframes = tuning.hurt_iframes
-	var kb := d.knockback if d.knockback != Vector2.ZERO else Vector2(signf(global_position.x - d.hit_pos.x) * 120.0, -120.0)
+	var kb := d.knockback
+	if kb == Vector3.ZERO:
+		kb = SpellEffect.push(d.hit_pos, global_position, 5.0, 3.0)
 	velocity = kb
 	TimeCtl.hitstop(0.06)
-	GameCamera.shake_all(4.0)
-	FX.burst(center(), 10, Pal.DANGER, Vector2(40, 120), Vector2(0.15, 0.35), {"gravity": 200.0})
+	GameCamera3D.shake_all(4.0)
+	FX3.burst(center(), 10, Pal.DANGER, Vector2(1.6, 5.0), Vector2(0.15, 0.35), {"gravity": 8.0})
 	if health.is_dead():
 		_die()
 	else:
 		state = HURT
 		_state_t = 0.0
-		sprite.restart(&"hurt")
+		sprite.play(&"hurt", true)
 		Sfx.play("hurt", -2.0)
 
 
 func _die() -> void:
 	state = DEAD
 	_state_t = 0.0
-	sprite.restart(&"death")
+	sprite.play(&"death", true)
 	Sfx.play("player_death")
 	died.emit()
 
 
-func respawn_at(pos: Vector2) -> void:
+func respawn_at(pos: Vector3) -> void:
 	global_position = pos
-	velocity = Vector2.ZERO
+	velocity = Vector3.ZERO
 	state = NORMAL
 	_state_t = 0.0
 	health.reset()
@@ -391,7 +375,7 @@ func respawn_at(pos: Vector2) -> void:
 	spirits.clear()
 	passives.reset()
 	_iframes = tuning.respawn_iframes
-	sprite.restart(&"idle")
+	sprite.play(&"idle", true)
 
 
 func lock(on: bool) -> void:
@@ -403,20 +387,19 @@ func lock(on: bool) -> void:
 
 
 # ------------------------------------------------------------------ animation
-func on_cast_release(_data: SpellData, _ctx: CastContext) -> void:
+func on_cast_release(_data: SpellData, ctx: CastContext) -> void:
 	_release_t = 0.14
 	_release_pose = caster.pose_index()
-	sprite.restart(StringName("release_%d" % _release_pose))
+	look_dir = ctx.dir
+	sprite.play(StringName("release_%d" % _release_pose), true)
 
 
 func _animate(delta: float) -> void:
 	_flash = maxf(0.0, _flash - delta * 8.0)
 	sprite.set_flash(_flash)
-	sprite.visible = true
-	if _iframes > 0.0 and state != DODGE and state != DEAD and state != HURT:
-		sprite.modulate.a = 0.45 if int(_iframes * 20.0) % 2 == 0 else 1.0
-	else:
-		sprite.modulate.a = 1.0
+	sprite.set_flip(facing < 0)
+	var blink := _iframes > 0.0 and state != DODGE and state != DEAD and state != HURT and state != DASH
+	sprite.set_fade(0.5 if blink and int(_iframes * 20.0) % 2 == 0 else 0.0)
 	match state:
 		DEAD:
 			sprite.play(&"death")
@@ -436,13 +419,9 @@ func _animate(delta: float) -> void:
 	if caster.state == SpellCaster.RECOVER:
 		sprite.play(&"recover")
 		return
-	if not is_on_floor():
-		sprite.play(&"jump" if velocity.y < 0.0 else &"fall")
-	elif _land_t > 0.0:
-		sprite.play(&"land")
-	elif absf(velocity.x) > 12.0:
+	if Vector2(velocity.x, velocity.z).length() > 0.5:
 		sprite.play(&"run")
-		var f := sprite.anim.frame
+		var f := sprite.frame
 		if (f == 1 or f == 5) and f != _step_frame:
 			Sfx.play("step", -14.0, 0.15)
 		_step_frame = f

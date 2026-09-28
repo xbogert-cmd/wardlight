@@ -1,27 +1,27 @@
-extends Area2D
-## Mana mote dropped by defeated enemies. Pops out, settles, then drifts to
-## the wizard inside pickup range. Expires after a while (blinks first).
+extends Node3D
+## Mana mote dropped by defeated enemies. Pops out, bounces to rest, then
+## drifts to the wizard inside pickup range. Expires after a while (blinks first).
 
-var velocity := Vector2.ZERO
+var velocity := Vector3.ZERO
 var amount := 6.0
 var life := 9.0
 var _t := 0.0
+var _glow: MeshInstance3D
 
 
 func _ready() -> void:
-	collision_layer = 0
-	collision_mask = 2
-	monitorable = false
-	z_index = FX.Z_FRONT
-	var cs := CollisionShape2D.new()
-	var sh := CircleShape2D.new()
-	sh.radius = 6.0
-	cs.shape = sh
-	add_child(cs)
-	body_entered.connect(_on_body)
-	var m := CanvasItemMaterial.new()
-	m.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
-	material = m
+	var mat := ShaderMaterial.new()
+	mat.shader = FX3.DECAL_SHADER
+	mat.set_shader_parameter(&"tex", FX3.GLOW_S)
+	mat.set_shader_parameter(&"billboard", true)
+	mat.set_shader_parameter(&"color", Color(Pal.MANA[1], 1.0))
+	_glow = MeshInstance3D.new()
+	var q := QuadMesh.new()
+	q.size = Vector2(16, 16) * FX3.PX
+	_glow.mesh = q
+	_glow.material_override = mat
+	_glow.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(_glow)
 
 
 func _physics_process(delta: float) -> void:
@@ -36,33 +36,24 @@ func _physics_process(delta: float) -> void:
 		var d := p.center() - global_position
 		if d.length() < p.tuning.mote_pickup_radius:
 			homing = true
-			velocity = velocity.move_toward(d.normalized() * 280.0, 1100.0 * delta)
+			velocity = velocity.move_toward(d.normalized() * 11.0, 45.0 * delta)
+		if d.length() < 0.45:
+			p.mana.gain(amount)
+			Sfx.play("mote", -8.0, 0.12)
+			FX3.burst(global_position, 5, Pal.MANA, Vector2(0.8, 2.0), Vector2(0.15, 0.3))
+			queue_free()
+			return
 	if not homing:
-		velocity.y = minf(velocity.y + 420.0 * delta, 200.0)
-		velocity.x = move_toward(velocity.x, 0.0, 120.0 * delta)
-		var q := PhysicsRayQueryParameters2D.create(global_position, global_position + velocity * delta + Vector2(0, 3), 1)
-		var hit := get_world_2d().direct_space_state.intersect_ray(q)
-		if not hit.is_empty() and velocity.y > 0.0:
-			global_position.y = hit.position.y - 3.0
-			velocity.y = -velocity.y * 0.35 if velocity.y > 40.0 else 0.0
+		velocity.y -= 17.0 * delta
+		velocity.x = move_toward(velocity.x, 0.0, 5.0 * delta)
+		velocity.z = move_toward(velocity.z, 0.0, 5.0 * delta)
+		var q := PhysicsRayQueryParameters3D.create(global_position, global_position + velocity * delta + Vector3(0, -0.15, 0), 1)
+		var hit := get_world_3d().direct_space_state.intersect_ray(q)
+		if not hit.is_empty() and velocity.y < 0.0:
+			global_position.y = hit.position.y + 0.15
+			velocity.y = -velocity.y * 0.35 if velocity.y < -1.6 else 0.0
 	global_position += velocity * delta
+	_glow.position.y = 0.25 + roundf(sin(_t * 6.0)) * FX3.PX
 	visible = life > 2.0 or int(life * 10.0) % 2 == 0
-	queue_redraw()
-
-
-func _on_body(b: Node) -> void:
-	if b is Player and b.is_alive() and _t > 0.2:
-		b.mana.gain(amount)
-		Sfx.play("mote", -8.0, 0.12)
-		FX.burst(global_position, 5, Pal.MANA, Vector2(20, 50), Vector2(0.15, 0.3))
-		queue_free()
-
-
-func _draw() -> void:
-	var bob := roundf(sin(_t * 6.0) * 1.0)
-	var c := Pal.MANA
-	draw_circle(Vector2(0, bob), 4.0, Color(c[3], 0.35))
-	draw_rect(Rect2(-1, -2 + bob, 3, 5), c[2])
-	draw_rect(Rect2(-2, -1 + bob, 5, 3), c[2])
-	draw_rect(Rect2(0, -1 + bob, 1, 3), c[0])
-	draw_rect(Rect2(-1, 0 + bob, 3, 1), c[1])
+	if randf() < delta * 6.0:
+		FX3.burst(global_position + _glow.position, 1, Pal.MANA, Vector2(0.1, 0.4), Vector2(0.3, 0.5), {"gravity": -0.8})

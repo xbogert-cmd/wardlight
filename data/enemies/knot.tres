@@ -16,12 +16,12 @@ poise = 30.0
 knock_resist = 1.0
 flinch_cooldown = 2.0
 motes = 3
-aggro_range = 280.0
+aggro_range = 11.667
 params = {
 "exposed": 1.2,
-"reach": 230.0,
+"reach": 9.583,
 "rest": 1.4,
 "root_resist": 1.0,
-"width": 48.0,
+"width": 2.0,
 "windup": 0.85
 }

@@ -4,8 +4,6 @@ extends SceneTree
 ## Then run `godot --headless --path . --import` so Godot picks the files up.
 
 const OUT := "res://assets/generated/"
-const Tiles = preload("res://tools/art/tiles_art.gd")
-const Bgs = preload("res://tools/art/backgrounds_art.gd")
 const Enemies = preload("res://tools/art/enemies_art.gd")
 const Fx = preload("res://tools/art/fx_art.gd")
 const Icons = preload("res://tools/art/icons_art.gd")
@@ -18,13 +16,6 @@ func _init() -> void:
 	var t0 := Time.get_ticks_msec()
 	var only := OS.get_cmdline_user_args()
 	var want := func(k: String) -> bool: return only.is_empty() or only.has(k)
-	if want.call("tiles"):
-		Tiles.build().save_png(OUT + "tiles.png")
-	if want.call("bg"):
-		for region in Bgs.REGIONS:
-			var layers: Dictionary = Bgs.build(region)
-			for k in layers:
-				(layers[k] as Image).save_png(OUT + "bg_%s_%s.png" % [region, k])
 	if want.call("enemies"):
 		_save_sheet("hound", Enemies.hound())
 		_save_sheet("raider", Enemies.raider())
@@ -63,6 +54,9 @@ func _init() -> void:
 		W3.flames().save_png(d + "flames.png")
 		W3.castle().save_png(d + "castle.png")
 		W3.village_far().save_png(d + "village_far.png")
+		W3.thorns().save_png(d + "thorns.png")
+		W3.roots().save_png(d + "roots.png")
+		W3.spirit().save_png(d + "spirit.png")
 	if want.call("icons"):
 		Icons.build().save_png(OUT + "icons.png")
 	if want.call("icon"):

@@ -1,10 +1,8 @@
 extends Node
 ## Game root. Owns the persistent player, the HUD and the current level.
 
-const LEVEL := preload("res://game/world/level.gd")
-
 var player: Player
-var level: Level
+var level: Crossing
 var hud: HUD
 var spellbook: Spellbook
 var paused_overlay: Control
@@ -16,7 +14,7 @@ func _ready() -> void:
 	player = Player.new()
 	hud = HUD.new()
 	add_child(hud)
-	load_level("res://data/maps/arena.txt", "woods", "Briarwood Edge")
+	load_level()
 	hud.bind(player)
 	spellbook = Spellbook.new()
 	spellbook.player = player
@@ -25,17 +23,14 @@ func _ready() -> void:
 	_build_pause()
 
 
-func load_level(map: String, region: String, title: String) -> void:
+func load_level() -> void:
 	if level:
 		level.queue_free()
-	level = LEVEL.new()
-	level.map_file = map
-	level.region = region
-	level.display_name = title
+	level = Crossing.new()
 	level.process_mode = Node.PROCESS_MODE_PAUSABLE
 	add_child(level)
 	level.enter(player)
-	hud.banner(title)
+	hud.banner(level.display_name)
 
 
 func _build_pause() -> void:

@@ -1,31 +1,20 @@
 class_name Hound
 extends Enemy
-## Gloamhound — fast flanker. Stalks at range on one side of the wizard
-## (pack members take opposite sides), then crouches with a clear tell:
-## eyes flare, it growls and a marker shows the landing spot. The leap is
-## committed; the skidding landing is the punish window. No contact damage
-## outside the leap.
+## Gloamhound — fast flanker. Circles the wizard at range (pack members
+## spread to different sides), then crouches with a clear tell: eyes flare,
+## it snarls and a red ring marks the landing spot. The leap is committed;
+## the skidding landing is the punish window. No contact damage outside the leap.
 
-var attack_box: Area2D
 var _leap_hit := false
-var _land_at := Vector2.ZERO
-var _side := 0
+var _land_at := Vector3.ZERO
+var _orbit := 1.0
 var _rest := 0.8
 var _side_t := 0.0
+var _mark: MeshInstance3D
 
 
 func _setup() -> void:
-	attack_box = Area2D.new()
-	attack_box.collision_layer = 0
-	attack_box.collision_mask = 2
-	attack_box.monitorable = false
-	var cs := CollisionShape2D.new()
-	var sh := RectangleShape2D.new()
-	sh.size = Vector2(30, 16)
-	cs.shape = sh
-	cs.position = Vector2(4, -10)
-	attack_box.add_child(cs)
-	visual.add_child(attack_box)
+	_orbit = 1.0 if randf() < 0.5 else -1.0
 	set_state(&"idle")
 
 
@@ -33,21 +22,22 @@ func _p(k: String) -> float:
 	return data.params.get(k, 0.0)
 
 
-## Pack flanking: the first hound keeps its side; a second hound on the
-## same side (the one further away) commits to the other side for a while.
-func _pick_side(p: Node2D) -> void:
+## Pack flanking: if another hound is circling on nearly the same bearing,
+## the one further away switches direction for a while.
+func _spread(p: Node3D) -> void:
 	_side_t -= get_physics_process_delta_time()
-	if _side == 0:
-		_side = 1 if global_position.x > p.global_position.x else -1
 	if _side_t > 0.0:
 		return
-	_side_t = 1.0
+	_side_t = 0.8
+	var mine := SpellEffect.flat_dir(global_position - p.global_position)
 	for e in get_tree().get_nodes_in_group(&"enemy"):
-		if e != self and e is Hound and e.is_alive() and e._side == _side:
-			if e.global_position.distance_to(p.global_position) < global_position.distance_to(p.global_position):
-				_side = -_side
-				_side_t = 5.0
-			break
+		if e == self or not (e is Hound) or not e.is_alive():
+			continue
+		var theirs := SpellEffect.flat_dir(e.global_position - p.global_position)
+		if mine.angle_to(theirs) < 0.9 and dist_to(p.global_position) > e.dist_to(p.global_position):
+			_orbit = -e._orbit
+			_side_t = 3.0
+			return
 
 
 func _ai(delta: float) -> void:
@@ -56,83 +46,87 @@ func _ai(delta: float) -> void:
 	var alive_p := p != null and p.is_alive()
 	match state:
 		&"idle":
-			velocity.x = move_toward(velocity.x, 0.0, 600.0 * delta)
+			steer(Vector3.ZERO, 25.0, delta)
 			anim(&"idle")
-			if alive_p and global_position.distance_to(p.global_position) < data.aggro_range:
+			if alive_p and dist_to(p.global_position) < data.aggro_range:
 				Sfx.play("hound_growl", -8.0)
 				set_state(&"stalk")
 		&"stalk":
 			if not alive_p:
 				set_state(&"idle")
 				return
-			_pick_side(p)
-			var want_x := p.global_position.x + _side * _p("preferred_dist")
-			var dx := want_x - global_position.x
-			if absf(dx) > 12.0:
-				velocity.x = move_toward(velocity.x, signf(dx) * data.move_speed, 900.0 * delta)
-				facing = int(signf(dx))
+			_spread(p)
+			var out := SpellEffect.flat_dir(global_position - p.global_position)
+			var want := p.global_position + out.rotated(Vector3.UP, 0.55 * _orbit) * _p("preferred_dist")
+			var d := want - global_position
+			d.y = 0.0
+			if d.length() > 0.4:
+				steer(d.normalized() * data.move_speed, 30.0, delta)
+				if absf(velocity.x) > 0.3:
+					facing = int(signf(velocity.x))
+				heading = SpellEffect.flat_dir(velocity, heading)
 				anim(&"run")
-				if is_on_wall() and is_on_floor():
-					velocity.y = -280.0
 			else:
-				velocity.x = move_toward(velocity.x, 0.0, 900.0 * delta)
-				face_toward(p.global_position.x)
+				steer(Vector3.ZERO, 30.0, delta)
+				face_toward(p.global_position)
 				anim(&"idle")
-			var gap := absf(p.global_position.x - global_position.x)
-			if _rest <= 0.0 and is_on_floor() and gap > 50.0 and gap < 175.0 \
-					and absf(p.global_position.y - global_position.y) < 90.0 and state_t > 0.3:
+			var gap := dist_to(p.global_position)
+			if _rest <= 0.0 and gap > 2.2 and gap < 7.3 and state_t > 0.3 and is_on_floor():
 				_start_windup(p)
 		&"windup":
-			velocity.x = move_toward(velocity.x, 0.0, 1200.0 * delta)
+			steer(Vector3.ZERO, 50.0, delta)
 			anim(&"windup")
 			if alive_p and state_t < _p("windup") * 0.6:
-				face_toward(p.global_position.x)
+				face_toward(p.global_position)
 				_land_at = p.global_position
+				if is_instance_valid(_mark):
+					_mark.global_position = _land_at + Vector3(0, 0.04, 0)
+			if randf() < delta * 20.0:
+				FX3.burst(center() + heading * 0.4 + Vector3(0, 0.1, 0), 1, Pal.DANGER, Vector2(0.2, 0.8), Vector2(0.15, 0.3), {"gravity": -1.0})
 			if state_t >= _p("windup"):
 				_leap()
 		&"leap":
 			anim(&"leap")
-			if not _leap_hit:
-				for b in attack_box.get_overlapping_bodies():
-					if b is Player:
-						_leap_hit = true
-						var d := Damage.make(data.damage, self, &"", Vector2(facing * 170.0, -150.0))
-						d.hit_pos = global_position
-						b.take_hit(d)
+			if not _leap_hit and alive_p and dist_to(p.global_position) < radius() + p.radius() + 0.35:
+				_leap_hit = true
+				var dmg := Damage.make(data.damage, self, &"", heading * 7.0 + Vector3(0, 4.0, 0))
+				dmg.hit_pos = global_position
+				p.take_hit(dmg)
 			if is_on_floor() and state_t > 0.12:
 				armored = false
 				set_state(&"land")
 				Sfx.play("hound_land", -6.0)
-				FX.burst(global_position, 8, Pal.DUST, Vector2(20, 70), Vector2(0.2, 0.45), {"dir": Vector2.UP, "spread": 2.6, "add": false, "front": false, "gravity": 120.0})
+				FX3.burst(global_position + Vector3(0, 0.1, 0), 10, Pal.DUST, Vector2(1.0, 3.0), Vector2(0.2, 0.45), {"dir": Vector3.UP, "spread": 2.4, "gravity": 6.0})
 		&"land":
-			velocity.x = move_toward(velocity.x, 0.0, 380.0 * delta)
+			steer(Vector3.ZERO, 16.0, delta)
 			anim(&"land")
 			if state_t >= _p("land_recover"):
 				_rest = _p("rest")
+				_orbit = -_orbit
 				set_state(&"retreat")
 		&"retreat":
 			if alive_p:
-				var away := signf(global_position.x - p.global_position.x)
-				velocity.x = away * data.move_speed * 0.8
-				facing = int(away) if away != 0.0 else facing
+				var away := SpellEffect.flat_dir(global_position - p.global_position)
+				steer(away * data.move_speed * 0.8, 40.0, delta)
+				if absf(away.x) > 0.2:
+					facing = int(signf(away.x))
 			anim(&"run")
 			if state_t > 0.45:
 				set_state(&"stalk")
 		&"flinch":
-			velocity.x = move_toward(velocity.x, 0.0, 700.0 * delta)
+			steer(Vector3.ZERO, 30.0, delta)
 			anim(&"hurt")
 			if state_t > 0.35:
 				_rest = maxf(_rest, 0.5)
 				set_state(&"stalk")
 
 
-func _start_windup(p: Node2D) -> void:
+func _start_windup(p: Node3D) -> void:
 	set_state(&"windup")
-	face_toward(p.global_position.x)
+	face_toward(p.global_position)
 	_land_at = p.global_position
 	Sfx.play("hound_snarl", -2.0)
-	FX.tele_mark(p.global_position, 30.0, _p("windup"), Color("ff6a3a"))
-	FX.burst(center() + Vector2(facing * 14, -6), 4, Pal.DANGER, Vector2(10, 30), Vector2(0.2, 0.3), {"front": true})
+	_mark = FX3.tele_ring(_land_at, 0.8, _p("windup") + 0.15, Color(1.0, 0.4, 0.2, 0.9))
 
 
 func _leap() -> void:
@@ -140,14 +134,12 @@ func _leap() -> void:
 	armored = true
 	_leap_hit = false
 	var T := _p("leap_time")
-	var dx := clampf(_land_at.x - global_position.x, -200.0, 200.0)
-	var dy := clampf(_land_at.y - global_position.y, -90.0, 60.0)
-	velocity.x = dx / T
-	velocity.y = (dy - 0.5 * gravity * T * T) / T
-	facing = int(signf(dx)) if dx != 0.0 else facing
+	var d := _land_at - global_position
+	d.y = 0.0
+	if d.length() > 8.5:
+		d = d.normalized() * 8.5
+	velocity = d / T + Vector3(0, 22.0 * T * 0.5, 0)
+	heading = SpellEffect.flat_dir(d, heading)
+	if absf(d.x) > 0.1:
+		facing = int(signf(d.x))
 	Sfx.play("hound_leap", -2.0)
-
-
-func _flinch() -> void:
-	set_state(&"flinch")
-	sprite.play(&"hurt")

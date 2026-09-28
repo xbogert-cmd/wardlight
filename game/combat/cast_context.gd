@@ -3,15 +3,15 @@ extends RefCounted
 ## Everything a spell effect needs at the moment of release. Spells report
 ## damage through hit() so passives and interactions see every real hit.
 
-var caster: Node2D
+var caster: Node3D
 var data: SpellData
 var upgraded := false
 var power := 1.0          # affinity × passive multiplier on positive effects
 var native := true
-var origin := Vector2.ZERO  # staff gem, global
-var dir := Vector2.RIGHT
-var target: Node2D = null
-var aim_point := Vector2.ZERO
+var origin := Vector3.ZERO  # staff gem, global
+var dir := Vector3.RIGHT   # horizontal unit vector
+var target: Node3D = null
+var aim_point := Vector3.ZERO  # on the ground (or a target centre)
 var world: Node = null
 var bonus := {}           # per-cast flags (heat spent, scattered embers...)
 var hits := 0
@@ -21,7 +21,7 @@ func p(key: String, default: Variant = 0.0) -> Variant:
 	return data.p(key, upgraded, default)
 
 
-func dmg(mult: float = 1.0, kb: Vector2 = Vector2.ZERO) -> Damage:
+func dmg(mult: float = 1.0, kb: Vector3 = Vector3.ZERO) -> Damage:
 	var d := Damage.make(data.damage * power * mult, caster, data.school_name(), kb)
 	d.spell_id = data.id
 	return d
@@ -40,10 +40,10 @@ func spawn(n: Node) -> void:
 	world.add_child(n)
 
 
-func hit(target_actor: Node2D, d: Damage) -> void:
+func hit(target_actor: Node3D, d: Damage) -> void:
 	if not is_instance_valid(target_actor) or not target_actor.is_alive():
 		return
-	if d.hit_pos == Vector2.ZERO:
+	if d.hit_pos == Vector3.ZERO:
 		d.hit_pos = target_actor.center()
 	if bonus.has("heat") and not d.is_proc:
 		d.statuses.append({"id": &"burn", "duration": 2.5, "power": 4.0})

@@ -16,7 +16,7 @@ func _ctx(p: Player, id: StringName) -> CastContext:
 
 func test_heat_one_charge_per_cast_and_spend() -> void:
 	var p: Player = t.make_player("fire")
-	var e: Enemy = t.make_enemy(Vector2(160, 100))
+	var e: Enemy = t.make_enemy(Vector3(2.5, 0, 0))
 	await t.frames(2)
 	var c := _ctx(p, &"cinder_fan")
 	for k in 3:
@@ -38,7 +38,7 @@ func test_only_active_school_passive() -> void:
 	var p: Player = t.make_player("hex")
 	p.wiz.unlocked[&"arc_lance"] = true
 	p.wiz.unlocked[&"ember_spear"] = true
-	var e: Enemy = t.make_enemy(Vector2(160, 100))
+	var e: Enemy = t.make_enemy(Vector3(2.5, 0, 0))
 	await t.frames(2)
 	for k in 4:
 		var c := _ctx(p, &"arc_lance")
@@ -51,8 +51,8 @@ func test_only_active_school_passive() -> void:
 
 func test_conduction_every_third_cast_no_recursion() -> void:
 	var p: Player = t.make_player("storm")
-	var a: Enemy = t.make_enemy(Vector2(160, 100))
-	var b: Enemy = t.make_enemy(Vector2(200, 100))
+	var a: Enemy = t.make_enemy(Vector3(2.5, 0, 0))
+	var b: Enemy = t.make_enemy(Vector3(4.2, 0, 0))
 	await t.frames(2)
 	a.health.hp = 9999.0  # keep the first target alive through all casts
 	var hp_b := b.health.hp
@@ -71,9 +71,9 @@ func test_conduction_every_third_cast_no_recursion() -> void:
 func test_grave_current_bounded() -> void:
 	var p: Player = t.make_player("fire")
 	p.wiz.unlocked[&"arc_lance"] = true
-	var a: Enemy = t.make_enemy(Vector2(160, 100))
-	var b: Enemy = t.make_enemy(Vector2(200, 100))
-	var c: Enemy = t.make_enemy(Vector2(240, 100))
+	var a: Enemy = t.make_enemy(Vector3(2.5, 0, 0))
+	var b: Enemy = t.make_enemy(Vector3(4.2, 0, 0))
+	var c: Enemy = t.make_enemy(Vector3(5.8, 0, 0))
 	b.statuses.apply(&"curse", 5.0)
 	c.statuses.apply(&"curse", 5.0)
 	await t.frames(2)
@@ -87,7 +87,7 @@ func test_grave_current_bounded() -> void:
 
 func test_haunted_ember_once_per_victim() -> void:
 	var p: Player = t.make_player("fire")
-	var v: Enemy = t.make_enemy(Vector2(160, 100))
+	var v: Enemy = t.make_enemy(Vector3(2.5, 0, 0))
 	await t.frames(2)
 	v.statuses.apply(&"burn", 5.0, 1.0, p)
 	v.statuses.apply(&"curse", 5.0)
@@ -97,7 +97,7 @@ func test_haunted_ember_once_per_victim() -> void:
 	t.eq(_count_embers() - embers_before, 1, "one spectral ember released")
 	Interactions.on_enemy_died(v, d)
 	t.eq(_count_embers() - embers_before, 1, "never a second ember from the same victim")
-	var v2: Enemy = t.make_enemy(Vector2(220, 100))
+	var v2: Enemy = t.make_enemy(Vector3(5.0, 0, 0))
 	v2.statuses.apply(&"burn", 5.0, 1.0, p)
 	v2.statuses.apply(&"curse", 5.0)
 	var ember_hit := Damage.make(999.0, p, &"hex")
@@ -121,7 +121,7 @@ func test_soul_echo_capped() -> void:
 	await t.frames(2)
 	p.health.hp = 50.0
 	for k in 3:
-		var e: Enemy = t.make_enemy(Vector2(160 + k * 20, 100))
+		var e: Enemy = t.make_enemy(Vector3(2.5 + k * 0.8, 0, 0))
 		e.statuses.apply(&"curse", 5.0)
 		e.take_hit(Damage.make(999.0, p, &"hex"))
 	t.near(p.health.hp, 55.0, "only one recovery pulse per second")

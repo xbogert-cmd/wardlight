@@ -7,15 +7,15 @@ var amount := 0.0
 var source: Node = null
 var school := &""          # &"fire", &"hex", &"storm" or &"" for physical
 var spell_id := &""
-var knockback := Vector2.ZERO
+var knockback := Vector3.ZERO     # m/s, horizontal push (y = small hop)
 var stagger := 0.0         # poise damage
 var statuses: Array = []   # [{id, duration, power}]
 var is_proc := false       # passive / interaction damage never triggers further procs
 var active_attack := true  # enemy hits: came from a real attack (used for perfect-dodge mana)
-var hit_pos := Vector2.ZERO
+var hit_pos := Vector3.ZERO
 
 
-static func make(amt: float, src: Node, sch: StringName = &"", kb: Vector2 = Vector2.ZERO) -> Damage:
+static func make(amt: float, src: Node, sch: StringName = &"", kb: Vector3 = Vector3.ZERO) -> Damage:
 	var d := Damage.new()
 	d.amount = amt
 	d.source = src

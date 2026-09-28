@@ -9,7 +9,7 @@ signal changed
 
 const BURN_TICK := 0.5
 
-var owner_actor: Node2D
+var owner_actor: Node3D
 var root_resist := 0.0
 var _s := {}  # id -> {t, power, src}
 var _burn_acc := 0.0

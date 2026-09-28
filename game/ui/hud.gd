@@ -126,6 +126,7 @@ func _draw_hud() -> void:
 	if _banner_t > 0.0:
 		var a := clampf(_banner_t, 0.0, 1.0)
 		text(_banner, Vector2(0, 60), Color(1, 0.92, 0.75, a), HORIZONTAL_ALIGNMENT_CENTER, 640)
+	_draw_world_marks()
 	# reticle
 	if player.aim.mouse_active or Settings.aim_mode == "direct":
 		var m := canvas.get_local_mouse_position().round()
@@ -137,8 +138,41 @@ func _draw_hud() -> void:
 			canvas.draw_line(a2, b2, rc, 1.0)
 		canvas.draw_rect(Rect2(m, Vector2.ONE), rc)
 	if show_debug:
-		var fx_n := FX.i.total_particles() if FX.i else 0
+		var fx_n := FX3.i.total_particles() if FX3.i else 0
 		text("%d fps  fx %d  enemies %d  ts %.2f" % [Engine.get_frames_per_second(), fx_n, get_tree().get_nodes_in_group(&"enemy").size(), Engine.time_scale], Vector2(6, 350), Color("c0ffc0"))
+
+
+## Target brackets around the locked enemy and poise bars over elites,
+## projected from the 3D world onto the pixel HUD.
+func _draw_world_marks() -> void:
+	var cam := player.get_viewport().get_camera_3d()
+	if cam == null:
+		return
+	for e in get_tree().get_nodes_in_group(&"enemy"):
+		if e.has_method("poise_ratio") and e.is_alive():
+			var f: float = e.poise_ratio()
+			if f < 1.0 and not cam.is_position_behind(e.global_position):
+				var top := cam.unproject_position(e.global_position + Vector3(0, e.height() + 0.25, 0)).round()
+				var w := 24.0
+				canvas.draw_rect(Rect2(top.x - w * 0.5 - 1, top.y - 1, w + 2, 3), Color("0c0812"))
+				canvas.draw_rect(Rect2(top.x - w * 0.5, top.y, roundf(w * f), 1), Color("e8e0c8") if f > 0.34 else Color("ffb040"))
+	var t: Node3D = player.aim.target
+	if t == null or not is_instance_valid(t) or cam.is_position_behind(t.global_position):
+		return
+	var base := cam.unproject_position(t.global_position)
+	var top2 := cam.unproject_position(t.global_position + Vector3(0, t.height(), 0))
+	var hw: float = t.radius() * 26.0 + 2.0
+	var r := Rect2(Vector2(base.x - hw, top2.y - 2), Vector2(hw * 2.0, base.y - top2.y + 4)).abs()
+	var pulse := 1.0 if int(Time.get_ticks_msec() / 300) % 2 == 0 else 0.0
+	r = r.grow(pulse)
+	var c := Color("a8f0ff")
+	var k := 3.0
+	for corner: Vector2 in [r.position, Vector2(r.end.x, r.position.y), r.end, Vector2(r.position.x, r.end.y)]:
+		var sx := 1.0 if corner.x == r.position.x else -1.0
+		var sy := 1.0 if corner.y == r.position.y else -1.0
+		var p := corner.round()
+		canvas.draw_line(p, p + Vector2(k * sx, 0), c, 1.0)
+		canvas.draw_line(p, p + Vector2(0, k * sy), c, 1.0)
 
 
 ## Passive state under the bars: Heat charges, Conduction count, Soul Echo ready.

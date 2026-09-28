@@ -1,4 +1,4 @@
-extends Node2D
+extends Node3D
 ## Minimal test runner (no framework). Runs every tests/test_*.gd file's
 ## test_* methods. Each test gets a fresh `world` node inside the scene tree.
 ## godot --headless --path . res://tests/run_tests.tscn
@@ -6,7 +6,7 @@ extends Node2D
 
 var failures: Array[String] = []
 var current := ""
-var world: Node2D
+var world: Node3D
 
 
 func _ready() -> void:
@@ -23,8 +23,9 @@ func _ready() -> void:
 				continue
 			total += 1
 			current = f.get_basename() + "." + name
-			world = Node2D.new()
+			world = Node3D.new()
 			add_child(world)
+			_floor(world)
 			suite.set("t", self)
 			var before := failures.size()
 			await suite.call(name)
@@ -56,16 +57,28 @@ func near(a: float, b: float, msg: String) -> void:
 	check(absf(a - b) < 0.01, "%s (got %s, expected %s)" % [msg, str(a), str(b)])
 
 
+## Flat ground for the test world.
+static func _floor(w: Node3D) -> void:
+	var body := StaticBody3D.new()
+	var cs := CollisionShape3D.new()
+	var sh := BoxShape3D.new()
+	sh.size = Vector3(200, 1, 200)
+	cs.shape = sh
+	cs.position.y = -0.5
+	body.add_child(cs)
+	w.add_child(body)
+
+
 ## Helpers that build real game objects inside the test world.
 func make_player(school: String = "storm") -> Player:
 	var p := Player.new()
 	p.wiz.setup(school)
 	world.add_child(p)
-	p.global_position = Vector2(100, 100)
+	p.global_position = Vector3.ZERO
 	return p
 
 
-func make_enemy(pos: Vector2) -> Enemy:
+func make_enemy(pos: Vector3) -> Enemy:
 	var e: Enemy = preload("res://game/enemies/hound.gd").new()
 	e.data = preload("res://data/enemies/hound.tres")
 	world.add_child(e)

@@ -20,10 +20,10 @@ upgrade_name = "Rolling Thunder"
 upgrade_description = "A second, wider ring follows a beat later (60% damage)."
 effect = ExtResource("2")
 params = {
-"radius": 56.0,
-"push": 280.0
+"radius": 2.333,
+"push": 11.667
 }
 upgrade_params = {
-"radius2": 84.0,
+"radius2": 3.5,
 "second_mult": 0.6
 }

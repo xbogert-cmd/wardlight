@@ -1,28 +1,24 @@
 class_name Aim
-extends Node2D
-## Chooses where spells go. Assisted (default): an enemy near the cursor,
-## else toward the cursor. With the mouse idle (keyboard play) it uses the
-## nearest visible enemy in the facing direction, else straight ahead
-## (W/S tilt). Direct: always the cursor. Never targets through walls.
+extends Node
+## Chooses where spells go. Assisted (default): an enemy near the cursor on
+## screen, else toward the cursor's spot on the ground. With the mouse idle
+## (keyboard play) it uses the nearest visible enemy in the direction the
+## wizard is moving/looking, else straight that way. Direct: always the
+## cursor. Never targets through walls.
 
-const ASSIST_RADIUS := 56.0
-const FACING_RANGE := 250.0
-const MAX_RANGE := 360.0
+const ASSIST_PX := 26.0          # screen pixels from the cursor to an enemy's body
+const FACING_RANGE := 10.5
+const FACING_CONE := deg_to_rad(55.0)
+const MAX_RANGE := 15.0
 const MOUSE_IDLE := 4.0
 
-var player: Node2D
-var target: Node2D = null
-var cursor := Vector2.ZERO
+var player: Node3D
+var target: Node3D = null
+var cursor := Vector3.ZERO       # ground point under the mouse
 var mouse_active := false
 var _last_move := -100.0
 var override: Variant = null     # demo driver: fixed world cursor
 var override_enemy := false      # demo driver: cursor follows nearest enemy
-var _pulse := 0.0
-
-
-func _ready() -> void:
-	top_level = true
-	z_index = 25
 
 
 func _input(e: InputEvent) -> void:
@@ -30,84 +26,87 @@ func _input(e: InputEvent) -> void:
 		_last_move = Time.get_ticks_msec() / 1000.0
 
 
-func _process(delta: float) -> void:
-	_pulse += delta
-	queue_redraw()
+func camera() -> Camera3D:
+	return player.get_viewport().get_camera_3d()
 
 
-func update_aim(origin: Vector2) -> void:
-	cursor = get_global_mouse_position()
+func update_aim(origin: Vector3) -> void:
 	mouse_active = Time.get_ticks_msec() / 1000.0 - _last_move < MOUSE_IDLE
+	var cam := camera()
+	if cam:
+		var mp := player.get_viewport().get_mouse_position()
+		var from := cam.project_ray_origin(mp)
+		var dir := cam.project_ray_normal(mp)
+		var q := PhysicsRayQueryParameters3D.create(from, from + dir * 300.0, 1)
+		var hit := player.get_world_3d().direct_space_state.intersect_ray(q)
+		if not hit.is_empty():
+			cursor = hit.position
+		elif absf(dir.y) > 0.001:
+			cursor = from + dir * ((player.global_position.y - from.y) / dir.y)
 	if override_enemy:
-		var e := SpellEffect.nearest(origin, 600.0, [], player)
-		override = e.center() if e else null
+		var e := SpellEffect.nearest(origin, 25.0, [], player)
+		override = e.global_position if e else null
 	if override != null:
 		cursor = override
 		mouse_active = true
 	target = _choose(origin)
 
 
-func _valid(e: Node2D, origin: Vector2) -> bool:
-	return is_instance_valid(e) and e.is_alive() and origin.distance_to(e.center()) < MAX_RANGE \
+func _valid(e: Node3D, origin: Vector3) -> bool:
+	return is_instance_valid(e) and e.is_alive() and SpellEffect.flat(origin, e.center()) < MAX_RANGE \
 		and SpellEffect.has_los(origin, e.center(), player)
 
 
-func _choose(origin: Vector2) -> Node2D:
+## Screen distance from the mouse to the enemy's body (0 when over it).
+func _screen_gap(e: Node3D) -> float:
+	var cam := camera()
+	if cam == null or override != null:
+		return SpellEffect.flat(cursor, e.global_position) * 12.0
+	var mp := player.get_viewport().get_mouse_position()
+	var base := cam.unproject_position(e.global_position)
+	var top := cam.unproject_position(e.global_position + Vector3(0, e.height(), 0))
+	var half_w: float = e.radius() * 26.0
+	var rect := Rect2(Vector2(base.x - half_w, top.y), Vector2(half_w * 2.0, base.y - top.y))
+	var cx := clampf(mp.x, rect.position.x, rect.end.x)
+	var cy := clampf(mp.y, rect.position.y, rect.end.y)
+	return Vector2(cx, cy).distance_to(mp)
+
+
+func _choose(origin: Vector3) -> Node3D:
 	if Settings.aim_mode == "direct":
 		return null
 	if mouse_active:
 		# sticky: keep the current target while the cursor stays roughly on it
-		if target and _valid(target, origin) and target.center().distance_to(cursor) < ASSIST_RADIUS * 1.5:
+		if target and _valid(target, origin) and _screen_gap(target) < ASSIST_PX * 1.6:
 			return target
-		var best: Node2D = null
-		var bd := ASSIST_RADIUS
-		for e: Node2D in SpellEffect.enemies():
-			var d: float = e.center().distance_to(cursor)
+		var best: Node3D = null
+		var bd := ASSIST_PX
+		for e: Node3D in SpellEffect.enemies():
+			var d := _screen_gap(e)
 			if d < bd and _valid(e, origin):
 				bd = d
 				best = e
 		return best
-	var facing: int = player.facing
-	if target and _valid(target, origin) and signf(target.center().x - origin.x) == facing:
+	var look: Vector3 = player.look_dir
+	if target and _valid(target, origin) and SpellEffect.flat_dir(target.center() - origin).angle_to(look) < FACING_CONE * 1.4:
 		return target
-	var best2: Node2D = null
+	var best2: Node3D = null
 	var bd2 := FACING_RANGE
-	for e: Node2D in SpellEffect.enemies():
-		var dx: float = e.center().x - origin.x
-		if signf(dx) != facing or absf(e.center().y - origin.y) > 90.0:
+	for e: Node3D in SpellEffect.enemies():
+		var v: Vector3 = e.center() - origin
+		if SpellEffect.flat_dir(v).angle_to(look) > FACING_CONE:
 			continue
-		var d: float = origin.distance_to(e.center())
+		var d := SpellEffect.flat(origin, e.center())
 		if d < bd2 and _valid(e, origin):
 			bd2 = d
 			best2 = e
 	return best2
 
 
-func dir_from(origin: Vector2) -> Vector2:
+## Horizontal aim direction from `origin`.
+func dir_from(origin: Vector3) -> Vector3:
 	if target and is_instance_valid(target):
-		return (target.center() - origin).normalized()
+		return SpellEffect.flat_dir(target.center() - origin, player.look_dir)
 	if Settings.aim_mode == "direct" or mouse_active:
-		var d := cursor - origin
-		return d.normalized() if d.length() > 4.0 else Vector2(player.facing, 0)
-	var v := Vector2(player.facing, 0)
-	if Input.is_action_pressed(&"up"):
-		v.y = -0.6
-	elif Input.is_action_pressed(&"down"):
-		v.y = 0.6
-	return v.normalized()
-
-
-func _draw() -> void:
-	if target == null or not is_instance_valid(target):
-		return
-	var r: Rect2 = target.hurt_rect()
-	var pad := 2.0 + (1.0 if fmod(_pulse, 0.6) < 0.3 else 0.0)
-	r = r.grow(pad)
-	var c := Color("a8f0ff")
-	var k := 3.0
-	for corner: Vector2 in [r.position, Vector2(r.end.x, r.position.y), r.end, Vector2(r.position.x, r.end.y)]:
-		var sx := 1.0 if corner.x == r.position.x else -1.0
-		var sy := 1.0 if corner.y == r.position.y else -1.0
-		var p := corner.round()
-		draw_line(p, p + Vector2(k * sx, 0), c, 1.0)
-		draw_line(p, p + Vector2(0, k * sy), c, 1.0)
+		return SpellEffect.flat_dir(cursor - origin, player.look_dir) if SpellEffect.flat(cursor, origin) > 0.2 else player.look_dir
+	return player.look_dir

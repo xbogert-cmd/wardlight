@@ -19,11 +19,11 @@ upgrade_name = "Forked Lance"
 upgrade_description = "On impact the bolt forks to 2 more enemies for 50% damage."
 effect = ExtResource("2")
 params = {
-"range": 330.0,
-"speed": 470.0
+"range": 13.75,
+"speed": 19.583
 }
 upgrade_params = {
 "fork_mult": 0.5,
-"fork_range": 110.0,
+"fork_range": 4.6,
 "forks": 2
 }

@@ -15,7 +15,7 @@ enum { IDLE, WINDUP, RECOVER }
 const BASIC_SLOT := -1
 const BUFFER_TIME := 0.18
 
-var player: Node2D
+var player: Node3D
 var mana: Mana
 var aim: Aim
 var clock := 0.0
@@ -133,16 +133,14 @@ func _refresh_ctx() -> void:
 	elif aim.mouse_active or Settings.aim_mode == "direct":
 		ctx.aim_point = aim.cursor
 	else:
-		ctx.aim_point = ctx.origin + ctx.dir * 200.0
+		ctx.aim_point = SpellEffect.ground_at(player.global_position + ctx.dir * 8.0, player)
 	if absf(ctx.dir.x) > 0.05:
 		player.face(signi(int(signf(ctx.dir.x))))
 
 
 func _release() -> void:
-	# choose the pointing pose from the shoulder, then aim from the real gem
+	# pick the pointing pose for this direction, then aim from the real gem
 	_refresh_ctx()
-	var shoulder: Vector2 = player.global_position + Vector2(0, -24)
-	ctx.dir = (ctx.aim_point - shoulder).normalized() if ctx.aim_point.distance_to(shoulder) > 4.0 else ctx.dir
 	player.on_cast_release(cur, ctx)
 	_refresh_ctx()
 	player.passives.on_release(ctx)
@@ -158,16 +156,21 @@ func _effect(data: SpellData) -> SpellEffect:
 	return _effects[data.id]
 
 
-## Aim angle bucket (0..4) for the release pose, relative to facing.
+## Aim angle bucket (0..4) for the release pose: the staff points up the
+## screen for shots away from the camera, down for shots toward it.
 func pose_index() -> int:
 	if ctx == null:
 		return 2
-	var ang := rad_to_deg(atan2(ctx.dir.y, absf(ctx.dir.x)))
+	return pose_for(ctx.dir)
+
+
+static func pose_for(d: Vector3) -> int:
+	var ang := rad_to_deg(atan2(d.z * 0.7, absf(d.x)))
 	var best := 2
 	var bd := 999.0
 	for k in WizardArt.AIM_ANGLES.size():
-		var d := absf(ang - WizardArt.AIM_ANGLES[k])
-		if d < bd:
-			bd = d
+		var diff := absf(ang - WizardArt.AIM_ANGLES[k])
+		if diff < bd:
+			bd = diff
 			best = k
 	return best

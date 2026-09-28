@@ -20,6 +20,6 @@ upgrade_name = ""
 upgrade_description = ""
 effect = ExtResource("2")
 params = {
-"range": 60.0
+"range": 2.5
 }
 upgrade_params = {}

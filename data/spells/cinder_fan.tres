@@ -20,10 +20,10 @@ upgrade_name = "Wildfire"
 upgrade_description = "A second, longer wave follows (60% damage) and 3 patches of ground catch fire."
 effect = ExtResource("2")
 params = {
-"reach": 70.0,
+"reach": 2.917,
 "patches": 1
 }
 upgrade_params = {
-"reach2": 115.0,
+"reach2": 4.8,
 "patches": 3
 }

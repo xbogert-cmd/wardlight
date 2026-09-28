@@ -18,7 +18,7 @@ const PASSIVE_TEXT := {
 	"storm": ["Conduction", "Every third native lightning spell that lands arcs to one more nearby enemy for 50% damage."],
 }
 
-var player: Node2D
+var player: Player
 var is_open := false
 var sel_slot := 0
 var cur := Vector2i(0, 0)   # x = column 0..3, y = school row 0..2

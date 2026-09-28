@@ -1,33 +1,31 @@
 class_name MeleeBox
-extends Area2D
-## An enemy attack hitbox that only hurts while `active`, once per swing.
+extends Node
+## An enemy melee swing: hurts the player once per swing while `active` if
+## they are within `reach` of the enemy and inside `half_angle` of its heading.
 
-var owner_enemy: Node2D
+var owner_enemy: Enemy
+var reach := 1.4
+var half_angle := deg_to_rad(60.0)
 var damage := 10.0
-var knockback := Vector2(160, -140)
+var push := 6.0
+var hop := 3.0
 var active := false
 var _hit_this_swing := false
 
 
-static func make(parent: Node2D, owner_e: Node2D, size: Vector2, offset: Vector2) -> MeleeBox:
+static func make(owner_e: Enemy, reach_m: float, half_deg: float) -> MeleeBox:
 	var b := MeleeBox.new()
 	b.owner_enemy = owner_e
-	b.collision_layer = 0
-	b.collision_mask = 2
-	b.monitorable = false
-	var cs := CollisionShape2D.new()
-	var sh := RectangleShape2D.new()
-	sh.size = size
-	cs.shape = sh
-	cs.position = offset
-	b.add_child(cs)
-	parent.add_child(b)
+	b.reach = reach_m
+	b.half_angle = deg_to_rad(half_deg)
+	owner_e.add_child(b)
 	return b
 
 
-func swing(dmg: float, kb: Vector2) -> void:
+func swing(dmg: float, push_speed: float, hop_speed: float = 3.0) -> void:
 	damage = dmg
-	knockback = kb
+	push = push_speed
+	hop = hop_speed
 	active = true
 	_hit_this_swing = false
 
@@ -39,9 +37,16 @@ func stop() -> void:
 func _physics_process(_delta: float) -> void:
 	if not active or _hit_this_swing:
 		return
-	for b in get_overlapping_bodies():
-		if b is Player and b.is_alive():
-			_hit_this_swing = true
-			var d := Damage.make(damage, owner_enemy, &"", Vector2(knockback.x * owner_enemy.facing, knockback.y))
-			d.hit_pos = owner_enemy.global_position
-			b.take_hit(d)
+	var p := owner_enemy.player()
+	if p == null or not p.is_alive():
+		return
+	var v := p.global_position - owner_enemy.global_position
+	v.y = 0.0
+	if v.length() > reach + p.radius():
+		return
+	if v.length() > 0.5 and absf(SpellEffect.flat_dir(v).angle_to(owner_enemy.heading)) > half_angle:
+		return
+	_hit_this_swing = true
+	var d := Damage.make(damage, owner_enemy, &"", owner_enemy.heading * push + Vector3(0, hop, 0))
+	d.hit_pos = owner_enemy.global_position
+	p.take_hit(d)

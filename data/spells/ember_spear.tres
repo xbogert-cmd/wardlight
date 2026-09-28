@@ -20,8 +20,8 @@ upgrade_name = "Splitting Spear"
 upgrade_description = "On its first hit the spear bursts into 3 shards (50% damage each)."
 effect = ExtResource("2")
 params = {
-"speed": 400.0,
-"range": 300.0,
+"speed": 16.667,
+"range": 12.5,
 "pierce": 2,
 "burn_time": 3.0
 }

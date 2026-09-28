@@ -20,7 +20,7 @@ upgrade_name = "Meteor Ashfall"
 upgrade_description = "A meteor crashes down first (400% damage, knocks enemies up)."
 effect = ExtResource("2")
 params = {
-"width": 70.0,
+"width": 2.917,
 "drops": 16,
 "duration": 1.4
 }

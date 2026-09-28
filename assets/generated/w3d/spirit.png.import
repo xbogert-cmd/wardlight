@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bhmw8qqsd2u21"
-path="res://.godot/imported/bg_ruins_mid.png-4cad98955952ce84d0f5e42635b64c0d.ctex"
+uid="uid://wr8d2cvp6cvk"
+path="res://.godot/imported/spirit.png-1ef1c23792f6155f9dd3e48f944f39f5.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/generated/bg_ruins_mid.png"
-dest_files=["res://.godot/imported/bg_ruins_mid.png-4cad98955952ce84d0f5e42635b64c0d.ctex"]
+source_file="res://assets/generated/w3d/spirit.png"
+dest_files=["res://.godot/imported/spirit.png-1ef1c23792f6155f9dd3e48f944f39f5.ctex"]
 
 [params]
 

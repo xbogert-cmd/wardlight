@@ -26,9 +26,17 @@ func _ready() -> void:
 		_place(0.0)
 
 
-static func shake_all(amount: float) -> void:
+## Shake strength in screen pixels (converted to metres at the focus).
+static func shake_all(amount_px: float) -> void:
 	if cur:
-		cur._shake = maxf(cur._shake, amount * (0.25 if Settings.reduce_shake else 1.0))
+		cur._shake = maxf(cur._shake, amount_px / 24.0 * (0.25 if Settings.reduce_shake else 1.0))
+
+
+## Jump straight to the target (level entry, respawn).
+func snap() -> void:
+	if target and is_instance_valid(target):
+		_focus = target.global_position + Vector3(0, 1.0, 0)
+		_place(0.0)
 
 
 func _physics_process(delta: float) -> void:

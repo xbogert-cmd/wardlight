@@ -20,7 +20,7 @@ upgrade_name = "Strangling Grove"
 upgrade_description = "The roots linger for 2.5 s, binding and cursing anything that walks in."
 effect = ExtResource("2")
 params = {
-"width": 72.0,
+"width": 3.0,
 "root_time": 1.8,
 "linger": 0.9
 }

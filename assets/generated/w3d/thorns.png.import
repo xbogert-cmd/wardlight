@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://djux7ogv2m7qh"
-path="res://.godot/imported/bg_woods_far.png-4ab75be202f272b31a4e664e7fbaa3a2.ctex"
+uid="uid://bfuacgri2l6w8"
+path="res://.godot/imported/thorns.png-4733d3d84ea6000e3db2e9a6e5247c8b.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/generated/bg_woods_far.png"
-dest_files=["res://.godot/imported/bg_woods_far.png-4ab75be202f272b31a4e664e7fbaa3a2.ctex"]
+source_file="res://assets/generated/w3d/thorns.png"
+dest_files=["res://.godot/imported/thorns.png-4733d3d84ea6000e3db2e9a6e5247c8b.ctex"]
 
 [params]
 

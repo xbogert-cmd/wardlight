@@ -8,65 +8,98 @@ func cast(ctx: CastContext) -> void:
 	var c := Circle.new()
 	c.ctx = ctx
 	ctx.spawn(c)
-	c.global_position = ctx.caster.global_position + Vector2(0, -2)
+	c.global_position = ctx.caster.global_position
 	Sfx.play("hex_siphon", -2.0)
 
 
-class Circle extends Node2D:
+class Circle extends Node3D:
 	var ctx: CastContext
 	var t := 0.0
 	var tick := 0.2
 	var healed := 0.0
-	const R := 54.0
+	var _outer: ShaderMaterial
+	var _inner: ShaderMaterial
+	var _rune: MeshInstance3D
+	var _lamp: OmniLight3D
+	const R := 2.25
 
 	func _ready() -> void:
-		z_index = FX.Z_BACK + 3
-		var m := CanvasItemMaterial.new()
-		m.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
-		material = m
-		FX.ring(global_position, 4.0, R, 0.3, Pal.school(&"hex"), 1.0, false)
+		var ramp := Pal.school(&"hex")
+		_outer = _disc(R, 3.0, 0.12)
+		_inner = _disc(R * 0.45, 1.0, 0.0)
+		_rune = MeshInstance3D.new()
+		var q := QuadMesh.new()
+		q.size = Vector2(64, 64) * FX3.PX
+		_rune.mesh = q
+		var m := ShaderMaterial.new()
+		m.shader = FX3.DECAL_SHADER
+		m.set_shader_parameter(&"tex", RUNE_L)
+		m.set_shader_parameter(&"color", Color(Pal.SPECTRAL[1], 0.7))
+		_rune.material_override = m
+		_rune.rotation.x = -PI / 2
+		_rune.position.y = 0.05
+		_rune.scale = Vector3.ONE * (R * 1.6 / 2.67)
+		add_child(_rune)
+		_lamp = OmniLight3D.new()
+		_lamp.light_color = Color(0.65, 0.45, 1.0)
+		_lamp.light_energy = 1.5
+		_lamp.omni_range = R * 2.2
+		_lamp.position.y = 0.8
+		add_child(_lamp)
+		FX3.ring(global_position + Vector3(0, 0.05, 0), 0.2, R, 0.3, ramp, 1.0)
+
+	func _disc(r: float, w: float, fill: float) -> ShaderMaterial:
+		var mat := ShaderMaterial.new()
+		mat.shader = FX3.DECAL_SHADER
+		var size := Vector2.ONE * (r * 2.0 + 0.4)
+		mat.set_shader_parameter(&"mode", 1)
+		mat.set_shader_parameter(&"size_m", size)
+		mat.set_shader_parameter(&"radius", r)
+		mat.set_shader_parameter(&"width", w)
+		mat.set_shader_parameter(&"fill", fill)
+		var m := MeshInstance3D.new()
+		var q := QuadMesh.new()
+		q.size = size
+		m.mesh = q
+		m.material_override = mat
+		m.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		m.rotation.x = -PI / 2
+		m.position.y = 0.04
+		add_child(m)
+		return mat
 
 	func _physics_process(delta: float) -> void:
 		t += delta
 		tick -= delta
 		var dur: float = ctx.p("duration", 3.0)
+		var ramp := Pal.school(&"hex")
+		var fade := clampf((dur - t) / 0.4, 0.0, 1.0) * clampf(t / 0.15, 0.0, 1.0)
+		_outer.set_shader_parameter(&"color", Color(ramp[1], 0.95 * fade))
+		_inner.set_shader_parameter(&"color", Color(Pal.SPECTRAL[2], 0.7 * fade))
+		_rune.rotation.y = -t * 1.2
+		_lamp.light_energy = 1.5 * fade
 		if tick <= 0.0:
 			tick = 0.5
 			var cap: float = ctx.p("heal_cap", 12.0)
-			for e: Node2D in SpellEffect.in_circle(global_position + Vector2(0, -10), R):
+			for e: Node3D in SpellEffect.in_circle(global_position, R):
 				var d := ctx.dmg(1.0)
 				d.stagger = 2.0
 				ctx.hit(e, d)
-				var from: Vector2 = e.center()
-				var to: Vector2 = ctx.caster.center()
-				FX.bolt(from, from.lerp(to, 0.5), 0.12, Pal.SPECTRAL, 3.0)
+				var from: Vector3 = e.center()
+				var to: Vector3 = ctx.caster.center()
+				FX3.bolt(from, from.lerp(to, 0.5), 0.12, Pal.SPECTRAL, 0.12)
+				FX3.converge(to, 0.6, 3, Pal.SPECTRAL, 0.25, 1.0)
 				if healed < cap:
 					var amt := minf(1.5 * ctx.power, cap - healed)
 					healed += amt
 					ctx.caster.health.heal(amt)
 				if ctx.upgraded:
 					ctx.caster.mana.gain(1.5)
-					e._knock.x += signf(global_position.x - e.global_position.x) * 70.0
+					e._knock += SpellEffect.flat_dir(global_position - e.global_position) * 2.9
 		if randf() < delta * 70.0:
 			var a := randf() * TAU
 			var rr := randf_range(0.3, 1.0) * R
-			FX.burst(global_position + Vector2(cos(a) * rr, sin(a) * rr * 0.3 - 2), 1, Pal.SPECTRAL if randf() < 0.6 else Pal.school(&"hex"),
-				Vector2(10, 30), Vector2(0.4, 0.8), {"dir": Vector2.UP, "spread": 0.5, "gravity": -30.0, "front": false, "glow": true})
+			FX3.burst(global_position + Vector3(cos(a) * rr, 0.08, sin(a) * rr), 1, Pal.SPECTRAL if randf() < 0.6 else ramp,
+				Vector2(0.4, 1.2), Vector2(0.4, 0.8), {"dir": Vector3.UP, "spread": 0.5, "gravity": -1.2})
 		if t >= dur:
 			queue_free()
-		queue_redraw()
-
-	func _draw() -> void:
-		var ramp := Pal.school(&"hex")
-		var dur: float = ctx.p("duration", 3.0)
-		var fade := clampf((dur - t) / 0.4, 0.0, 1.0) * clampf(t / 0.15, 0.0, 1.0)
-		# a flattened magic circle on the ground
-		draw_set_transform(Vector2.ZERO, 0.0, Vector2(1.0, 0.3))
-		draw_circle(Vector2.ZERO, R, Color(ramp[3], 0.35 * fade))
-		draw_arc(Vector2.ZERO, R, 0, TAU, 48, Color(ramp[1], 0.95 * fade), 3.0)
-		draw_arc(Vector2.ZERO, R - 7.0, t * 1.5, t * 1.5 + TAU, 40, Color(ramp[1], 0.6 * fade), 1.0)
-		for k in 8:
-			var a := -t * 1.2 + k * TAU / 8.0
-			draw_line(Vector2.from_angle(a) * (R - 7.0), Vector2.from_angle(a + 0.4) * (R - 1.0), Color(Pal.SPECTRAL[1], 0.9 * fade), 2.0)
-		draw_arc(Vector2.ZERO, R * 0.45, -t * 2.0, -t * 2.0 + TAU, 32, Color(Pal.SPECTRAL[2], 0.7 * fade), 1.0)
-		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)

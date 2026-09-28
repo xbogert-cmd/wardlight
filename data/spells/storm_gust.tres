@@ -19,5 +19,5 @@ description = "A free, short electric gust from the staff. Pushes enemies back u
 effect = ExtResource("2")
 params = {
 "arc": 36.0,
-"range": 54.0
+"range": 2.25
 }

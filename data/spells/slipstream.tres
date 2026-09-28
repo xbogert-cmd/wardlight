@@ -20,7 +20,7 @@ upgrade_name = "Tailwind"
 upgrade_description = "Leaves a lingering gale along your path that keeps shoving enemies."
 effect = ExtResource("2")
 params = {
-"distance": 120.0,
+"distance": 5.0,
 "time": 0.18
 }
 upgrade_params = {}

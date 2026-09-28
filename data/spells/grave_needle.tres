@@ -20,8 +20,8 @@ upgrade_name = "Needle Volley"
 upgrade_description = "Fires 3 needles in a tight spread."
 effect = ExtResource("2")
 params = {
-"speed": 520.0,
-"range": 340.0,
+"speed": 21.667,
+"range": 14.167,
 "curse_time": 7.0
 }
 upgrade_params = {}

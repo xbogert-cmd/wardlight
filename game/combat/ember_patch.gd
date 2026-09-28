@@ -1,41 +1,61 @@
 class_name EmberPatch
-extends Node2D
-## Burning ground left by fire spells. Burns enemies standing in it and can
-## be scattered by wind (Cinderflight). Placed on the ground surface.
+extends Node3D
+## Burning ground left by fire spells: a smouldering disc that burns enemies
+## standing in it and can be scattered by wind (Cinderflight). It glows, so it
+## lights the ground around it at night.
 
-var width := 40.0
+var radius := 0.8
 var life := 4.0
 var source: Node = null
 var consumed := false
 var _tick := 0.0
 var _t := 0.0
+var _disc: MeshInstance3D
+var _mat: ShaderMaterial
+var _lamp: OmniLight3D
 
 
-static func place(world: Node, at: Vector2, w: float, lifetime: float, src: Node) -> EmberPatch:
-	var space := (world as Node2D).get_world_2d().direct_space_state
-	var q := PhysicsRayQueryParameters2D.create(at + Vector2(0, -8), at + Vector2(0, 90), 1)
-	var hit := space.intersect_ray(q)
-	if hit.is_empty():
-		return null
+static func place(world: Node, at: Vector3, r: float, lifetime: float, src: Node) -> EmberPatch:
 	var p := EmberPatch.new()
-	p.width = w
+	p.radius = r
 	p.life = lifetime
 	p.source = src
 	world.add_child(p)
-	p.global_position = hit.position
+	p.global_position = SpellEffect.ground_at(at, p)
 	return p
 
 
 func _ready() -> void:
 	add_to_group(&"ember_patch")
-	z_index = FX.Z_BACK + 2
-	var m := CanvasItemMaterial.new()
-	m.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
-	material = m
+	var ramp := Pal.school(&"fire")
+	_mat = ShaderMaterial.new()
+	_mat.shader = FX3.DECAL_SHADER
+	var size := Vector2.ONE * (radius * 2.0 + 0.3)
+	_mat.set_shader_parameter(&"mode", 1)
+	_mat.set_shader_parameter(&"size_m", size)
+	_mat.set_shader_parameter(&"radius", radius)
+	_mat.set_shader_parameter(&"width", 1.0)
+	_mat.set_shader_parameter(&"fill", 0.3)
+	_mat.set_shader_parameter(&"color", Color(ramp[3], 0.8))
+	_disc = MeshInstance3D.new()
+	var q := QuadMesh.new()
+	q.size = size
+	_disc.mesh = q
+	_disc.material_override = _mat
+	_disc.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	_disc.rotation.x = -PI / 2
+	_disc.position.y = 0.05
+	add_child(_disc)
+	_lamp = OmniLight3D.new()
+	_lamp.light_color = Color(1.0, 0.5, 0.2)
+	_lamp.light_energy = 1.4
+	_lamp.omni_range = radius * 3.0
+	_lamp.position.y = 0.5
+	add_child(_lamp)
 
 
-func contains(pt: Vector2, pad: float = 0.0) -> bool:
-	return absf(pt.x - global_position.x) <= width * 0.5 + pad and absf(pt.y - global_position.y) < 28.0 + pad
+func contains(pt: Vector3, pad: float = 0.0) -> bool:
+	return SpellEffect.flat(pt, global_position) <= radius + pad
 
 
 func extinguish() -> void:
@@ -51,25 +71,15 @@ func _physics_process(delta: float) -> void:
 	_tick -= delta
 	if _tick <= 0.0:
 		_tick = 0.5
-		for e: Node2D in SpellEffect.enemies():
-			if contains(e.global_position):
-				e.statuses.apply(&"burn", 2.0, 3.0, source)
-	if randf() < delta * 14.0:
-		FX.burst(global_position + Vector2(randf_range(-width * 0.5, width * 0.5), -2), 1, Pal.school(&"fire"),
-			Vector2(10, 30), Vector2(0.3, 0.6), {"dir": Vector2.UP, "spread": 0.8, "gravity": -30.0, "front": false})
-	queue_redraw()
-
-
-func _draw() -> void:
+		for e: Node3D in SpellEffect.in_circle(global_position, radius):
+			e.statuses.apply(&"burn", 2.0, 3.0, source)
 	var fade := clampf(life / 0.6, 0.0, 1.0)
 	var ramp := Pal.school(&"fire")
-	var hw := width * 0.5
-	draw_rect(Rect2(-hw, -1, width, 2), Color(ramp[3], 0.6 * fade))
-	var x := -hw
-	var k := 0
-	while x < hw:
-		var h := 2.0 + absf(sin(_t * 9.0 + k * 1.7)) * 4.0
-		draw_rect(Rect2(roundf(x), roundf(-h), 2, roundf(h)), Color(ramp[2], 0.85 * fade))
-		draw_rect(Rect2(roundf(x), roundf(-h), 1, 1), Color(ramp[1], fade))
-		x += 3.0 + float(k % 3)
-		k += 1
+	var flick := 1.0 if int(_t * 12.0) % 3 else 0.8
+	_mat.set_shader_parameter(&"color", Color(ramp[3], 0.8 * fade * flick))
+	_lamp.light_energy = 1.4 * fade * flick
+	if randf() < delta * 26.0 * radius:
+		var a := randf() * TAU
+		var rr := sqrt(randf()) * radius
+		FX3.burst(global_position + Vector3(cos(a) * rr, 0.08, sin(a) * rr), 1, ramp,
+			Vector2(0.3, 1.0), Vector2(0.3, 0.6), {"dir": Vector3.UP, "spread": 0.8, "gravity": -1.2, "size": 2.0 if randf() < 0.3 else 1.0})

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dxcnlkga6oqtq"
-path="res://.godot/imported/bg_village_far.png-6dee6bd99c706ffeeb298ab6bb8ffeb1.ctex"
+uid="uid://bd8hdlvbmamre"
+path="res://.godot/imported/roots.png-2bf6a917fcf90775e6fe6e24a6b4bfb4.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/generated/bg_village_far.png"
-dest_files=["res://.godot/imported/bg_village_far.png-6dee6bd99c706ffeeb298ab6bb8ffeb1.ctex"]
+source_file="res://assets/generated/w3d/roots.png"
+dest_files=["res://.godot/imported/roots.png-2bf6a917fcf90775e6fe6e24a6b4bfb4.ctex"]
 
 [params]
 

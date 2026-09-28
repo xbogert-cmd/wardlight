@@ -275,6 +275,65 @@ static func banner() -> Image:
 	return c.img
 
 
+## A clump of thorned briar stems bursting from the ground (Briar Knot).
+static func thorns() -> Image:
+	var c := PixelCanvas.new(16, 22)
+	var r := _rng(31)
+	for k in 3:
+		var x0 := 3 + k * 5
+		var lean := r.randi_range(-3, 3)
+		var h := r.randi_range(14, 21)
+		c.stroke(Vector2(x0, 21), Vector2(x0 + lean, 21 - h), 2, _c("5a3e2a"), 1)
+		for t in 3:
+			var ty := 21 - int(h * (0.35 + t * 0.2))
+			var tx := x0 + int(lean * (0.35 + t * 0.2))
+			c.put(tx + (2 if t % 2 else -2), ty - 1, _c("d8c8a0"), 2)
+			c.put(tx + (1 if t % 2 else -1), ty, _c("8a6a4a"), 1)
+		c.put(x0 + lean, 21 - h, _c("e8dcc0"), 2)
+	c.shade(1, _c("7a5a3a"), _c("3a2618"), 1)
+	c.outline(_c("120c08"), 0.9)
+	return c.img
+
+
+## Twisting roots with faint hex glow at the tips (Binding Roots).
+static func roots() -> Image:
+	var c := PixelCanvas.new(18, 26)
+	var r := _rng(47)
+	for k in 3:
+		var x0 := 4 + k * 5
+		var pts := [Vector2(x0, 25)]
+		var y := 25.0
+		var x := float(x0)
+		while y > 4.0 + k * 2:
+			y -= r.randf_range(3.0, 5.0)
+			x += r.randf_range(-2.5, 2.5)
+			pts.append(Vector2(x, y))
+		for n in pts.size() - 1:
+			c.stroke(pts[n], pts[n + 1], 3 if n < 2 else 2, _c("6a4a3a"), 1)
+		var tip: Vector2 = pts[pts.size() - 1]
+		c.put(int(tip.x), int(tip.y), _c("c88cff"), 2)
+		c.put(int(tip.x), int(tip.y) - 1, _c("f4e8ff"), 2)
+	c.shade(1, _c("9a7a5a"), _c("3a2a20"), 1)
+	c.outline(_c("120c08"), 0.9)
+	return c.img
+
+
+## Small hooded spirit carrying a lantern (Spirit Lantern).
+static func spirit() -> Image:
+	var c := PixelCanvas.new(16, 14)
+	var body := _c("8affc8")
+	c.poly(PackedVector2Array([Vector2(4, 2), Vector2(10, 2), Vector2(11, 10), Vector2(9, 12), Vector2(7, 10), Vector2(5, 12), Vector2(3, 10)]), body, 1)
+	c.rect(5, 1, 4, 1, _c("e8fff4"), 1)
+	c.rect(5, 4, 1, 2, _c("0e2a22"), 2)
+	c.rect(8, 4, 1, 2, _c("0e2a22"), 2)
+	c.line(10, 6, 12, 6, _c("3ad69a"), 1)
+	c.rect(12, 5, 3, 4, _c("f4e890"), 3)
+	c.put(13, 4, _c("a89060"), 3)
+	c.shade(1, _c("e8fff4"), _c("1e8a66"), 1)
+	c.outline(_c("0a2a20"), 0.6)
+	return c.img
+
+
 ## Four-frame flame loop, frames side by side.
 static func flames() -> Image:
 	var img := Image.create_empty(16 * 4, 20, false, Image.FORMAT_RGBA8)

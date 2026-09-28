@@ -1,8 +1,27 @@
+class_name Crossing
 extends Node3D
-## 3D look mockup ("Briarwood Crossing"): a plateau road over a stream, a
-## ruined rune arch with a brazier, lantern posts and fences, and a cliff
-## edge with a waterfall into a misty valley with a distant castle.
-## Everything is built here in code from generated pixel art.
+## Briarwood Crossing: a plateau road over a stream, a ruined rune arch with a
+## brazier, lantern posts and fences, and a cliff edge above a misty valley
+## with a distant castle. Everything is built here in code from generated
+## pixel art. For now it doubles as the combat proving ground (all enemy
+## roles); stage 3 turns it into part of the Briarwood region.
+
+signal player_respawned
+
+const ENEMIES := {
+	&"hound": [preload("res://game/enemies/hound.gd"), preload("res://data/enemies/hound.tres")],
+	&"raider": [preload("res://game/enemies/raider.gd"), preload("res://data/enemies/raider.tres")],
+	&"hexer": [preload("res://game/enemies/hexer.gd"), preload("res://data/enemies/hexer.tres")],
+	&"knot": [preload("res://game/enemies/knot.gd"), preload("res://data/enemies/knot.tres")],
+	&"sentinel": [preload("res://game/enemies/sentinel.gd"), preload("res://data/enemies/sentinel.tres")],
+}
+## [kind, x, z]
+const SPAWNS := [
+	[&"hound", 9.0, -4.0], [&"hound", 13.0, 1.0],
+	[&"raider", 19.0, -6.5], [&"hexer", 22.0, -4.0],
+	[&"knot", -14.0, 4.5],
+	[&"sentinel", 24.0, -11.5],
+]
 
 const D := "res://assets/generated/w3d/"
 const PROP_SHADER := preload("res://game3d/prop.gdshader")
@@ -10,8 +29,11 @@ const WATER_SHADER := preload("res://game3d/water.gdshader")
 
 var noise := FastNoiseLite.new()
 var terrain: HeightTerrain
-var player: Player3D
+var player: Player
 var cam: GameCamera3D
+var spawn_point := Vector3.ZERO
+var checkpoint := Vector3.ZERO
+var display_name := "Briarwood Crossing"
 var road := [Vector2(-26, 20), Vector2(-15, 11), Vector2(-7, 5), Vector2(1, 1), Vector2(6.5, -1.5), Vector2(13, -5), Vector2(20, -9), Vector2(28, -12)]
 var side_path := [Vector2(-7, 5), Vector2(-11, 1), Vector2(-15.5, -2.2)]
 var stream := [Vector2(27, 21), Vector2(15, 9), Vector2(7, 1.8), Vector2(3.8, -0.5), Vector2(2.0, -6), Vector2(0.8, -12), Vector2(0.3, -17.5)]
@@ -39,23 +61,49 @@ func _ready() -> void:
 	_scenery()
 	_valley()
 	_bounds()
-	player = Player3D.new()
-	add_child(player)
-	player.global_position = _ground(-5, 6)
+	spawn_point = _ground(-5, 6)
+	checkpoint = spawn_point
 	cam = GameCamera3D.new()
-	cam.target = player
 	add_child(cam)
-	player.cam = cam
-	for s: Array in [[&"hound", Vector2(9, -4)], [&"hound", Vector2(13, 1)], [&"raider", Vector2(19, -6.5)], [&"hexer", Vector2(21.5, -4)]]:
-		var e: Enemy3D = Hound3D.new() if s[0] == &"hound" else Enemy3D.new()
-		e.data = load("res://data/enemies/%s.tres" % s[0])
-		add_child(e)
-		e.global_position = _ground(s[1].x, s[1].y)
-	var hud := preload("res://game3d/hud3d.gd").new()
-	hud.player = player
-	add_child(hud)
+	_spawn_enemies()
+
+
+func enter(p: Player) -> void:
+	player = p
+	if p.get_parent():
+		p.reparent(self)
+	else:
+		add_child(p)
+	p.global_position = spawn_point
+	cam.target = p
+	cam.snap()
+	if not p.died.is_connected(_on_player_died):
+		p.died.connect(_on_player_died)
 	Sfx.music("explore")
-	Input.mouse_mode = Input.MOUSE_MODE_HIDDEN
+
+
+func _spawn_enemies() -> void:
+	for s in SPAWNS:
+		var def: Array = ENEMIES[s[0]]
+		var e: Enemy = def[0].new()
+		e.data = def[1]
+		add_child(e)
+		e.global_position = _ground(s[1], s[2])
+
+
+func _on_player_died() -> void:
+	await get_tree().create_timer(1.6).timeout
+	# checkpoint: restore health/mana and reset the encounter
+	for e in get_tree().get_nodes_in_group(&"enemy"):
+		e.queue_free()
+	for n in get_children():
+		if n is Projectile or n is EmberPatch or n is Knot.ThornPatch:
+			n.queue_free()
+	await get_tree().process_frame
+	_spawn_enemies()
+	player.respawn_at(checkpoint)
+	cam.snap()
+	player_respawned.emit()
 
 
 # ------------------------------------------------------------------ shape

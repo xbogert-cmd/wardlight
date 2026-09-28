@@ -20,7 +20,7 @@ upgrade_name = "Eye of the Storm"
 upgrade_description = "Each strike hits 2 enemies, and the orb drags enemies toward it."
 effect = ExtResource("2")
 params = {
-"range": 230.0,
+"range": 9.583,
 "duration": 3.5,
 "interval": 0.45,
 "targets": 1

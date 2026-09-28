@@ -20,9 +20,9 @@ const ECHO_MANA := 6.0
 const ECHO_COOLDOWN := 1.0
 const CONDUCTION_EVERY := 3
 const CONDUCTION_MULT := 0.5
-const CONDUCTION_RANGE := 130.0
+const CONDUCTION_RANGE := 5.4
 
-var player: Node2D
+var player: Node3D
 var heat := 0
 var storm_count := 0
 var _echo_cd := 0.0
@@ -55,13 +55,14 @@ func on_release(ctx: CastContext) -> void:
 		ctx.power *= 1.0 + HEAT_PER_CHARGE * heat
 		heat = 0
 		changed.emit()
-		FX.ring(ctx.origin, 2.0, 16.0, 0.25, Pal.school(&"fire"), 1.0, true)
-		FX.burst(ctx.origin, 14, Pal.school(&"fire"), Vector2(50, 130), Vector2(0.2, 0.4), {"gravity": -60.0})
+		FX3.ring(ctx.origin, 0.1, 0.7, 0.25, Pal.school(&"fire"), 1.0, false)
+		FX3.ring(ctx.caster.global_position, 0.3, 1.4, 0.3, Pal.school(&"fire"), 2.0)
+		FX3.burst(ctx.origin, 14, Pal.school(&"fire"), Vector2(2.0, 5.4), Vector2(0.2, 0.4), {"gravity": -2.5})
 		Sfx.play("fire_heat", -2.0)
 
 
 ## First and later real hits of a cast.
-func on_cast_hit(ctx: CastContext, target: Node2D, d: Damage) -> void:
+func on_cast_hit(ctx: CastContext, target: Node3D, d: Damage) -> void:
 	if not ctx.native or ctx.data.is_basic:
 		return
 	match school():
@@ -81,19 +82,20 @@ func on_cast_hit(ctx: CastContext, target: Node2D, d: Damage) -> void:
 				changed.emit()
 
 
-func _conduct(ctx: CastContext, from_actor: Node2D, d: Damage) -> void:
-	var from: Vector2 = from_actor.center()
+func _conduct(ctx: CastContext, from_actor: Node3D, d: Damage) -> void:
+	var from: Vector3 = from_actor.center()
 	var e := SpellEffect.nearest(from, CONDUCTION_RANGE, [from_actor], from_actor)
 	if e == null:
 		return
-	FX.bolt(from, e.center(), 0.25, Pal.school(&"storm"), 5.0, 1.0, true, 2)
-	FX.burst(e.center(), 10, Pal.school(&"storm"), Vector2(40, 120), Vector2(0.1, 0.3), {"gravity": 180.0})
+	FX3.bolt(from, e.center(), 0.25, Pal.school(&"storm"), 0.2)
+	FX3.bolt(from, e.center(), 0.25, Pal.school(&"storm"), 0.12)
+	FX3.burst(e.center(), 10, Pal.school(&"storm"), Vector2(1.6, 5.0), Vector2(0.1, 0.3), {"gravity": 7.5})
 	var pd := ctx.proc_dmg(d.amount * CONDUCTION_MULT, &"storm", &"conduction")
 	ctx.hit(e, pd)
 	Sfx.play("storm_zap", -2.0)
 
 
-func _on_enemy_killed(enemy: Node2D, last: Damage) -> void:
+func _on_enemy_killed(enemy: Node3D, last: Damage) -> void:
 	if school() != "hex" or last == null or last.source != player:
 		return
 	if not enemy.statuses.has(&"curse") or _echo_cd > 0.0:
@@ -106,12 +108,13 @@ func _on_enemy_killed(enemy: Node2D, last: Damage) -> void:
 	p.style = &"spectral"
 	p.ramp = Pal.SPECTRAL
 	p.team = &"none"
-	p.velocity = Vector2(0, -80)
+	p.velocity = Vector3(0, 3.3, 0)
 	p.homing_point = player
 	p.turn_rate = 9.0
-	p.speed_cap = 260.0
-	p.max_dist = 600.0
+	p.speed_cap = 11.0
+	p.max_dist = 25.0
+	p.ignore_walls = true
 	enemy.get_parent().add_child(p)
 	p.global_position = enemy.center()
-	FX.ring(player.center(), 3.0, 18.0, 0.3, Pal.SPECTRAL, 1.0, true)
+	FX3.ring(player.global_position, 0.2, 1.0, 0.35, Pal.SPECTRAL, 1.0)
 	Sfx.play("hex_echo", -4.0)

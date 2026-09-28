@@ -11,12 +11,12 @@ origin = Vector2(22, 47)
 body_size = Vector2(16, 30)
 max_hp = 90.0
 damage = 14.0
-move_speed = 70.0
+move_speed = 2.917
 poise = 26.0
 knock_resist = 0.35
 flinch_cooldown = 1.6
 motes = 3
-aggro_range = 260.0
+aggro_range = 10.833
 params = {
 "bash_damage": 12.0,
 "recover": 0.6,

@@ -9,6 +9,7 @@ uniform vec4 flash_color : source_color = vec4(1.0);
 uniform vec4 tint : source_color = vec4(1.0);
 uniform float bands = 4.0;
 uniform float emit = 0.0;
+uniform float fade = 0.0;         // 0 opaque .. 1 gone, dithered on the screen pixel grid
 uniform float depth_bias = 0.15;  // metres toward the camera so near ground/props don't nick the feet
 
 void vertex() {
@@ -28,6 +29,11 @@ void vertex() {
 void fragment() {
 	vec4 c = texture(tex, UV);
 	if (c.a < 0.5) discard;
+	if (fade > 0.0) {
+		ivec2 q = ivec2(FRAGCOORD.xy) % 4;
+		int b[16] = int[](0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5);
+		if (fade * 16.0 > float(b[q.y * 4 + q.x]) + 0.5) discard;
+	}
 	ALBEDO = mix(c.rgb * tint.rgb, flash_color.rgb, flash);
 	EMISSION = ALBEDO * emit;
 	NORMAL = vec3(0.0, 0.0, 1.0);

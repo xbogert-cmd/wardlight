@@ -1,11 +1,14 @@
 class_name Enemy
-extends CharacterBody2D
+extends CharacterBody3D
 ## Shared enemy behaviour: health, hit reactions, knockback, flinch limits,
 ## death and mana-mote drops. Subclasses implement `_ai(delta)`.
+## `heading` is the horizontal direction the enemy attacks toward; the side
+## view sprite flips with `facing` (sign of heading.x).
 
 signal died(enemy: Enemy)
 signal hurt(enemy: Enemy, d: Damage)
 
+const PX := 1.0 / 24.0
 const MOTE := preload("res://game/items/mote.gd")
 
 @export var data: EnemyData
@@ -14,28 +17,25 @@ var health: Health
 var statuses: Statuses
 var last_hit: Damage
 var is_boss := false
-var sprite: AnimatedSprite2D
-var visual: Node2D
-var flash_mat: ShaderMaterial
+var sprite: PixelBillboard
 var facing := -1
+var heading := Vector3.LEFT
 var state := &"idle"
 var state_t := 0.0
-var gravity := 900.0
-var home := Vector2.ZERO
+var home := Vector3.ZERO
 var armored := false       # true during committed attacks: no flinch, reduced knockback
 var _flinch_cd := 0.0
 var _poise_dmg := 0.0
 var _flash := 0.0
-var _knock := Vector2.ZERO
+var _knock := Vector3.ZERO
 
 
 func _ready() -> void:
 	add_to_group(&"enemy")
 	collision_layer = 4
 	collision_mask = 1
-	floor_snap_length = 6.0
-	floor_max_angle = deg_to_rad(47.0)
-	floor_constant_speed = true
+	floor_snap_length = 0.4
+	floor_max_angle = deg_to_rad(50.0)
 	home = global_position
 	health = Health.new()
 	health.max_hp = data.max_hp
@@ -44,26 +44,22 @@ func _ready() -> void:
 	statuses.owner_actor = self
 	statuses.root_resist = data.params.get("root_resist", 0.0)
 	add_child(statuses)
+	var cs := CollisionShape3D.new()
+	var cap := CapsuleShape3D.new()
+	cap.radius = radius()
+	cap.height = maxf(cap.radius * 2.0, height())
+	cs.shape = cap
+	cs.position.y = cap.height * 0.5
+	add_child(cs)
+	var meta: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://assets/generated/%s.json" % data.sheet))
+	sprite = PixelBillboard.new()
+	sprite.setup(load("res://assets/generated/%s.png" % data.sheet), Vector2i(int(meta.cell[0]), int(meta.cell[1])), int(meta.hframes), meta.anims, data.origin)
+	add_child(sprite)
+	sprite.play(&"idle")
+	add_child(BlobShadow.make(maxf(0.7, data.body_size.x * PX * 1.4)))
 	var ov := StatusOverlay.new()
 	ov.actor = self
 	add_child(ov)
-	var cs := CollisionShape2D.new()
-	var sh := RectangleShape2D.new()
-	sh.size = data.body_size
-	cs.shape = sh
-	cs.position = Vector2(0, -data.body_size.y * 0.5)
-	add_child(cs)
-	visual = Node2D.new()
-	add_child(visual)
-	sprite = AnimatedSprite2D.new()
-	sprite.sprite_frames = SheetFrames.load_sheet(data.sheet)
-	sprite.centered = false
-	sprite.offset = -data.origin
-	flash_mat = ShaderMaterial.new()
-	flash_mat.shader = preload("res://game/combat/flash.gdshader")
-	sprite.material = flash_mat
-	visual.add_child(sprite)
-	sprite.play(&"idle")
 	_setup()
 
 
@@ -76,12 +72,16 @@ func player() -> Player:
 	return get_tree().get_first_node_in_group(&"player") as Player
 
 
-func center() -> Vector2:
-	return global_position + Vector2(0, -data.body_size.y * 0.5)
+func center() -> Vector3:
+	return global_position + Vector3(0, height() * 0.5, 0)
 
 
-func hurt_rect() -> Rect2:
-	return Rect2(global_position - Vector2(data.body_size.x * 0.5, data.body_size.y), data.body_size)
+func radius() -> float:
+	return maxf(0.3, data.body_size.x * PX * 0.5)
+
+
+func height() -> float:
+	return data.body_size.y * PX
 
 
 func is_alive() -> bool:
@@ -93,10 +93,21 @@ func set_state(s: StringName) -> void:
 	state_t = 0.0
 
 
-func face_toward(x: float) -> void:
-	var d := signf(x - global_position.x)
-	if d != 0.0:
-		facing = int(d)
+func face_toward(p: Vector3) -> void:
+	heading = SpellEffect.flat_dir(p - global_position, heading)
+	if absf(heading.x) > 0.15:
+		facing = int(signf(heading.x))
+
+
+## Horizontal distance to a point.
+func dist_to(p: Vector3) -> float:
+	return SpellEffect.flat(global_position, p)
+
+
+## Steer toward a horizontal velocity.
+func steer(v: Vector3, rate: float, delta: float) -> void:
+	velocity.x = move_toward(velocity.x, v.x, rate * delta)
+	velocity.z = move_toward(velocity.z, v.z, rate * delta)
 
 
 func take_hit(d: Damage) -> void:
@@ -106,12 +117,12 @@ func take_hit(d: Damage) -> void:
 	health.damage(block_scale(d) * d.amount)
 	_flash = 1.0 if not d.is_proc else 0.5
 	var kb := d.knockback * (1.0 - data.knock_resist) * (0.3 if armored else 1.0)
-	_knock.x += kb.x
-	if kb.y < 0.0 and not armored:
-		velocity.y = minf(velocity.y, kb.y)
+	_knock += Vector3(kb.x, 0.0, kb.z)
+	if kb.y > 0.0 and not armored:
+		velocity.y = maxf(velocity.y, kb.y)
 	_poise_dmg += d.stagger
 	if not d.is_proc or d.spell_id != &"":
-		FX.burst(center(), 5, Pal.school(d.school), Vector2(30, 90), Vector2(0.12, 0.3), {"gravity": 150.0})
+		FX3.burst(center(), 5, Pal.school(d.school), Vector2(1.2, 3.8), Vector2(0.12, 0.3), {"gravity": 6.0})
 	hurt.emit(self, d)
 	if not is_alive():
 		_die()
@@ -132,27 +143,27 @@ func block_scale(_d: Damage) -> float:
 ## Default flinch: short interrupt. Subclasses may override.
 func _flinch() -> void:
 	set_state(&"flinch")
-	sprite.play(&"hurt")
+	sprite.play(&"hurt", true)
 
 
 func _die() -> void:
 	set_state(&"dead")
 	armored = false
 	collision_layer = 0
-	sprite.play(&"death")
+	sprite.play(&"death", true)
 	Sfx.play("enemy_die", -4.0)
-	FX.burst(center(), 14, Pal.SMOKE, Vector2(10, 40), Vector2(0.4, 0.8), {"add": false, "gravity": -30.0, "front": false, "jitter": 6.0})
+	FX3.burst(center(), 14, Pal.SMOKE, Vector2(0.4, 1.6), Vector2(0.4, 0.8), {"gravity": -1.2, "jitter": 0.25})
 	for k in data.motes:
-		var m := MOTE.new()
-		m.position = center()
-		m.velocity = Vector2(randf_range(-70, 70), randf_range(-150, -80))
+		var m: Node3D = MOTE.new()
+		m.set("velocity", Vector3(randf_range(-2.8, 2.8), randf_range(3.5, 6.0), randf_range(-2.8, 2.8)))
 		get_parent().add_child.call_deferred(m)
+		m.set_deferred("global_position", center())
 	died.emit(self)
 	Interactions.on_enemy_died(self, last_hit)
 	Events.enemy_killed.emit(self, last_hit)
 	var tw := create_tween()
 	tw.tween_interval(1.4)
-	tw.tween_property(self, "modulate:a", 0.0, 0.5)
+	tw.tween_method(sprite.set_fade, 0.0, 1.0, 0.5)
 	tw.tween_callback(queue_free)
 
 
@@ -160,27 +171,47 @@ func _physics_process(delta: float) -> void:
 	state_t += delta
 	_flinch_cd = maxf(0.0, _flinch_cd - delta)
 	_poise_dmg = maxf(0.0, _poise_dmg - delta * data.poise * 0.35)
-	if not is_on_floor():
-		velocity.y = minf(velocity.y + gravity * delta, 420.0)
+	if is_on_floor() and velocity.y <= 0.0:
+		velocity.y = -0.5
+	else:
+		velocity.y -= 22.0 * delta
 	if state != &"dead":
 		_ai(delta)
-		velocity.x *= statuses.move_scale()
+		var ms := statuses.move_scale()
+		velocity.x *= ms
+		velocity.z *= ms
+		_separate()
 	else:
-		velocity.x = move_toward(velocity.x, 0.0, 600.0 * delta)
-	var ai_vx := velocity.x
-	velocity.x = ai_vx + _knock.x
+		steer(Vector3.ZERO, 25.0, delta)
+	var ai_v := velocity
+	velocity += _knock
 	move_and_slide()
-	velocity.x = ai_vx
-	_knock.x = move_toward(_knock.x, 0.0, 900.0 * delta)
+	velocity = Vector3(ai_v.x, velocity.y, ai_v.z)
+	_knock = _knock.move_toward(Vector3.ZERO, 38.0 * delta)
 	_flash = maxf(0.0, _flash - delta * 9.0)
-	flash_mat.set_shader_parameter(&"flash", _flash)
-	visual.scale.x = facing
+	sprite.set_flash(_flash)
+	sprite.set_flip(facing < 0)
+
+
+## Soft push apart so packs don't stack on one spot.
+## ponytail: O(n²) over live enemies; fine for encounters under ~30.
+func _separate() -> void:
+	for e: Node3D in SpellEffect.enemies():
+		if e == self:
+			continue
+		var v := global_position - e.global_position
+		v.y = 0.0
+		var min_d: float = radius() + e.radius()
+		var d := v.length()
+		if d < min_d and d > 0.001:
+			var push := v / d * (min_d - d) * 6.0
+			velocity.x += push.x
+			velocity.z += push.z
 
 
 func _ai(_delta: float) -> void:
 	pass
 
 
-func anim(name: StringName) -> void:
-	if sprite.animation != name:
-		sprite.play(name)
+func anim(n: StringName) -> void:
+	sprite.play(n)

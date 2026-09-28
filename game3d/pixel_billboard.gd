@@ -120,3 +120,28 @@ func _place_origin() -> void:
 
 func set_flash(v: float) -> void:
 	mat.set_shader_parameter(&"flash", v)
+
+
+func set_fade(v: float) -> void:
+	mat.set_shader_parameter(&"fade", v)
+
+
+func set_tint(c: Color) -> void:
+	mat.set_shader_parameter(&"tint", c)
+
+
+## A frozen copy of the current frame that dissolves (dodge afterimages).
+func afterimage(col: Color, life: float) -> void:
+	var g := PixelBillboard.new()
+	g.setup(sheet, cell, hframes, {}, foot)
+	g.flip = flip
+	g._place_origin()
+	g._apply(global_frame())
+	g.set_tint(col)
+	g.mat.set_shader_parameter(&"emit", 0.8)
+	g.mat.set_shader_parameter(&"depth_bias", 0.1)
+	get_tree().current_scene.add_child(g)
+	g.global_position = global_position
+	var tw := g.create_tween()
+	tw.tween_method(g.set_fade, 0.35, 1.0, life)
+	tw.tween_callback(g.queue_free)
