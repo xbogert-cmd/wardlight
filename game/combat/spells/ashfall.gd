@@ -64,8 +64,7 @@ static func _meteor(ctx: CastContext, cloud: Vector3, ground: Vector3) -> void:
 	p.max_dist = CLOUD_H + 2.0
 	p.radius = 0.4
 	p.pierce = 99
-	ctx.spawn(p)
-	p.global_position = cloud
+	ctx.spawn(p, cloud)
 	var boom := func(pos: Vector3) -> void:
 		var ramp := Pal.school(&"fire")
 		var at := ground_at(pos, ctx.caster)

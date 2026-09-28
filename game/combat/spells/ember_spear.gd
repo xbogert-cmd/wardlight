@@ -43,8 +43,7 @@ static func _split(ctx: CastContext, pos: Vector3, dir: Vector3, skip: Node3D) -
 		sp.radius = 0.2
 		sp.lit = false
 		sp._hit.append(skip)
-		ctx.spawn(sp)
-		sp.global_position = pos
+		ctx.spawn(sp, pos)
 		sp.hit_actor.connect(func(b: Node3D, bpos: Vector3) -> void:
 			var d := ctx.dmg(float(ctx.p("shard_mult", 0.5)))
 			d.hit_pos = bpos

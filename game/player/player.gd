@@ -64,7 +64,7 @@ var _ghost_t := 0.0
 func _ready() -> void:
 	add_to_group(&"player")
 	collision_layer = 2
-	collision_mask = 1 | 64   # world + solid spell targets (brambles)
+	collision_mask = 1 | 64 | Region.INVISIBLE   # world + solid spell targets (brambles) + invisible walls
 	floor_snap_length = 0.4
 	floor_max_angle = deg_to_rad(50.0)
 	floor_constant_speed = true
@@ -256,7 +256,7 @@ func _physics_process(delta: float) -> void:
 				state = NORMAL
 		DEAD, LOCKED:
 			_brake(tuning.decel, delta)
-	move_and_slide()
+	Steps.move(self)
 	_check_ground()
 	_find_focus()
 	_animate(delta)

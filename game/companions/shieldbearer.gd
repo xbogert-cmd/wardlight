@@ -30,7 +30,7 @@ var _target: Node3D
 func _ready() -> void:
 	add_to_group(&"companion")
 	collision_layer = 16
-	collision_mask = 1
+	collision_mask = 1 | Region.INVISIBLE
 	floor_snap_length = 0.4
 	floor_max_angle = deg_to_rad(50.0)
 	var cs := CollisionShape3D.new()
@@ -127,7 +127,7 @@ func _physics_process(delta: float) -> void:
 				sprite.play(&"rise", true)
 		_:
 			_act(p, delta)
-	move_and_slide()
+	Steps.move(self)
 	_unstick(p, delta)
 	sprite.set_flip(facing < 0)
 

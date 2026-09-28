@@ -44,6 +44,7 @@ tools/dev/check.sh                    # import + parse-check every script/resour
 tools/dev/run.sh /tmp/x.log 90 --path . -- --demo=story --shots=/tmp/shots   # whole quest, scripted
 godot --headless --path . --export-release "macOS" build/Wardlight.zip          # Mac build
 godot --headless --path . --script tools/gen_art.gd   # regenerate art (then --import)
+tools/dev/run.sh /tmp/d.log 60 --path . -- --demo=dps_hex    # balance: 25 s vs the Warden, prints damage by spell (dps_fire/dps_storm)
 ```
 - New `class_name`s aren't visible until `godot --headless --path . --import` runs (check.sh does it).
 - Scripted demos: `-- --demo=<name> --shots=<dir>` (see `game/core/demo_driver.gd` for the command

@@ -23,8 +23,7 @@ func cast(ctx: CastContext) -> void:
 static func _hang(ctx: CastContext, pos: Vector3) -> void:
 	var z := Zone.new()
 	z.ctx = ctx
-	ctx.spawn(z)
-	z.global_position = pos
+	ctx.spawn(z, pos)
 	Sfx.play("storm_hum", -4.0)
 
 

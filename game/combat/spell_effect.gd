@@ -161,8 +161,7 @@ static func make_projectile(ctx: CastContext, style: StringName, speed: float, d
 	p.velocity = launch_dir(ctx, start) * speed
 	p.max_dist = dist
 	p.radius = r
-	ctx.spawn(p)
-	p.global_position = start
+	ctx.spawn(p, start)
 	return p
 
 

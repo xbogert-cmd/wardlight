@@ -6,6 +6,22 @@ extends Node
 ## freeze / unfreeze (enemies), tp ("x,z"), tp_near (metres west of the nearest
 ## enemy), pos (print), learn, school, upg, reset, book, key, quit.
 
+## Balance check: one school against the Warden for 25 s (wizard can't die),
+## cycling all four spells while holding the staff attack. Prints damage dealt.
+static func _dps(sch: String) -> Array:
+	var out: Array = [[0.3, "travel", "old_ward:waystone"], [3.5, "learn", ""], [3.55, "school", sch], [3.6, "god", ""],
+		[3.6, "tp", "0,-23.5"], [3.8, "aim_enemy", ""], [3.9, "bosshp", "start"], [4.0, "hold", "attack"]]
+	var t := 4.0
+	var k := 0
+	while t < 29.0:
+		out.append([t, "tap", "spell_%d" % (k % 4 + 1)])
+		k += 1
+		t += 0.3
+	out.append([29.0, "bosshp", "end_" + sch])
+	out.append([29.1, "quit", ""])
+	return out
+
+
 static func _all_spells() -> Array:
 	var out: Array = [[0.1, "freeze", ""], [0.15, "learn", ""], [0.2, "tp_near", "3.5"], [0.3, "aim_enemy", ""]]
 	var t := 0.5
@@ -60,6 +76,23 @@ const DEMOS := {
 		[5.0, "state", "after_east"], [5.1, "travel", "hearthmere:square"], [6.3, "tp", "-20,2"], [6.4, "hold", "move_left"],
 		[8.3, "release", "move_left"], [9.8, "state", "after_west"], [9.9, "quit", ""],
 	],
+	# the gorge road behind the southern ridge
+	"gorge": [
+		[0.1, "flag", "trunk_lifted"], [0.2, "flag", "troll_defeated"], [0.3, "travel", "briarwood:west"], [1.6, "tp", "23,-10"], [2.4, "shot", "g1"],
+		[2.5, "tp", "29,-12"], [3.3, "shot", "g2"], [3.4, "tp", "35,-12"], [4.2, "shot", "g3"], [4.4, "quit", ""],
+	],
+	# the edge walls still hold the wizard in (sanctuary south edge is z=14)
+	"edgewalk": [[0.5, "tp", "0,11"], [0.6, "hold", "down"], [3.0, "pos", ""], [3.1, "release", "down"], [3.2, "quit", ""]],
+	# walk onto the bridge and up into the Warden's plaza
+	"lips": [
+		[0.3, "travel", "briarwood:west"], [1.4, "freeze", ""], [1.5, "tp", "-1.5,2.0"], [1.6, "hold", "move_right"], [1.6, "hold", "up:0.45"], [1.7, "pos", "bridge"], [1.9, "pos", "bridge"], [2.2, "pos", "bridge"], [2.5, "pos", "bridge"], [2.7, "pos", "bridge"], [3.0, "pos", "bridge"], [3.2, "pos", "bridge"], [3.5, "pos", "bridge"], [3.7, "pos", "bridge"], [4.0, "pos", "bridge"], [4.2, "release", "move_right"], [4.2, "release", "up"], [4.3, "travel", "old_ward:waystone"], [7.5, "tp", "0,-17"], [7.6, "hold", "up"], [7.7, "pos", "arena"], [8.0, "pos", "arena"], [8.2, "pos", "arena"], [8.4, "pos", "arena"], [8.7, "pos", "arena"], [8.9, "pos", "arena"], [9.2, "pos", "arena"], [9.4, "pos", "arena"], [9.7, "pos", "arena"], [9.9, "pos", "arena"], [10.2, "pos", "arena"], [10.4, "pos", "arena"], [10.5, "release", "up"], [10.6, "quit", ""],
+	],
+	# steep ground must still stop the wizard (gorge bank, cliff edge)
+	"steep": [[0.3, "travel", "briarwood:west"], [1.4, "freeze", ""], [1.5, "tp", "28,-11.5"], [1.6, "hold", "down"], [3.5, "pos", "bank"],
+		[3.6, "release", "down"], [3.7, "tp", "12,-10"], [3.8, "hold", "up"], [5.8, "pos", "cliff"], [5.9, "release", "up"], [6.0, "quit", ""]],
+	# try to walk round the fallen trunk over the gorge bank (must be blocked)
+	"trunkwalk": [[0.3, "travel", "briarwood:west"], [1.4, "freeze", ""], [1.5, "tp", "21.5,-9.8"], [1.6, "hold", "move_right"], [1.6, "hold", "down:0.7"],
+		[4.5, "pos", "round_trunk"], [4.6, "release", "move_right"], [4.6, "release", "down"], [4.7, "tp", "20,-7"], [4.8, "hold", "move_right"], [7.0, "pos", "along_bank"], [7.1, "quit", ""]],
 	"check": [
 		[0.1, "freeze", ""], [0.2, "learn", ""], [0.3, "tp", "-12,2"], [1.0, "shot", "k01_behind_tree"],
 		[1.1, "school", "hex"], [1.2, "tp", "-16.5,1"], [1.8, "tap", "spell_3"], [2.3, "shot", "k02_siphon_slope"],
@@ -169,12 +202,18 @@ var _burst_every := 1
 var _burst_frame := 0
 
 
+var _tally := {}
+
+
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	for a in OS.get_cmdline_user_args():
 		if a.begins_with("--demo="):
 			var nm := a.trim_prefix("--demo=")
-			steps = _all_spells() if nm == "allspells" else DEMOS.get(nm, [])
+			steps = _all_spells() if nm == "allspells" else _dps(nm.trim_prefix("dps_")) if nm.begins_with("dps_") else DEMOS.get(nm, [])
+			if nm.begins_with("dps_"):
+				Events.damage_dealt.connect(func(_t: Node3D, d: Damage) -> void:
+					_tally[d.spell_id] = roundf(_tally.get(d.spell_id, 0.0) + d.amount))
 		elif a.begins_with("--shots="):
 			shot_dir = a.trim_prefix("--shots=")
 	if steps.is_empty():
@@ -207,9 +246,11 @@ func _run(s: Array) -> void:
 	var cmd: String = s[1]
 	match cmd:
 		"hold":
-			Input.action_press(s[2])
+			# "action" or "action:strength"
+			var hs: PackedStringArray = (s[2] as String).split(":")
+			Input.action_press(hs[0], float(hs[1]) if hs.size() > 1 else 1.0)
 		"release":
-			Input.action_release(s[2])
+			Input.action_release((s[2] as String).split(":")[0])
 		"tap":
 			Input.action_press(s[2])
 			_taps.append(s[2])
@@ -230,6 +271,16 @@ func _run(s: Array) -> void:
 			var pa := _player()
 			pa.aim.update_aim(pa.cast_origin())
 			print("DEMO aim ", s[2], " mouse=", get_viewport().get_mouse_position(), " cursor=", pa.aim.cursor.snappedf(0.1), " player=", pa.global_position.snappedf(0.1), " dir=", pa.aim.dir_from(pa.cast_origin()).snappedf(0.01), " active=", pa.aim.mouse_active)
+		"god":
+			var pg := _player()
+			pg.caster.cast_started.connect(func(dd: SpellData) -> void:
+				_tally["cast_" + String(dd.id)] = _tally.get("cast_" + String(dd.id), 0) + 1)
+			pg.health.max_hp = 1e6
+			pg.health.hp = 1e6
+		"bosshp":
+			for e in SpellEffect.enemies():
+				if e.is_boss:
+					print("DEMO bosshp ", s[2], " hp=", roundi(e.health.hp), "/", roundi(e.health.max_hp), " by_spell=", _tally)
 		"clear_aim":
 			_player().aim.override = null
 			_player().aim.override_enemy = false

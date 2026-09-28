@@ -1,7 +1,12 @@
 extends SpellEffect
-## Spirit Lantern: a spirit circles the wizard for a while. The next enemy
-## attack that would land is caught by the spirit, which answers with a
-## cursing bolt. Upgrade (Twin Lanterns): two spirits.
+## Spirit Lantern: a spirit circles the wizard for a while, loosing a weak
+## cursing bolt at the nearest enemy every few seconds. The next enemy attack
+## that would land is caught by the spirit, which answers with a full-strength
+## bolt. Upgrade (Twin Lanterns): two spirits.
+
+const VOLLEY_EVERY := 2.0
+const VOLLEY_RANGE := 9.0
+const VOLLEY_MULT := 0.5
 
 const SPIRIT := preload("res://assets/generated/w3d/spirit.png")
 
@@ -24,6 +29,7 @@ class Spirit extends Node3D:
 	var phase := 0.0
 	var life := 12.0
 	var t := 0.0
+	var _volley := 1.0
 	var _body: PixelBillboard
 	var _lamp: OmniLight3D
 
@@ -47,6 +53,13 @@ class Spirit extends Node3D:
 		_body.set_flip(cos(a + PI / 2) < 0.0)
 		if randf() < delta * 20.0:
 			FX3.burst(global_position, 1, Pal.SPECTRAL, Vector2(0.15, 0.5), Vector2(0.3, 0.5), {"gravity": -1.2})
+		_volley -= delta
+		if _volley <= 0.0:
+			_volley = VOLLEY_EVERY
+			var e := SpellEffect.nearest(global_position, VOLLEY_RANGE, [], ctx.caster)
+			if e:
+				_bolt(e, VOLLEY_MULT)
+				Sfx.play("hex_release", -10.0)
 		if t >= life:
 			ctx.caster.spirits.erase(self)
 			FX3.burst(global_position, 8, Pal.SPECTRAL, Vector2(0.4, 1.6), Vector2(0.2, 0.4))
@@ -59,21 +72,23 @@ class Spirit extends Node3D:
 		Sfx.play("hex_block", -1.0)
 		var attacker: Node3D = d.source as Node3D
 		if is_instance_valid(attacker) and attacker.has_method("is_alive") and attacker.is_alive():
-			var p := Projectile.new()
-			p.style = &"spectral"
-			p.ramp = Pal.SPECTRAL
-			p.velocity = (attacker.center() - global_position).normalized() * 8.3
-			p.homing = true
-			p.turn_rate = 10.0
-			p.speed_cap = 13.3
-			p.max_dist = 16.0
-			p.ignore_walls = true
-			ctx.spawn(p)
-			p.global_position = global_position
-			p.hit_actor.connect(func(a: Node3D, pos: Vector3) -> void:
-				var rd := ctx.dmg(1.0, SpellEffect.push(pos, a.global_position, 4.0, 2.5))
-				rd.hit_pos = pos
-				rd.statuses.append({"id": &"curse", "duration": 6.0})
-				ctx.hit(a, rd)
-				FX3.burst(pos, 12, Pal.SPECTRAL, Vector2(1.6, 5.0), Vector2(0.15, 0.35), {"gravity": 5.0}))
+			_bolt(attacker, 1.0)
 		queue_free()
+
+	func _bolt(target: Node3D, mult: float) -> void:
+		var p := Projectile.new()
+		p.style = &"spectral"
+		p.ramp = Pal.SPECTRAL
+		p.velocity = (target.center() - global_position).normalized() * 8.3
+		p.homing = true
+		p.turn_rate = 10.0
+		p.speed_cap = 13.3
+		p.max_dist = 16.0
+		p.ignore_walls = true
+		ctx.spawn(p, global_position)
+		p.hit_actor.connect(func(a: Node3D, pos: Vector3) -> void:
+			var rd := ctx.dmg(mult, SpellEffect.push(pos, a.global_position, 4.0 * mult, 2.5 * mult))
+			rd.hit_pos = pos
+			rd.statuses.append({"id": &"curse", "duration": 6.0})
+			ctx.hit(a, rd)
+			FX3.burst(pos, 12, Pal.SPECTRAL, Vector2(1.6, 5.0), Vector2(0.15, 0.35), {"gravity": 5.0}))

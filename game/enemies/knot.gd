@@ -60,8 +60,8 @@ func _ai(delta: float) -> void:
 				tp.radius = r
 				tp.damage = data.damage
 				tp.source = self
+				tp.position = (get_parent() as Node3D).to_local(_mark)   # placed before _ready runs
 				get_parent().add_child(tp)
-				tp.global_position = _mark
 				_casts += 1
 				set_state(&"exposed")
 		&"exposed":

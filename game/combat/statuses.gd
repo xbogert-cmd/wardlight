@@ -2,12 +2,14 @@ class_name Statuses
 extends Node
 ## Timed status effects on an actor. Durations tick on scaled time.
 ##   burn  — fire damage over time (proc damage: never triggers passives)
-##   curse — hex mark; enables Soul Echo, Grave Current and Haunted Embers
+##   curse — hex mark: the bearer takes CURSE_MULT damage; enables Soul Echo,
+##           Grave Current and Haunted Embers
 ##   root  — cannot move (bosses shrug it off faster via `root_resist`)
 
 signal changed
 
 const BURN_TICK := 0.5
+const CURSE_MULT := 1.2
 
 var owner_actor: Node3D
 var root_resist := 0.0

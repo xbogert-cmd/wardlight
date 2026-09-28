@@ -125,3 +125,37 @@ func test_soul_echo_capped() -> void:
 		e.statuses.apply(&"curse", 5.0)
 		e.take_hit(Damage.make(999.0, p, &"hex"))
 	t.near(p.health.hp, 55.0, "only one recovery pulse per second")
+
+
+## Area spells act where they were aimed, not at the world origin (their
+## nodes must be placed before they enter the tree).
+func test_area_spells_land_at_aim_point() -> void:
+	var p: Player = t.make_player("hex")
+	var far: Enemy = t.make_enemy(Vector3(6, 0, -3))
+	var near_origin: Enemy = t.make_enemy(Vector3(0.5, 0, 0.5))
+	await t.frames(2)
+	var hp_far := far.health.hp
+	var hp_near := near_origin.health.hp
+	var c := _ctx(p, &"binding_roots")
+	c.aim_point = far.global_position
+	(c.data.effect.new() as SpellEffect).cast(c)
+	await t.frames(40)
+	t.check(far.statuses.has(&"root"), "roots hold the enemy at the aimed spot")
+	t.check(far.health.hp < hp_far, "roots damage the enemy at the aimed spot")
+	t.eq(near_origin.health.hp, hp_near, "nothing happens at the world origin")
+	p.queue_free()
+	far.queue_free()
+	near_origin.queue_free()
+
+
+func test_curse_amplifies_damage() -> void:
+	var a: Enemy = t.make_enemy(Vector3(3, 0, 0))
+	var b: Enemy = t.make_enemy(Vector3(-3, 0, 0))
+	await t.frames(1)
+	b.statuses.apply(&"curse", 5.0)
+	a.take_hit(Damage.make(10.0, null, &"fire"))
+	b.take_hit(Damage.make(10.0, null, &"fire"))
+	t.near(a.health.max_hp - a.health.hp, 10.0, "plain hit")
+	t.near(b.health.max_hp - b.health.hp, 10.0 * Statuses.CURSE_MULT, "cursed target takes more")
+	a.queue_free()
+	b.queue_free()

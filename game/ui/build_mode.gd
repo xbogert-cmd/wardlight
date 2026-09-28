@@ -90,8 +90,6 @@ func _input(e: InputEvent) -> void:
 		var from := cam.project_ray_origin(mp)
 		var dir := cam.project_ray_normal(mp)
 		var q := PhysicsRayQueryParameters3D.create(from, from + dir * 200.0, 1)
-		if Region.current and Region.current.walls:
-			q.exclude = [Region.current.walls.get_rid()]
 		var hit := player.get_world_3d().direct_space_state.intersect_ray(q)
 		if not hit.is_empty():
 			pos = _snap(hit.position)

@@ -68,7 +68,8 @@ func _shape(x: float, z: float, h: float) -> float:
 	h += shelf * 1.6
 	# the gorge's southern rock wall
 	var rz := _ridge_z(x)
-	h += 4.2 * smoothstep(rz, rz + 1.1, z) * smoothstep(21.0, 23.0, x)
+	# low but sheer: taller hides the road from the camera, gentler lets walkers round the trunk
+	h += 1.6 * smoothstep(rz, rz + 0.6, z) * smoothstep(21.0, 21.8, x)
 	# the cliff and the valley below it
 	var zc := _cliff_z(x)
 	if z < zc:

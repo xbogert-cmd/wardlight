@@ -23,8 +23,7 @@ func cast(ctx: CastContext) -> void:
 		g.ctx = ctx
 		g.radius = r
 		g.life = ctx.p("linger", 0.9)
-		ctx.spawn(g)
-		g.global_position = ground
+		ctx.spawn(g, ground)
 		Sfx.play("roots", -1.0)
 		GameCamera3D.shake_all(2.0))
 

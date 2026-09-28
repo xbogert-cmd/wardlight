@@ -55,7 +55,11 @@ func proc_dmg(amount: float, school: StringName, id: StringName) -> Damage:
 	return d
 
 
-func spawn(n: Node) -> void:
+## Add `n` to the world, placed at `at` (global) *before* it enters the tree,
+## so its _ready already sees where it is.
+func spawn(n: Node, at: Variant = null) -> void:
+	if at != null:
+		(n as Node3D).position = (world as Node3D).to_local(at)
 	world.add_child(n)
 
 

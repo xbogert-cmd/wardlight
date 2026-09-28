@@ -100,8 +100,9 @@ func _physics_process(delta: float) -> void:
 	super._physics_process(delta)
 	# seal the plaza while the guardian fights
 	if guardian and is_instance_valid(guardian):
-		var sealed := guardian.engaged and guardian.is_alive() and player and player.is_alive()
-		arena_wall.collision_layer = 1 if sealed else 0
+		var sealed := guardian.engaged and guardian.is_alive() and player and player.is_alive() \
+			and Vector2(player.global_position.x, player.global_position.z).distance_to(ARENA) < ARENA_R
+		arena_wall.collision_layer = INVISIBLE if sealed else 0
 
 
 func _on_respawn() -> void:

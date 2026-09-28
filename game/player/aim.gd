@@ -38,8 +38,6 @@ func update_aim(origin: Vector3) -> void:
 		var from := cam.project_ray_origin(mp)
 		var dir := cam.project_ray_normal(mp)
 		var q := PhysicsRayQueryParameters3D.create(from, from + dir * 300.0, 1)
-		if Region.current and Region.current.walls:
-			q.exclude = [Region.current.walls.get_rid()]
 		var hit := player.get_world_3d().direct_space_state.intersect_ray(q)
 		if not hit.is_empty():
 			cursor = hit.position

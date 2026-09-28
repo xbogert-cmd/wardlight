@@ -108,8 +108,7 @@ static func cinderflight(ctx: CastContext, hits_area: Callable, dir: Vector3) ->
 			p.max_dist = 6.0
 			p.radius = 0.2
 			p.lit = false
-			ctx.spawn(p)
-			p.global_position = origin
+			ctx.spawn(p, origin)
 			p.hit_actor.connect(func(a: Node3D, pos: Vector3) -> void:
 				var d := ctx.proc_dmg(CINDER_DAMAGE, &"fire", &"cinderflight")
 				d.hit_pos = pos

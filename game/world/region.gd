@@ -11,6 +11,10 @@ signal exit_requested(to_region: StringName, to_entry: StringName)
 
 const D := "res://assets/generated/w3d/"
 const PX := 1.0 / 24.0
+## Collision layer of invisible walls (edges, cliff guards, the sealed arena).
+## Walkers collide with it; mouse picking and spell rays (mask 1) don't, since
+## these walls are taller than the camera and would catch its view rays.
+const INVISIBLE := 128
 const PROP_SHADER := preload("res://game3d/prop.gdshader")
 const WATER_SHADER := preload("res://game3d/water.gdshader")
 const ENEMIES := {
@@ -58,9 +62,6 @@ var terrain: HeightTerrain
 var player: Player
 var cam: GameCamera3D
 var fader := OcclusionFader.new()
-## The invisible edge walls: tall enough to cut the camera's view rays, so
-## mouse picking must skip them.
-var walls: StaticBody3D
 var _exiting := false
 
 
@@ -353,7 +354,6 @@ func _water(s: Dictionary) -> void:
 
 func _bounds_walls() -> void:
 	var body := StaticBody3D.new()
-	walls = body
 	add_child(body)
 	var b := bounds
 	for w: Array in [[Vector3(b.position.x, 0, b.get_center().y), Vector3(0.6, 40, b.size.y)],
@@ -364,6 +364,7 @@ func _bounds_walls() -> void:
 
 
 func _wall(body: StaticBody3D, pos: Vector3, size: Vector3) -> void:
+	body.collision_layer = INVISIBLE
 	var cs := CollisionShape3D.new()
 	var sh := BoxShape3D.new()
 	sh.size = size

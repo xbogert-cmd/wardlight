@@ -1,14 +1,13 @@
 extends SpellEffect
-## Siphon Circle: a hex circle at the wizard's feet that drains enemies inside
-## and restores a little health (capped per cast).
+## Siphon Circle: a hex circle at the aimed spot that drains enemies inside
+## and restores a little health to the wizard (capped per cast).
 ## Upgrade (Soul Siphon): also restores mana and drags enemies toward the centre.
 
 
 func cast(ctx: CastContext) -> void:
 	var c := Circle.new()
 	c.ctx = ctx
-	ctx.spawn(c)
-	c.global_position = ctx.caster.global_position
+	ctx.spawn(c, ground_at(ctx.aim_point, ctx.caster))
 	Sfx.play("hex_siphon", -2.0)
 
 

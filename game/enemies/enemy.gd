@@ -33,7 +33,7 @@ var _knock := Vector3.ZERO
 func _ready() -> void:
 	add_to_group(&"enemy")
 	collision_layer = 4
-	collision_mask = 1
+	collision_mask = 1 | Region.INVISIBLE
 	floor_snap_length = 0.4
 	floor_max_angle = deg_to_rad(50.0)
 	home = global_position
@@ -114,7 +114,7 @@ func take_hit(d: Damage) -> void:
 	if not is_alive():
 		return
 	last_hit = d
-	health.damage(block_scale(d) * d.amount)
+	health.damage(block_scale(d) * d.amount * (Statuses.CURSE_MULT if statuses.has(&"curse") else 1.0))
 	_flash = 1.0 if not d.is_proc else 0.5
 	var kb := d.knockback * (1.0 - data.knock_resist) * (0.3 if armored else 1.0)
 	_knock += Vector3(kb.x, 0.0, kb.z)
@@ -203,7 +203,7 @@ func _physics_process(delta: float) -> void:
 		steer(Vector3.ZERO, 25.0, delta)
 	var ai_v := velocity
 	velocity += _knock
-	move_and_slide()
+	Steps.move(self)
 	velocity = Vector3(ai_v.x, velocity.y, ai_v.z)
 	_knock = _knock.move_toward(Vector3.ZERO, 38.0 * delta)
 	_flash = maxf(0.0, _flash - delta * 9.0)
