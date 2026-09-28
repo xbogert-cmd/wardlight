@@ -11,7 +11,7 @@ integer scaling, nearest filtering. All art/audio/font is original and generated
 - **Look: 3D world, 2D pixel characters.** Third-person diagonal-down camera (pitch 50°, fov 30,
   distance 25) over heightfield terrain with pixel-grid textures and dithered banded lighting;
   characters/props are pixel-art billboards (1 px = 1/24 m). Reference scene: `scenes/mockup3d.tscn`,
-  code in `game3d/`. The old side-view code in `game/` is being ported; its rules/data carry over.
+  rendering helpers in `game3d/`, gameplay in `game/`.
 - **Side-facing sprites only.** No front/back character views. Sprites are upright Y-axis billboards
   (`game3d/sprite_lit.gdshader`); `Player3D.staff_tip()` mirrors that math.
 - **No jumping.** Hills/slopes are walked. Levitation (float) is the only traversal ability.
@@ -41,7 +41,8 @@ changes as "done" without showing captures; list what changed and wait for OK or
 ## Commands
 ```bash
 tools/dev/check.sh                    # import + parse-check every script/resource + rule tests
-tools/dev/run.sh /tmp/x.log 40 --path . res://scenes/mockup3d.tscn -- --demo=mock --shots=/tmp/shots
+tools/dev/run.sh /tmp/x.log 90 --path . -- --demo=story --shots=/tmp/shots   # whole quest, scripted
+godot --headless --path . --export-release "macOS" build/Wardlight.zip          # Mac build
 godot --headless --path . --script tools/gen_art.gd   # regenerate art (then --import)
 ```
 - New `class_name`s aren't visible until `godot --headless --path . --import` runs (check.sh does it).
