@@ -722,11 +722,14 @@ func chest(x: float, z: float, event_id: StringName, contents: Array, coins := 0
 		return
 	it.activated.connect(func(_p: Player) -> void:
 		opened.call()
+		# guaranteed contents go straight into the bags (nothing to lose on the ground)
 		GameState.once(event_id, func() -> void:
 			for c: Array in contents:
-				Loot.item(self, g + Vector3(0, 0.8, 0), c[0], c[1] if c.size() > 1 else 1)
-			for k in mini(coins, 8):
-				Loot.coin(self, g + Vector3(0, 0.8, 0), coins / mini(coins, 8) + (1 if k < coins % mini(coins, 8) else 0))
+				give(c[0], c[1] if c.size() > 1 else 1)
+			if coins > 0:
+				GameState.inv.earn(coins)
+				reward(["+%d coins" % coins])
+			SaveSystem.autosave()
 			Sfx.play("ward_light", -6.0)
 			FX3.burst(g + Vector3(0, 0.8, 0), 20, [Color("fff0c0"), Color("f0c870"), Color("a07840")], Vector2(1.0, 3.0), Vector2(0.4, 0.8), {"gravity": 3.0})))
 

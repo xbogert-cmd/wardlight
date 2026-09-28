@@ -9,10 +9,14 @@ signal saved
 const VERSION := 1
 
 var enabled := true
+## Set by the test runner so tests never touch a player's real save.
+var slot := ""
 var _pending := false
 
 
 func _base() -> String:
+	if slot != "":
+		return "user://" + slot
 	return "user://demo_save" if " ".join(OS.get_cmdline_user_args()).contains("--demo") else "user://wardlight_save"
 
 
@@ -52,9 +56,9 @@ func save_now() -> String:
 	f.close()
 	# validate what actually reached the disk before replacing anything
 	var check := read_file(tmp)
-	if check.has("error"):
+	if check.error != "":
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(tmp))
-		return "The save didn't verify; your previous save was kept."
+		return "The save didn't verify (%s); your previous save was kept." % check.error
 	var dir := DirAccess.open("user://")
 	if has_save() and read_file(path()).get("error", "") == "":
 		dir.copy(path(), backup_path())

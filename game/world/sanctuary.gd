@@ -9,6 +9,11 @@ var pell: Npc
 var bramble: Bramble
 var isolde: Npc
 var tamsin: Npc
+var _placed_nodes: Array[Node3D] = []
+## Services, the ward, NPC spots and the gate path stay reachable.
+const PROTECTED := [[-5.0, -7.0, 5.2, "the cottage"], [6.0, -8.5, 3.8, "the study"], [6.0, -6.4, 1.6, "the study lectern"],
+	[-9.8, -5.6, 1.6, "the mirror"], [2.8, -9.0, 1.9, "the fusion altar"], [0.5, -2.0, 2.0, "the ward stone"],
+	[-1.5, 1.0, 1.5, "the brazier"], [-2.5, 2.2, 1.3, "Tamsin's spot"], [-1.5, -5.5, 1.3, "Isolde's spot"]]
 
 
 func _layout() -> void:
@@ -48,12 +53,63 @@ func _build() -> void:
 		bill(load("res://assets/generated/props_woods.png"), _ground(10 + cos(a) * 4.0, 6 + sin(a) * 3.2), 0.8, Rect2(_prop_rect("rock_s")))
 	_stations()
 	_folk()
+	rebuild_placed()
 	var keep := func(p: Vector2) -> bool:
 		return path_dist(p) > 2.6 and Vector2(p.x + 5, p.y + 7).length() > 6.0 and Vector2(p.x - 6, p.y + 8).length() > 4.5 \
 			and Vector2(p.x - 10, p.y - 6).length() > 5.5 and Vector2(p.x, p.y + 2).length() > 3.5
 	trees(Rect2(-34, -30, 70, 52), 110, func(p: Vector2) -> bool: return keep.call(p) and not bounds.grow(-3.0).has_point(p) or (keep.call(p) and rng.randf() < 0.12))
 	scenery(Rect2(-20, -16, 42, 30), 160, func(p: Vector2) -> bool: return path_dist(p) > 1.4 and keep.call(p))
 	bill(load(D + "signpost.png"), _ground(17.5, 1.2))
+
+
+## Rebuild placed home objects from GameState (skipping one being moved).
+func rebuild_placed(skip := -1) -> void:
+	for n in _placed_nodes:
+		n.queue_free()
+	_placed_nodes.clear()
+	for k in GameState.placed.size():
+		if k == skip:
+			continue
+		var e: Dictionary = GameState.placed[k]
+		if not Placeables.DEFS.has(e.id):
+			continue
+		var n := Placeables.build(e.id, int(e.rot))
+		add_child(n)
+		n.global_position = _ground(e.x, e.z)
+		_placed_nodes.append(n)
+
+
+## Why `id` can't go at `pos` (or "" if it can). `ignore` is the index of
+## an object being moved.
+func can_place(id: StringName, pos: Vector3, rot: int, ignore: int) -> String:
+	var fp := Placeables.footprint(id, rot)
+	var home := bounds.grow(-1.5)
+	var p2 := Vector2(pos.x, pos.z)
+	if not home.has_point(p2) or p2.x > 17.5:
+		return "Too close to the edge of the clearing"
+	for pr: Array in PROTECTED:
+		if p2.distance_to(Vector2(pr[0], pr[1])) < pr[2] + maxf(fp.x, fp.y) * 0.5:
+			return "Keep %s clear" % pr[3]
+	if path_dist(p2) < 1.0 + minf(fp.x, fp.y) * 0.5:
+		return "Keep the path clear"
+	if player and SpellEffect.flat(player.global_position, pos) < maxf(fp.x, fp.y) * 0.5 + 0.6:
+		return "You're standing there"
+	var rect := Rect2(p2 - fp * 0.5, fp).grow(0.15)
+	for k in GameState.placed.size():
+		if k == ignore:
+			continue
+		var e: Dictionary = GameState.placed[k]
+		if not Placeables.DEFS.has(e.id):
+			continue
+		var ofp := Placeables.footprint(e.id, int(e.rot))
+		if rect.intersects(Rect2(Vector2(e.x, e.z) - ofp * 0.5, ofp)):
+			return "Something is already there"
+	var hs: Array[float] = []
+	for c: Vector2 in [Vector2(-1, -1), Vector2(1, -1), Vector2(-1, 1), Vector2(1, 1)]:
+		hs.append(terrain.height_at(pos.x + c.x * fp.x * 0.5, pos.z + c.y * fp.y * 0.5))
+	if hs.max() - hs.min() > 0.7:
+		return "The ground is too steep here"
+	return ""
 
 
 func _prop_rect(name: String) -> Rect2:

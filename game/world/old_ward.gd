@@ -128,9 +128,11 @@ func _cleansed() -> void:
 		GameState.set_flag(&"mana_bonus", 20.0)
 		player.apply_bonuses()
 		player.mana.refill()
-		Loot.item(self, at, &"wardweave")
-		Loot.item(self, at, &"moonstone")
-		give_point(2))
+		give(&"wardweave")
+		give(&"moonstone")
+		give_point(2)
+		FX3.burst(at, 40, [Color("fff0c0"), Color("f0c870"), Color("a07840")], Vector2(1.0, 4.0), Vector2(0.5, 1.0), {"gravity": 3.0})
+		SaveSystem.autosave())
 	await get_tree().create_timer(1.6).timeout
 	var lines := [
 		["", "The roots slacken. Light climbs the ward stone, and the guardian's shape softens into moss and pale glow."],

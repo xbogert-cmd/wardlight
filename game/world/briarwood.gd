@@ -459,9 +459,11 @@ func spawn(kind: StringName, x: float, z: float) -> Enemy:
 				player.health.heal(player.health.max_hp)
 				player.mana.refill()
 				var staff: StringName = {"fire": &"cinderbrand", "hex": &"gravewood", "storm": &"stormcoil"}[player.wiz.school]
-				Loot.item(self, at, staff)
-				Loot.item(self, at, &"ward_bell")
-				give_decor(&"hut", "Gatewood hut (from the broken gate's timbers)"))
+				give(staff)
+				give(&"ward_bell")
+				give_decor(&"hut", "Gatewood hut (from the broken gate's timbers)")
+				FX3.burst(at, 30, [Color("fff0c0"), Color("f0c870"), Color("a07840")], Vector2(1.0, 4.0), Vector2(0.5, 1.0), {"gravity": 3.0})
+				SaveSystem.autosave())
 			var hud := get_tree().get_first_node_in_group(&"hud") as HUD
 			if hud:
 				hud.banner("The Gatebreaker falls"))

@@ -121,6 +121,17 @@ const DEMOS := {
 		[7.2, "tp", "6,0"], [7.4, "aim_enemy", ""], [8.0, "burst", "c3_fight:60:10"], [8.2, "tap", "spell_1"], [9.5, "hold", "attack"],
 		[11.5, "release", "attack"], [12.0, "tap", "spell_2"], [14.0, "quit", ""],
 	],
+	# B at home: place a lantern, bench, tent and hut on the plot
+	"build": [
+		[0.3, "coins", "200"], [0.35, "decor_all", ""], [0.5, "tp", "6,6"], [1.0, "key", "66"], [1.3, "key", "4194321"], [1.4, "key", "4194321"],
+		[1.5, "key", "4194322"], [1.7, "key", "4194309"], [1.9, "key", "50"], [2.0, "key", "4194321"], [2.1, "key", "4194321"], [2.2, "key", "4194321"],
+		[2.3, "key", "4194309"], [2.5, "key", "52"], [2.6, "key", "4194322"], [2.7, "key", "4194322"], [2.8, "key", "4194322"], [2.9, "key", "4194322"],
+		[3.0, "key", "4194321"], [3.1, "key", "4194321"], [3.2, "key", "4194309"], [3.4, "key", "54"], [3.5, "key", "4194321"], [3.6, "key", "4194321"],
+		[3.7, "key", "4194321"], [3.8, "key", "4194321"], [3.9, "key", "4194321"], [4.0, "key", "4194321"], [4.1, "key", "4194322"], [4.2, "key", "4194322"],
+		[4.4, "shot", "b1_ghost"], [4.5, "key", "4194309"], [4.8, "shot", "b2_placed"], [5.0, "key", "4194305"], [5.2, "tp", "4,2"], [5.8, "shot", "b3_home"],
+		[6.0, "state", "build"], [6.2, "quit", ""],
+	],
+	"resume": [[1.5, "state", "resumed"], [1.6, "shot", "resume"], [1.8, "quit", ""]],
 	"idle_die": [
 		[0.1, "hold", "move_right"], [0.8, "release", "move_right"], [40.0, "quit", ""],
 	],
@@ -240,6 +251,11 @@ func _run(s: Array) -> void:
 			get_tree().root.get_node("Main").inventory.open()
 		"give":
 			GameState.inv.add(StringName(s[2]))
+		"coins":
+			GameState.inv.earn(int(s[2]))
+		"decor_all":
+			for d in Placeables.ORDER:
+				GameState.inv.decor[d] = true
 		"key":
 			var ev := InputEventKey.new()
 			ev.physical_keycode = int(s[2])
@@ -297,7 +313,7 @@ func _run(s: Array) -> void:
 			var q := {}
 			for k in GameState.quests:
 				q[k] = GameState.quests[k]
-			print("DEMO state ", s[2], " items=", GameState.inv.items.map(func(it: Dictionary) -> String: return Items.display(it)), " quests=", q, " flags=", GameState.flags.keys(), " unlocks=", GameState.unlocks.keys(), " region=", Region.current.id if Region.current else "", " companion=", GameState.companion)
+			print("DEMO state ", s[2], " items=", GameState.inv.items.map(func(it: Dictionary) -> String: return Items.display(it)), " quests=", q, " flags=", GameState.flags.keys(), " unlocks=", GameState.unlocks.keys(), " region=", Region.current.id if Region.current else "", " companion=", GameState.companion, " placed=", GameState.placed.size(), " coins=", GameState.inv.coins)
 		"tp_near":
 			# stand `arg` metres west of the nearest enemy, facing it
 			var pl2 := _player()

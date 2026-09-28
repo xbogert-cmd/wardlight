@@ -10,6 +10,7 @@ var world: Node3D
 
 
 func _ready() -> void:
+	SaveSystem.slot = "test_save"
 	var total := 0
 	var dir := DirAccess.open("res://tests")
 	var files := Array(dir.get_files()).filter(func(f: String) -> bool: return f.begins_with("test_") and f.ends_with(".gd") and f != "test_runner.gd")

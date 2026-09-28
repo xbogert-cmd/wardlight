@@ -58,7 +58,9 @@ func _ready() -> void:
 	hud.add_child(inventory)
 	player.died.connect(spellbook.close)
 	GameState.quest_updated.connect(func(_id: StringName) -> void: SaveSystem.autosave())
-	if _scripted() and not OS.get_cmdline_user_args().has("--title"):
+	if _scripted() and OS.get_cmdline_user_args().has("--continue"):
+		_continue()
+	elif _scripted() and not OS.get_cmdline_user_args().has("--title"):
 		_new_game(false)
 	else:
 		_title()
@@ -282,6 +284,12 @@ func _unhandled_input(e: InputEvent) -> void:
 	elif e.is_action_pressed(&"inventory") and not get_tree().paused and not _traveling:
 		player.input_enabled = false
 		inventory.open()
+	elif e.is_action_pressed(&"build") and not get_tree().paused and not _traveling and level and level.id == &"sanctuary":
+		var bm := BuildMode.new()
+		add_child(bm)
+		bm.open(level, player)
+	elif e.is_action_pressed(&"build") and not get_tree().paused and not _traveling:
+		hud.toast("You can build at your sanctuary")
 	elif e.is_action_pressed(&"map") and not get_tree().paused and not _traveling:
 		player.input_enabled = false
 		world_map.open()
