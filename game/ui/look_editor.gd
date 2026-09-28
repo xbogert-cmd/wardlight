@@ -150,12 +150,12 @@ func _draw_panel() -> void:
 		var v := _value(key)
 		if v != "":
 			_t2(("< " if sel and key != "name" else "  ") + v + (" >" if sel and key != "name" else ""), Vector2(p.x + 110, y), Color("f0e6d0"))
-		y += 14 if key != "school" else 24
+		y += 14
 	if new_game and _rows[row] == "school":
 		var blurb: String = {"fire": "Fire and heat. Burning ground, wards of flame.",
 			"hex": "Curses and spirits. Roots, needles, stolen life.",
 			"storm": "Lightning and wind. Fast bolts, thunder, flight."}[school]
-		_t2(blurb, Vector2(p.x + 110, p.y + 40 + 14 + 12), Color("a89878"))
+		_t2(blurb, p + Vector2(14, PANEL.size.y - 26), Color("a89878"))
 	_t2("Arrows change   Enter confirm" + ("" if new_game else "   Esc cancel"), p + Vector2(14, PANEL.size.y - 10), Color("8a7a60"))
 	# preview, idle animation at 3x
 	var frames: Array = _art.anims.idle.frames

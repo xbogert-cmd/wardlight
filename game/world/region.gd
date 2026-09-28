@@ -58,6 +58,9 @@ var terrain: HeightTerrain
 var player: Player
 var cam: GameCamera3D
 var fader := OcclusionFader.new()
+## The invisible edge walls: tall enough to cut the camera's view rays, so
+## mouse picking must skip them.
+var walls: StaticBody3D
 var _exiting := false
 
 
@@ -350,6 +353,7 @@ func _water(s: Dictionary) -> void:
 
 func _bounds_walls() -> void:
 	var body := StaticBody3D.new()
+	walls = body
 	add_child(body)
 	var b := bounds
 	for w: Array in [[Vector3(b.position.x, 0, b.get_center().y), Vector3(0.6, 40, b.size.y)],

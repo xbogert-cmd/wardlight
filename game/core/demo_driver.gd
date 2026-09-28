@@ -47,6 +47,13 @@ const DEMOS := {
 		[11.2, "quit", ""],
 	],
 	# tree fading + ground rings on the ruins hill
+	# real mouse aiming: cursor above / below / left / right of the wizard
+	"aimtest": [
+		[0.5, "mouse", "320,60"], [0.7, "aimprint", "up"], [0.8, "mouse", "320,340"], [1.0, "aimprint", "down"],
+		[1.1, "mouse", "40,200"], [1.3, "aimprint", "left"], [1.4, "mouse", "600,200"], [1.6, "aimprint", "right"],
+		[1.7, "tp", "0,11"], [1.9, "mouse", "320,60"], [2.1, "aimprint", "up_near_south_edge"],
+		[2.2, "mouse", "600,200"], [2.4, "aimprint", "right_near_south_edge"], [2.5, "quit", ""],
+	],
 	"check": [
 		[0.1, "freeze", ""], [0.2, "learn", ""], [0.3, "tp", "-12,2"], [1.0, "shot", "k01_behind_tree"],
 		[1.1, "school", "hex"], [1.2, "tp", "-16.5,1"], [1.8, "tap", "spell_3"], [2.3, "shot", "k02_siphon_slope"],
@@ -106,6 +113,8 @@ const DEMOS := {
 		[0.3, "flag", "ward_restored"], [0.4, "travel", "hearthmere:west"], [1.8, "map", ""], [2.1, "shot", "m1_map"],
 		[2.3, "key", "4194305"], [2.6, "journal", ""], [2.9, "shot", "m2_journal"], [3.2, "quit", ""],
 	],
+	# character creation with the school row selected
+	"newgame": [[1.0, "key", "4194322"], [1.1, "key", "4194309"], [1.4, "key", "4194322"], [1.5, "key", "4194309"], [2.0, "key", "4194322"], [2.3, "shot", "ng_school"], [2.4, "key", "4194321"], [2.6, "shot", "ng_school2"], [2.7, "quit", ""]],
 	"title": [[1.0, "shot", "title"], [1.2, "key", "4194322"], [1.25, "key", "4194322"], [1.3, "key", "4194309"], [1.6, "shot", "settings"],
 		[1.7, "key", "4194322"], [1.8, "key", "4194322"], [1.9, "key", "4194321"], [2.1, "shot", "settings2"], [2.2, "key", "4194305"], [2.5, "shot", "title2"], [2.7, "quit", ""]],
 	"inv": [
@@ -203,6 +212,18 @@ func _run(s: Array) -> void:
 			_player().aim.override = _player().global_position + Vector3(float(off[0]), 0, float(off[1]))
 		"aim_enemy":
 			_player().aim.override_enemy = true
+		"mouse":
+			# move the real cursor to "x,y" in 640x360 screen pixels
+			var mxy: PackedStringArray = (s[2] as String).split(",")
+			var mpos := Vector2(float(mxy[0]), float(mxy[1]))
+			get_viewport().warp_mouse(mpos)
+			var mm := InputEventMouseMotion.new()
+			mm.position = mpos
+			Input.parse_input_event(mm)
+		"aimprint":
+			var pa := _player()
+			pa.aim.update_aim(pa.cast_origin())
+			print("DEMO aim ", s[2], " mouse=", get_viewport().get_mouse_position(), " cursor=", pa.aim.cursor.snappedf(0.1), " player=", pa.global_position.snappedf(0.1), " dir=", pa.aim.dir_from(pa.cast_origin()).snappedf(0.01), " active=", pa.aim.mouse_active)
 		"clear_aim":
 			_player().aim.override = null
 			_player().aim.override_enemy = false
