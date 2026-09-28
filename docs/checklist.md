@@ -1,6 +1,6 @@
 # Implementation checklist
 
-Status: **Stage 2 complete. Stage 3 (adventure) in progress.**
+Status: **Stage 2 complete and ported to 3D. Stage 3 (adventure) next.**
 
 ## Agreed changes to the original brief
 - Cross-relic recipes cut; same-relic tier fusion (I → II → III) kept.
@@ -10,6 +10,9 @@ Status: **Stage 2 complete. Stage 3 (adventure) in progress.**
 - "People need you" beats: named villager asks for help in the opening; rescued travellers reappear.
 - No floating/Mario-style platforms: natural terrain only (hills, 45° and gentle slopes, rock
   cliffs and outcrops, scenery props). One-way planks removed from the engine.
+- **3D world, 2D characters** (approved mockup, 2026-09-27): third-person diagonal-down camera over
+  heightfield terrain; pixel-art billboard characters (1 px = 1/24 m), side-facing sprites only.
+  No jumping: hills are walked; levitation is the traversal unlock.
 - Aim with an active mouse never redirects to an enemy behind the cursor's direction; the
   facing-direction fallback is used when the mouse is idle (keyboard play).
 
@@ -45,9 +48,18 @@ Status: **Stage 2 complete. Stage 3 (adventure) in progress.**
 - [x] Automated rule tests (tests/): 14 passing
 - Dev keys (debug builds): F5 next school, F6 toggle upgrades, F7 train affinity, F8 learn all
 
+## 3D port
+- [x] 3D look mockup approved (terrain shader, dithered lighting, pixel billboards, FX3)
+- [x] Data in metres; player (8-way move, dodge, dash, levitate hooks), aim (screen-space assist)
+- [x] All 12 spells + upgrades + 3 basics, statuses, passives, interactions, ember patches
+- [x] Hound, Raider, Hexer, Knot, Sentinel re-authored for open ground (ring/line/arc telegraphs)
+- [x] HUD target brackets + poise bars projected from 3D; spellbook unchanged
+- [x] Trees between camera and wizard dither out; ground marks stay visible on slopes
+- [x] Tests ported (14 passing); side-view world code removed
+
 ## Stage 3 — adventure
 - [ ] Sanctuary, Hearthmere, Briarwood, Old Ward ruins; exits and animated journey
-- [ ] Contextual magic ×3, double jump + float unlocks, quests, journal
+- [ ] Contextual magic ×3, levitate unlock, quests, journal
 - [ ] Troll miniboss, corrupted guardian (2 phases), aftermath and restoration
 
 ## Stage 4 — discoveries and home

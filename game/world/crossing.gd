@@ -34,6 +34,7 @@ var cam: GameCamera3D
 var spawn_point := Vector3.ZERO
 var checkpoint := Vector3.ZERO
 var display_name := "Briarwood Crossing"
+var fader := OcclusionFader.new()
 var road := [Vector2(-26, 20), Vector2(-15, 11), Vector2(-7, 5), Vector2(1, 1), Vector2(6.5, -1.5), Vector2(13, -5), Vector2(20, -9), Vector2(28, -12)]
 var side_path := [Vector2(-7, 5), Vector2(-11, 1), Vector2(-15.5, -2.2)]
 var stream := [Vector2(27, 21), Vector2(15, 9), Vector2(7, 1.8), Vector2(3.8, -0.5), Vector2(2.0, -6), Vector2(0.8, -12), Vector2(0.3, -17.5)]
@@ -65,6 +66,7 @@ func _ready() -> void:
 	checkpoint = spawn_point
 	cam = GameCamera3D.new()
 	add_child(cam)
+	add_child(fader)
 	_spawn_enemies()
 
 
@@ -76,6 +78,7 @@ func enter(p: Player) -> void:
 		add_child(p)
 	p.global_position = spawn_point
 	cam.target = p
+	fader.target = p
 	cam.snap()
 	if not p.died.is_connected(_on_player_died):
 		p.died.connect(_on_player_died)
@@ -386,7 +389,7 @@ func _trees() -> void:
 		if absf(p.x) < 22.0 and p.y > -12.0 and p.y < 16.0 and rng.randf() < 0.75:
 			continue
 		var k: String = kinds[rng.randi_range(0, kinds.size() - 1)]
-		_bill(load(D + k), _ground(p.x, p.y), rng.randf_range(0.85, 1.15))
+		fader.add(_bill(load(D + k), _ground(p.x, p.y), rng.randf_range(0.85, 1.15)))
 		placed += 1
 
 

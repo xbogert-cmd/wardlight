@@ -46,6 +46,12 @@ const DEMOS := {
 		[8.4, "tp", "21,-9"], [9.6, "shot", "e10_sentinel"], [10.3, "shot", "e11_sentinel"], [11.0, "shot", "e12_sentinel"],
 		[11.2, "quit", ""],
 	],
+	# tree fading + ground rings on the ruins hill
+	"check": [
+		[0.1, "freeze", ""], [0.2, "learn", ""], [0.3, "tp", "-12,2"], [1.0, "shot", "k01_behind_tree"],
+		[1.1, "school", "hex"], [1.2, "tp", "-16.5,1"], [1.8, "tap", "spell_3"], [2.3, "shot", "k02_siphon_slope"],
+		[3.6, "school", "fire"], [3.7, "tap", "spell_3"], [4.1, "shot", "k03_ward_slope"], [4.3, "quit", ""],
+	],
 	"idle_die": [
 		[0.1, "hold", "move_right"], [0.8, "release", "move_right"], [40.0, "quit", ""],
 	],
