@@ -10,6 +10,7 @@ const Enemies = preload("res://tools/art/enemies_art.gd")
 const Fx = preload("res://tools/art/fx_art.gd")
 const Icons = preload("res://tools/art/icons_art.gd")
 const Props = preload("res://tools/art/props_art.gd")
+const W3 = preload("res://tools/art/world3d_art.gd")
 
 
 func _init() -> void:
@@ -42,6 +43,26 @@ func _init() -> void:
 		(pr.image as Image).save_png(OUT + "props_woods.png")
 		var f := FileAccess.open(OUT + "props_woods.json", FileAccess.WRITE)
 		f.store_string(JSON.stringify(pr.props, "\t"))
+	if want.call("w3d"):
+		var d := OUT + "w3d/"
+		DirAccess.make_dir_recursive_absolute(d)
+		W3.grass().save_png(d + "grass.png")
+		W3.cobble().save_png(d + "cobble.png")
+		W3.dirt().save_png(d + "dirt.png")
+		W3.rock().save_png(d + "rock.png")
+		W3.bricks(false).save_png(d + "bricks.png")
+		W3.bricks(true).save_png(d + "rune_bricks.png")
+		W3.wood().save_png(d + "wood.png")
+		W3.water().save_png(d + "water.png")
+		W3.pine(112, 1).save_png(d + "pine_a.png")
+		W3.pine(88, 2).save_png(d + "pine_b.png")
+		W3.oak(84, 92, 3).save_png(d + "oak.png")
+		W3.dead_tree(60, 104, 4).save_png(d + "dead_tree.png")
+		W3.lantern().save_png(d + "lantern.png")
+		W3.banner().save_png(d + "banner.png")
+		W3.flames().save_png(d + "flames.png")
+		W3.castle().save_png(d + "castle.png")
+		W3.village_far().save_png(d + "village_far.png")
 	if want.call("icons"):
 		Icons.build().save_png(OUT + "icons.png")
 	if want.call("icon"):
