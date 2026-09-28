@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="SpellData" format=3]
+
+[ext_resource type="Script" path="res://game/combat/spell_data.gd" id="1"]
+[ext_resource type="Script" path="res://game/combat/spells/spectral_thrust.gd" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = &"spectral_thrust"
+display_name = "Spectral Thrust"
+school = "hex"
+is_basic = true
+mana_cost = 0.0
+cooldown = 0.34
+windup = 0.0
+recovery = 0.1
+damage = 7.0
+icon = 13
+description = "A free spectral spear-thrust that passes through a short line of enemies."
+upgrade_name = ""
+upgrade_description = ""
+effect = ExtResource("2")
+params = {
+"range": 60.0
+}
+upgrade_params = {}

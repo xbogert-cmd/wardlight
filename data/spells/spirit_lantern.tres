@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="SpellData" format=3]
+
+[ext_resource type="Script" path="res://game/combat/spell_data.gd" id="1"]
+[ext_resource type="Script" path="res://game/combat/spells/spirit_lantern.gd" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = &"spirit_lantern"
+display_name = "Spirit Lantern"
+school = "hex"
+is_basic = false
+mana_cost = 24.0
+cooldown = 12.0
+windup = 0.2
+recovery = 0.14
+damage = 20.0
+icon = 7
+description = "A spirit circles you for 12 s. It catches the next attack that would hit you and answers with a cursing bolt."
+upgrade_name = "Twin Lanterns"
+upgrade_description = "Two spirits circle you, catching two attacks."
+effect = ExtResource("2")
+params = {
+"duration": 12.0
+}
+upgrade_params = {}

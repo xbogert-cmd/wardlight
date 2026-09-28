@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="SpellData" format=3]
+
+[ext_resource type="Script" path="res://game/combat/spell_data.gd" id="1"]
+[ext_resource type="Script" path="res://game/combat/spells/thunder_ring.gd" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = &"thunder_ring"
+display_name = "Thunder Ring"
+school = "storm"
+is_basic = false
+mana_cost = 18.0
+cooldown = 4.0
+windup = 0.12
+recovery = 0.16
+damage = 18.0
+icon = 9
+description = "A crack of thunder around you that hurls close enemies away."
+upgrade_name = "Rolling Thunder"
+upgrade_description = "A second, wider ring follows a beat later (60% damage)."
+effect = ExtResource("2")
+params = {
+"radius": 56.0,
+"push": 280.0
+}
+upgrade_params = {
+"radius2": 84.0,
+"second_mult": 0.6
+}

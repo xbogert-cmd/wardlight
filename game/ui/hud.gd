@@ -111,6 +111,7 @@ func _draw_hud() -> void:
 	_bar(Rect2(31, 18, 100, 4), mp.mp / mp.max_mp, 0.0, Color("3a78f0"), Color("9ad8ff"))
 	text("%d" % ceili(hp.hp), Vector2(135, 15), Color("ffc0b0"))
 	text("%d" % floori(mp.mp), Vector2(135, 24), Color("a8d8ff"))
+	_draw_passive(school)
 	# slots
 	var n := 5
 	var total := n * SLOT + (n - 1) * 4 + 6
@@ -140,13 +141,36 @@ func _draw_hud() -> void:
 		text("%d fps  fx %d  enemies %d  ts %.2f" % [Engine.get_frames_per_second(), fx_n, get_tree().get_nodes_in_group(&"enemy").size(), Engine.time_scale], Vector2(6, 350), Color("c0ffc0"))
 
 
+## Passive state under the bars: Heat charges, Conduction count, Soul Echo ready.
+func _draw_passive(school: String) -> void:
+	var pas: Passives = player.passives
+	var sc: Color = SCHOOL_COL[school]
+	match school:
+		"fire", "storm":
+			var n: int = pas.heat if school == "fire" else pas.storm_count
+			for k in 3:
+				var r := Rect2(31 + k * 7, 26, 5, 4)
+				canvas.draw_rect(r.grow(1), Color("0c0812"))
+				if k < n:
+					canvas.draw_rect(r, sc)
+					canvas.draw_rect(Rect2(r.position, Vector2(5, 1)), sc.lightened(0.5))
+				else:
+					canvas.draw_rect(r, Color(sc, 0.15))
+			text("Heat" if school == "fire" else "Conduction", Vector2(55, 31), Color(sc, 0.8))
+		"hex":
+			var ready := pas._echo_cd <= 0.0
+			canvas.draw_rect(Rect2(31, 25, 5, 6), Color(Pal.SPECTRAL[1], 0.9 if ready else 0.25))
+			canvas.draw_rect(Rect2(32, 24, 3, 1), Color(Pal.SPECTRAL[0], 0.9 if ready else 0.25))
+			text("Soul Echo", Vector2(40, 31), Color(sc, 0.8 if ready else 0.4))
+
+
 func _draw_slot(r: Rect2, slot: int) -> void:
 	var data := player.caster.spell_in(slot)
 	var shake := Vector2(roundf(sin(_fail.get(slot, 0.0) * 80.0) * 2.0), 0) if _fail.has(slot) else Vector2.ZERO
 	r.position += shake
 	var edge := Color("ff5a4a") if _fail.has(slot) else COL_FRAME
 	frame(canvas, r, COL_BG, edge)
-	var key := "J" if slot == SpellCaster.BASIC_SLOT else Settings.key_label("spell_%d" % (slot + 1))
+	var key := Settings.key_label("attack") if slot == SpellCaster.BASIC_SLOT else Settings.key_label("spell_%d" % (slot + 1))
 	text(key, Vector2(r.position.x, r.end.y + 9), Color("c8b898"), HORIZONTAL_ALIGNMENT_CENTER, r.size.x)
 	if data == null:
 		canvas.draw_texture_rect_region(ICONS, Rect2(r.position + Vector2(3, 3), Vector2(16, 16)), Rect2(15 * 16, 0, 16, 16))

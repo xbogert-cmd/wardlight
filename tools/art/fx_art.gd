@@ -23,6 +23,29 @@ static func glow(size: int) -> Image:
 	return img
 
 
+## Billowing cloud silhouette (tinted at runtime, normal blending).
+static func cloud(w: int, h: int, seed: int) -> Image:
+	var img := Image.create_empty(w, h, false, Image.FORMAT_RGBA8)
+	var r := RandomNumberGenerator.new()
+	r.seed = seed
+	var lumps := []
+	for k in 7:
+		lumps.append([r.randf_range(w * 0.2, w * 0.8), r.randf_range(h * 0.35, h * 0.65), r.randf_range(h * 0.25, h * 0.45)])
+	for y in h:
+		for x in w:
+			var best := 0.0
+			for l in lumps:
+				var d: float = Vector2(x + 0.5 - l[0], (y + 0.5 - l[1]) * 1.3).length() / l[2]
+				best = maxf(best, 1.0 - d)
+			if best <= 0.0:
+				continue
+			var thr: float = (BAYER[y % 4][x % 4] + 0.5) / 16.0
+			if best * 3.0 > thr:
+				var shade := 1.0 if y < h * 0.45 else 0.8
+				img.set_pixel(x, y, Color(shade, shade, shade, 1.0))
+	return img
+
+
 ## Magic circle: two rings with rune ticks and glyph dots between them.
 static func rune_ring(size: int, seed: int) -> Image:
 	var c := PixelCanvas.new(size, size)

@@ -11,6 +11,9 @@ const MOTE := preload("res://game/items/mote.gd")
 @export var data: EnemyData
 
 var health: Health
+var statuses: Statuses
+var last_hit: Damage
+var is_boss := false
 var sprite: AnimatedSprite2D
 var visual: Node2D
 var flash_mat: ShaderMaterial
@@ -37,6 +40,13 @@ func _ready() -> void:
 	health = Health.new()
 	health.max_hp = data.max_hp
 	add_child(health)
+	statuses = Statuses.new()
+	statuses.owner_actor = self
+	statuses.root_resist = data.params.get("root_resist", 0.0)
+	add_child(statuses)
+	var ov := StatusOverlay.new()
+	ov.actor = self
+	add_child(ov)
 	var cs := CollisionShape2D.new()
 	var sh := RectangleShape2D.new()
 	sh.size = data.body_size
@@ -92,23 +102,31 @@ func face_toward(x: float) -> void:
 func take_hit(d: Damage) -> void:
 	if not is_alive():
 		return
-	health.damage(d.amount)
-	_flash = 1.0
+	last_hit = d
+	health.damage(block_scale(d) * d.amount)
+	_flash = 1.0 if not d.is_proc else 0.5
 	var kb := d.knockback * (1.0 - data.knock_resist) * (0.3 if armored else 1.0)
 	_knock.x += kb.x
 	if kb.y < 0.0 and not armored:
 		velocity.y = minf(velocity.y, kb.y)
 	_poise_dmg += d.stagger
-	FX.burst(center(), 5, Pal.school(d.school), Vector2(30, 90), Vector2(0.12, 0.3), {"gravity": 150.0})
+	if not d.is_proc or d.spell_id != &"":
+		FX.burst(center(), 5, Pal.school(d.school), Vector2(30, 90), Vector2(0.12, 0.3), {"gravity": 150.0})
 	hurt.emit(self, d)
 	if not is_alive():
 		_die()
 		return
-	Sfx.play("hit_flesh", -6.0)
+	if not (d.is_proc and d.spell_id == &""):
+		Sfx.play("hit_flesh", -6.0 if not d.is_proc else -12.0)
 	if _poise_dmg >= data.poise and _flinch_cd <= 0.0 and not armored:
 		_poise_dmg = 0.0
 		_flinch_cd = data.flinch_cooldown
 		_flinch()
+
+
+## Damage multiplier for incoming hits (shields/armour override this).
+func block_scale(_d: Damage) -> float:
+	return 1.0
 
 
 ## Default flinch: short interrupt. Subclasses may override.
@@ -130,6 +148,8 @@ func _die() -> void:
 		m.velocity = Vector2(randf_range(-70, 70), randf_range(-150, -80))
 		get_parent().add_child.call_deferred(m)
 	died.emit(self)
+	Interactions.on_enemy_died(self, last_hit)
+	Events.enemy_killed.emit(self, last_hit)
 	var tw := create_tween()
 	tw.tween_interval(1.4)
 	tw.tween_property(self, "modulate:a", 0.0, 0.5)
@@ -144,6 +164,7 @@ func _physics_process(delta: float) -> void:
 		velocity.y = minf(velocity.y + gravity * delta, 420.0)
 	if state != &"dead":
 		_ai(delta)
+		velocity.x *= statuses.move_scale()
 	else:
 		velocity.x = move_toward(velocity.x, 0.0, 600.0 * delta)
 	var ai_vx := velocity.x

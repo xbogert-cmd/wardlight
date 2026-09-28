@@ -226,6 +226,184 @@ func sfx_ui_back() -> PackedFloat32Array:
 	return fin(b, 0.4)
 
 
+# ---------------------------------------------------------------- fire
+func sfx_fire_gather() -> PackedFloat32Array:
+	var b := S.buf(0.32)
+	S.noise(b, 0, 0.32, 0.7, 400, 2200, 0.2, 0.0, 120, 0.04)   # rising roar
+	S.crackle(b, 0.0, 0.3, 40, 0.25)
+	return fin(b, 0.6)
+
+
+func sfx_fire_release() -> PackedFloat32Array:
+	var b := S.buf(0.5)
+	S.noise(b, 0, 0.45, 1.0, 2600, 500, 0.005, 0.15, 150)     # whoomp
+	S.tone(b, 0, 0.3, 110, 55, "sine", 0.6, 0.002, 0.1)
+	S.crackle(b, 0.02, 0.4, 60, 0.35)
+	return fin(b, 0.85, 0.15)
+
+
+func sfx_fire_impact() -> PackedFloat32Array:
+	var b := S.buf(0.6)
+	S.noise(b, 0, 0.55, 1.0, 1800, 250, 0.001, 0.16)
+	S.tone(b, 0, 0.3, 80, 40, "sine", 0.8, 0.001, 0.1)
+	S.crackle(b, 0.05, 0.5, 70, 0.4)
+	return fin(b, 0.9, 0.2)
+
+
+func sfx_fire_whoosh() -> PackedFloat32Array:
+	var b := S.buf(0.45)
+	S.noise(b, 0, 0.45, 1.0, 700, 3200, 0.03, 0.14, 200)
+	S.crackle(b, 0.05, 0.35, 70, 0.3)
+	return fin(b, 0.8)
+
+
+func sfx_fire_ward() -> PackedFloat32Array:
+	var b := S.buf(0.9)
+	S.noise(b, 0, 0.9, 0.8, 300, 1400, 0.1, 0.4, 80, 0.3)
+	S.tone(b, 0, 0.9, hz(50), hz(50), "tri", 0.3, 0.05, 0.4, 0.3)
+	S.tone(b, 0, 0.9, hz(57), hz(57), "tri", 0.2, 0.05, 0.4, 0.3)
+	S.crackle(b, 0.05, 0.8, 50, 0.3)
+	return fin(b, 0.8, 0.3)
+
+
+func sfx_fire_burst() -> PackedFloat32Array:
+	var b := S.buf(0.9)
+	S.noise(b, 0, 0.85, 1.0, 3000, 150, 0.001, 0.3)
+	S.tone(b, 0, 0.6, 70, 30, "sine", 1.0, 0.001, 0.2)
+	S.crackle(b, 0.05, 0.7, 90, 0.4)
+	return fin(b, 0.95, 0.3)
+
+
+func sfx_fire_rain() -> PackedFloat32Array:
+	var b := S.buf(1.4)
+	S.noise(b, 0, 1.4, 0.5, 1200, 700, 0.2, 0.0, 200, 0.4)
+	S.crackle(b, 0.0, 1.3, 90, 0.45)
+	return fin(b, 0.7, 0.2)
+
+
+func sfx_fire_pulse() -> PackedFloat32Array:
+	var b := S.buf(0.22)
+	S.noise(b, 0, 0.22, 1.0, 2200, 600, 0.002, 0.06, 200)
+	S.tone(b, 0, 0.1, 160, 90, "sine", 0.4, 0.001, 0.03)
+	return fin(b, 0.75)
+
+
+func sfx_fire_heat() -> PackedFloat32Array:
+	var b := S.buf(0.5)
+	S.noise(b, 0, 0.45, 0.8, 800, 4000, 0.02, 0.15, 300)
+	for k in 3:
+		S.tone(b, k * 0.05, 0.3, hz(72 + k * 5), hz(72 + k * 5), "tri", 0.2, 0.002, 0.1)
+	return fin(b, 0.8, 0.2)
+
+
+# ---------------------------------------------------------------- hex
+func sfx_hex_gather() -> PackedFloat32Array:
+	var b := S.buf(0.35)
+	S.tone(b, 0, 0.35, hz(69), hz(81), "sine", 0.25, 0.1, 0.0, 0.05, 0.02)
+	S.tone(b, 0, 0.35, hz(70), hz(82), "sine", 0.2, 0.1, 0.0, 0.05, 0.02)   # beating = eerie
+	S.noise(b, 0, 0.35, 0.3, 3000, 5000, 0.15, 0.0, 1500, 0.05)             # whisper
+	return fin(b, 0.55)
+
+
+func sfx_hex_release() -> PackedFloat32Array:
+	var b := S.buf(0.5)
+	S.tone(b, 0, 0.4, hz(86), hz(62), "sine", 0.4, 0.002, 0.14)
+	S.tone(b, 0, 0.4, hz(87), hz(63), "tri", 0.2, 0.002, 0.12)
+	S.noise(b, 0, 0.25, 0.6, 5000, 1500, 0.002, 0.07, 1000)
+	return fin(b, 0.8, 0.35)
+
+
+func sfx_hex_impact() -> PackedFloat32Array:
+	var b := S.buf(0.6)
+	S.noise(b, 0, 0.1, 0.8, 4000, 1200, 0.001, 0.03, 600)
+	S.tone(b, 0, 0.5, hz(62), hz(55), "sine", 0.5, 0.002, 0.18)
+	S.tone(b, 0.02, 0.45, hz(73), hz(66), "sine", 0.3, 0.002, 0.15)
+	return fin(b, 0.8, 0.35)
+
+
+func sfx_hex_siphon() -> PackedFloat32Array:
+	var b := S.buf(1.2)
+	S.tone(b, 0, 1.2, hz(45), hz(45), "saw", 0.12, 0.2, 0.0, 0.4, 0.03)
+	S.tone(b, 0, 1.2, hz(64), hz(76), "sine", 0.25, 0.3, 0.0, 0.4, 0.02)
+	S.noise(b, 0, 1.2, 0.3, 2500, 800, 0.3, 0.0, 700, 0.4)
+	S.lowpass(b, 3000)
+	return fin(b, 0.7, 0.4)
+
+
+func sfx_hex_spirit() -> PackedFloat32Array:
+	var b := S.buf(0.8)
+	for k in 4:
+		S.tone(b, k * 0.06, 0.6, hz(79 + [0, 3, 7, 10][k]), hz(79 + [0, 3, 7, 10][k]), "sine", 0.22, 0.01, 0.25, 0.1, 0.01)
+	S.noise(b, 0, 0.5, 0.2, 5000, 3000, 0.05, 0.2, 2500)
+	return fin(b, 0.7, 0.45)
+
+
+func sfx_hex_block() -> PackedFloat32Array:
+	var b := S.buf(0.5)
+	S.tone(b, 0, 0.45, hz(91), hz(91), "tri", 0.4, 0.001, 0.15)
+	S.tone(b, 0, 0.45, hz(98), hz(98), "sine", 0.3, 0.001, 0.12)
+	S.noise(b, 0, 0.08, 0.7, 6000, 3000, 0.001, 0.02, 1500)
+	return fin(b, 0.8, 0.35)
+
+
+func sfx_hex_echo() -> PackedFloat32Array:
+	var b := S.buf(0.7)
+	S.tone(b, 0, 0.6, hz(74), hz(86), "sine", 0.3, 0.02, 0.2)
+	S.tone(b, 0.08, 0.5, hz(81), hz(93), "sine", 0.25, 0.02, 0.18)
+	return fin(b, 0.6, 0.45)
+
+
+func sfx_hex_thrust() -> PackedFloat32Array:
+	var b := S.buf(0.2)
+	S.noise(b, 0, 0.18, 0.8, 5000, 1500, 0.002, 0.05, 800)
+	S.tone(b, 0, 0.15, hz(79), hz(67), "sine", 0.3, 0.001, 0.05)
+	return fin(b, 0.7)
+
+
+func sfx_roots() -> PackedFloat32Array:
+	var b := S.buf(0.7)
+	S.noise(b, 0, 0.6, 1.0, 900, 200, 0.005, 0.2)             # earth burst
+	S.tone(b, 0, 0.3, 90, 50, "sine", 0.7, 0.001, 0.1)
+	S.crackle(b, 0.02, 0.5, 45, 0.5)                          # creaking wood
+	S.tone(b, 0.1, 0.4, 180, 140, "saw", 0.08, 0.02, 0.15)
+	S.lowpass(b, 2500)
+	return fin(b, 0.85)
+
+
+# ---------------------------------------------------------------- storm extras
+func sfx_storm_thunder() -> PackedFloat32Array:
+	var b := S.buf(1.2)
+	S.noise(b, 0, 0.06, 1.0, 9000, 4000, 0.0003, 0.015, 600)   # crack
+	S.noise(b, 0.02, 1.1, 1.0, 600, 90, 0.01, 0.35)            # rumble
+	S.tone(b, 0, 0.5, 60, 32, "sine", 0.9, 0.001, 0.2)
+	S.crackle(b, 0.0, 0.4, 100, 0.4)
+	return fin(b, 0.95, 0.3)
+
+
+func sfx_storm_wind() -> PackedFloat32Array:
+	var b := S.buf(0.4)
+	S.noise(b, 0, 0.4, 1.0, 600, 5000, 0.02, 0.13, 300)
+	S.noise(b, 0.05, 0.3, 0.5, 3000, 1200, 0.02, 0.1, 800)
+	return fin(b, 0.8)
+
+
+func sfx_storm_hum() -> PackedFloat32Array:
+	var b := S.buf(1.0)
+	S.tone(b, 0, 1.0, 110, 112, "saw", 0.15, 0.05, 0.0, 0.3, 0.02)
+	S.tone(b, 0, 1.0, 220, 223, "square", 0.05, 0.05, 0.0, 0.3)
+	S.crackle(b, 0.0, 1.0, 40, 0.3)
+	S.lowpass(b, 2500)
+	return fin(b, 0.6, 0.2)
+
+
+func sfx_ui_open() -> PackedFloat32Array:
+	var b := S.buf(0.4)
+	S.noise(b, 0, 0.3, 0.4, 1500, 4000, 0.05, 0.1, 400)      # page rustle
+	S.tone(b, 0.05, 0.3, hz(76), hz(76), "tri", 0.3, 0.002, 0.1)
+	S.tone(b, 0.1, 0.3, hz(83), hz(83), "tri", 0.25, 0.002, 0.1)
+	return fin(b, 0.5, 0.3)
+
+
 # ---------------------------------------------------------------- music
 ## Tense night-woods loop: D minor, 80 bpm, 8 bars.
 func mus_explore() -> PackedFloat32Array:

@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="SpellData" format=3]
+
+[ext_resource type="Script" path="res://game/combat/spell_data.gd" id="1"]
+[ext_resource type="Script" path="res://game/combat/spells/slipstream.gd" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = &"slipstream"
+display_name = "Slipstream"
+school = "storm"
+is_basic = false
+mana_cost = 12.0
+cooldown = 3.0
+windup = 0.0
+recovery = 0.08
+damage = 10.0
+icon = 10
+description = "Ride a burst of wind in the aimed direction, untouchable for a moment. Buffets enemies you pass."
+upgrade_name = "Tailwind"
+upgrade_description = "Leaves a lingering gale along your path that keeps shoving enemies."
+effect = ExtResource("2")
+params = {
+"distance": 120.0,
+"time": 0.18
+}
+upgrade_params = {}

@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="SpellData" format=3]
+
+[ext_resource type="Script" path="res://game/combat/spell_data.gd" id="1"]
+[ext_resource type="Script" path="res://game/combat/spells/tempest_orb.gd" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = &"tempest_orb"
+display_name = "Tempest Orb"
+school = "storm"
+is_basic = false
+mana_cost = 24.0
+cooldown = 8.0
+windup = 0.18
+recovery = 0.14
+damage = 9.0
+icon = 11
+description = "A slow orb drifts to the aimed point and hangs there for 3.5 s, striking the nearest enemy with lightning."
+upgrade_name = "Eye of the Storm"
+upgrade_description = "Each strike hits 2 enemies, and the orb drags enemies toward it."
+effect = ExtResource("2")
+params = {
+"range": 230.0,
+"duration": 3.5,
+"interval": 0.45,
+"targets": 1
+}
+upgrade_params = {
+"targets": 2
+}

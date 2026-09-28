@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="SpellData" format=3]
+
+[ext_resource type="Script" path="res://game/combat/spell_data.gd" id="1"]
+[ext_resource type="Script" path="res://game/combat/spells/ember_spear.gd" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = &"ember_spear"
+display_name = "Ember Spear"
+school = "fire"
+is_basic = false
+mana_cost = 14.0
+cooldown = 0.8
+windup = 0.14
+recovery = 0.12
+damage = 20.0
+icon = 0
+description = "A spear of fire that pierces up to 2 enemies and sets them burning."
+upgrade_name = "Splitting Spear"
+upgrade_description = "On its first hit the spear bursts into 3 shards (50% damage each)."
+effect = ExtResource("2")
+params = {
+"speed": 400.0,
+"range": 300.0,
+"pierce": 2,
+"burn_time": 3.0
+}
+upgrade_params = {
+"shard_mult": 0.5
+}

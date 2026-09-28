@@ -3,20 +3,6 @@ extends SpellEffect
 ## as a fast bolt. Upgrade (Forked Lance): the impact forks to 2 more enemies.
 
 
-func gather(ctx: CastContext, t: float, delta: float) -> void:
-	var ramp := Pal.school(&"storm")
-	var o := ctx.origin
-	# swirling motes rushing in, a growing core glow and stray arcs
-	if randf() < delta * 140.0:
-		FX.converge(o, 26.0 - 12.0 * t, 2, ramp, 0.14, {"swirl": 1.5})
-	FX.sprite(FX.tex("glow16.png"), o, 0.05, ramp[2], 0.6 + t * 0.9, 0.6 + t * 0.9, 0.0, false)
-	if randf() < delta * 30.0:
-		FX.bolt(o + Vector2.from_angle(randf() * TAU) * randf_range(9, 16), o, 0.06, ramp, 1.5)
-	if t > 0.25 and not ctx.bonus.has("ring"):
-		ctx.bonus["ring"] = true
-		FX.sprite(FX.tex("rune24.png"), o, 0.2, Color(ramp[1], 0.9), 0.4, 0.9, 6.0, false)
-
-
 func cast(ctx: CastContext) -> void:
 	var ramp := Pal.school(&"storm")
 	var o := ctx.origin + ctx.dir * 2.0
@@ -62,7 +48,7 @@ func _impact(ctx: CastContext, actor: Node2D, pos: Vector2) -> void:
 		return
 	var d := ctx.dmg(1.0, Vector2(ctx.dir.x * 110.0, -40.0))
 	d.hit_pos = pos
-	actor.take_hit(d)
+	ctx.hit(actor, d)
 	TimeCtl.hitstop(0.05)
 	GameCamera.shake_all(2.5)
 	Sfx.play("storm_impact", -1.0)
@@ -78,7 +64,7 @@ func _impact(ctx: CastContext, actor: Node2D, pos: Vector2) -> void:
 			FX.bolt(from, e.center(), 0.22, ramp, 4.0, 1.0, true, 1)
 			var fd := ctx.dmg(float(ctx.p("fork_mult", 0.5)))
 			fd.hit_pos = e.center()
-			e.take_hit(fd)
+			ctx.hit(e, fd)
 			FX.burst(e.center(), 10, ramp, Vector2(40, 120), Vector2(0.1, 0.3), {"gravity": 200.0})
 			from = e.center()
 

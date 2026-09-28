@@ -1,14 +1,14 @@
 class_name SpellCaster
 extends Node
-## Four spell slots + the free basic attack. Cooldowns are tracked per spell
-## id on the caster's own clock (slowed by the spell wheel, never reset by
-## swapping). Mana and cooldown are committed when the windup starts; a dodge
+## Four spell slots + the free basic attack, driven by the WizardState's
+## active loadout. Cooldowns are tracked per spell id on the caster's own
+## clock (slowed by the spellbook, never reset by swapping or switching
+## school). Mana and cooldown are committed when the windup starts; a dodge
 ## during windup cancels the spell without refunding it.
 
 signal cast_failed(slot: int, reason: String)
 signal cast_started(data: SpellData)
 signal cast_released(data: SpellData, ctx: CastContext)
-signal loadout_changed
 
 enum { IDLE, WINDUP, RECOVER }
 
@@ -18,9 +18,6 @@ const BUFFER_TIME := 0.18
 var player: Node2D
 var mana: Mana
 var aim: Aim
-var loadout: Array[StringName] = [&"", &"", &"", &""]
-var basic_id := &"storm_gust"
-var upgrades := {}      # spell id -> true
 var clock := 0.0
 var ready_at := {}      # spell id -> clock time when usable again
 
@@ -58,7 +55,7 @@ func _physics_process(delta: float) -> void:
 
 
 func spell_in(slot: int) -> SpellData:
-	var id := basic_id if slot == BASIC_SLOT else loadout[slot]
+	var id: StringName = player.wiz.basic() if slot == BASIC_SLOT else player.wiz.loadout()[slot]
 	return SpellDB.get_spell(id) if id != &"" else null
 
 
@@ -70,28 +67,33 @@ func busy() -> bool:
 	return state != IDLE
 
 
+## Why a cast would fail right now ("" = it would start).
+func check(slot: int) -> String:
+	var data := spell_in(slot)
+	if data == null:
+		return "empty"
+	if remaining(data.id) > 0.0:
+		return "cooldown"
+	if not mana.can_spend(data.mana_cost):
+		return "mana"
+	return ""
+
+
 ## Returns true if the cast started. Failure consumes nothing.
 func request(slot: int, quiet: bool = false) -> bool:
 	if not player.can_cast():
 		return false
 	if state == WINDUP or (state == RECOVER and t < cur.recovery * 0.6):
-		if not (quiet and slot == BASIC_SLOT):  # held attack just retries next frame
+		if not (quiet and slot == BASIC_SLOT):  # a held attack just retries next frame
 			_buffer_slot = slot
 			_buffer_t = BUFFER_TIME
 		return false
+	var why := check(slot)
+	if why != "":
+		if not quiet:
+			cast_failed.emit(slot, why)
+		return false
 	var data := spell_in(slot)
-	if data == null:
-		if not quiet:
-			cast_failed.emit(slot, "empty")
-		return false
-	if remaining(data.id) > 0.0:
-		if not quiet:
-			cast_failed.emit(slot, "cooldown")
-		return false
-	if not mana.can_spend(data.mana_cost):
-		if not quiet:
-			cast_failed.emit(slot, "mana")
-		return false
 	mana.spend(data.mana_cost)
 	ready_at[data.id] = clock + data.cooldown
 	cur = data
@@ -100,7 +102,9 @@ func request(slot: int, quiet: bool = false) -> bool:
 	ctx = CastContext.new()
 	ctx.caster = player
 	ctx.data = data
-	ctx.upgraded = upgrades.has(data.id)
+	ctx.upgraded = player.wiz.upgrades.has(data.id)
+	ctx.native = player.wiz.is_native(data.school)
+	ctx.power = player.wiz.affinity_mult(data.school)
 	ctx.world = player.get_parent()
 	_refresh_ctx()
 	cast_started.emit(data)
@@ -141,6 +145,7 @@ func _release() -> void:
 	ctx.dir = (ctx.aim_point - shoulder).normalized() if ctx.aim_point.distance_to(shoulder) > 4.0 else ctx.dir
 	player.on_cast_release(cur, ctx)
 	_refresh_ctx()
+	player.passives.on_release(ctx)
 	_effect(cur).cast(ctx)
 	state = RECOVER
 	t = 0.0
@@ -166,12 +171,3 @@ func pose_index() -> int:
 			bd = d
 			best = k
 	return best
-
-
-func equip(slot: int, id: StringName) -> void:
-	# a spell appears only once: equipping it elsewhere swaps the two slots
-	var prev := loadout.find(id)
-	if prev != -1 and prev != slot:
-		loadout[prev] = loadout[slot]
-	loadout[slot] = id
-	loadout_changed.emit()

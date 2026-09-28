@@ -17,6 +17,7 @@ config/icon="res://assets/generated/icon.png"
 Settings="*res://game/core/settings.gd"
 TimeCtl="*res://game/core/time_ctl.gd"
 Sfx="*res://game/core/sfx.gd"
+Events="*res://game/core/events.gd"
 DemoDriver="*res://game/core/demo_driver.gd"
 
 [display]

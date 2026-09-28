@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="SpellData" format=3]
+
+[ext_resource type="Script" path="res://game/combat/spell_data.gd" id="1"]
+[ext_resource type="Script" path="res://game/combat/spells/hearth_ward.gd" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = &"hearth_ward"
+display_name = "Hearth Ward"
+school = "fire"
+is_basic = false
+mana_cost = 22.0
+cooldown = 10.0
+windup = 0.18
+recovery = 0.14
+damage = 5.0
+icon = 2
+description = "A ring of fire guards you for 4 s: 40% less damage taken, and enemies touching it burn."
+upgrade_name = "Kindled Ward"
+upgrade_description = "When the ward ends it bursts outward in a second ring (250% damage, knockback)."
+effect = ExtResource("2")
+params = {
+"duration": 4.0,
+"guard": 0.6
+}
+upgrade_params = {
+"burst_mult": 2.5
+}

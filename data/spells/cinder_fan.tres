@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="SpellData" format=3]
+
+[ext_resource type="Script" path="res://game/combat/spell_data.gd" id="1"]
+[ext_resource type="Script" path="res://game/combat/spells/cinder_fan.gd" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = &"cinder_fan"
+display_name = "Cinder Fan"
+school = "fire"
+is_basic = false
+mana_cost = 16.0
+cooldown = 2.5
+windup = 0.12
+recovery = 0.16
+damage = 14.0
+icon = 1
+description = "A close cone of flame. Burns what it touches and sets the ground alight."
+upgrade_name = "Wildfire"
+upgrade_description = "A second, longer wave follows (60% damage) and 3 patches of ground catch fire."
+effect = ExtResource("2")
+params = {
+"reach": 70.0,
+"patches": 1
+}
+upgrade_params = {
+"reach2": 115.0,
+"patches": 3
+}

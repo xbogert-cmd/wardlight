@@ -32,6 +32,7 @@ func _init() -> void:
 		Fx.rune_ring(24, 3).save_png(OUT + "rune24.png")
 		Fx.rune_ring(40, 7).save_png(OUT + "rune40.png")
 		Fx.rune_ring(64, 11).save_png(OUT + "rune64.png")
+		Fx.cloud(96, 40, 5).save_png(OUT + "cloud96.png")
 	if want.call("props"):
 		var pr: Dictionary = Props.build()
 		(pr.image as Image).save_png(OUT + "props_woods.png")

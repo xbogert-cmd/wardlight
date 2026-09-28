@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SpellData" format=3]
+
+[ext_resource type="Script" path="res://game/combat/spell_data.gd" id="1"]
+[ext_resource type="Script" path="res://game/combat/spells/grave_needle.gd" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = &"grave_needle"
+display_name = "Grave Needle"
+school = "hex"
+is_basic = false
+mana_cost = 10.0
+cooldown = 0.6
+windup = 0.1
+recovery = 0.1
+damage = 12.0
+icon = 4
+description = "A swift needle that curses its target for 7 s."
+upgrade_name = "Needle Volley"
+upgrade_description = "Fires 3 needles in a tight spread."
+effect = ExtResource("2")
+params = {
+"speed": 520.0,
+"range": 340.0,
+"curse_time": 7.0
+}
+upgrade_params = {}

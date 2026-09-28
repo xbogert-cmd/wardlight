@@ -29,7 +29,7 @@ func cast(ctx: CastContext) -> void:
 		var d := ctx.dmg(1.0, Vector2(signf(dir.x) * lerpf(60.0, 170.0, close), -50.0))
 		d.hit_pos = e.center()
 		d.stagger = ctx.data.damage * 1.2
-		e.take_hit(d)
+		ctx.hit(e, d)
 		FX.burst(e.center(), 6, ramp, Vector2(40, 110), Vector2(0.1, 0.25), {"gravity": 180.0})
 		any = true
 	if any:

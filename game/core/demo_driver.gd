@@ -5,6 +5,28 @@ extends Node
 ## offset from the player), aim_enemy, clear_aim, shot, burst (N consecutive
 ## frames), freeze / unfreeze (enemies), quit.
 
+static func _all_spells() -> Array:
+	var out: Array = [[0.1, "freeze", ""], [0.15, "learn", ""], [0.2, "tp_near", "70"], [0.3, "aim_enemy", ""]]
+	var t := 0.5
+	for upg in [0, 1]:
+		out.append([t, "upg", str(upg)])
+		for sch in ["fire", "hex", "storm"]:
+			out.append([t, "school", sch])
+			for k in 4:
+				out.append([t, "reset", ""])
+				out.append([t + 0.02, "tap", "spell_%d" % (k + 1)])
+				out.append([t + 0.02, "burst", "%s%d_%s:48:4" % [sch, k + 1, "up" if upg else "base"]])
+				t += 1.3
+	out.append([t, "hold", "attack"])
+	for sch in ["fire", "hex", "storm"]:
+		out.append([t, "school", sch])
+		out.append([t + 0.02, "burst", "basic_%s:30:3" % sch])
+		t += 0.8
+	out.append([t, "release", "attack"])
+	out.append([t + 0.2, "quit", ""])
+	return out
+
+
 const DEMOS := {
 	"spells": [
 		[0.2, "freeze", ""], [0.3, "shot", "a01_idle"],
@@ -46,13 +68,16 @@ var _taps: Array = []
 var _burst_name := ""
 var _burst_left := 0
 var _burst_i := 0
+var _burst_every := 1
+var _burst_frame := 0
 
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	for a in OS.get_cmdline_user_args():
 		if a.begins_with("--demo="):
-			steps = DEMOS.get(a.trim_prefix("--demo="), [])
+			var nm := a.trim_prefix("--demo=")
+			steps = _all_spells() if nm == "allspells" else DEMOS.get(nm, [])
 		elif a.begins_with("--shots="):
 			shot_dir = a.trim_prefix("--shots=")
 	if steps.is_empty():
@@ -68,8 +93,10 @@ func _process(delta: float) -> void:
 	_taps.clear()
 	if _burst_left > 0:
 		_burst_left -= 1
-		_burst_i += 1
-		_shot("%s_%02d" % [_burst_name, _burst_i])
+		_burst_frame += 1
+		if _burst_frame % _burst_every == 0:
+			_burst_i += 1
+			_shot("%s_%02d" % [_burst_name, _burst_i])
 	while idx < steps.size() and t >= steps[idx][0]:
 		_run(steps[idx])
 		idx += 1
@@ -102,7 +129,9 @@ func _run(s: Array) -> void:
 			var parts: PackedStringArray = (s[2] as String).split(":")
 			_burst_name = parts[0]
 			_burst_left = int(parts[1])
+			_burst_every = int(parts[2]) if parts.size() > 2 else 1
 			_burst_i = 0
+			_burst_frame = 0
 		"freeze", "unfreeze":
 			for e in get_tree().get_nodes_in_group(&"enemy"):
 				e.set_physics_process(cmd == "unfreeze")
@@ -110,6 +139,34 @@ func _run(s: Array) -> void:
 					e.sprite.play(&"idle")
 		"quit":
 			get_tree().quit()
+		"learn":
+			for sc in WizardState.SCHOOLS:
+				for id in WizardState.BASE[sc]:
+					_player().wiz.unlocked[id] = true
+		"school":
+			_player().wiz.switch_school(s[2])
+		"upg":
+			_player().wiz.upgrades.clear()
+			if s[2] == "1":
+				for id in SpellDB.all():
+					_player().wiz.upgrades[id] = true
+		"reset":
+			var pl := _player()
+			pl.caster.ready_at.clear()
+			pl.mana.refill()
+			pl.health.reset()
+			for e in get_tree().get_nodes_in_group(&"enemy"):
+				e.health.reset()
+				e.statuses.clear()
+		"tp_near":
+			var pl2 := _player()
+			var e2: Node2D = null
+			for e in SpellEffect.enemies():
+				if e2 == null or pl2.global_position.distance_to(e.global_position) < pl2.global_position.distance_to(e2.global_position):
+					e2 = e
+			if e2:
+				pl2.global_position = e2.global_position - Vector2(float(s[2]), 20)
+				pl2.face(1)
 
 
 func _shot(name: String) -> void:

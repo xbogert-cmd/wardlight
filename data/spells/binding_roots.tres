@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="SpellData" format=3]
+
+[ext_resource type="Script" path="res://game/combat/spell_data.gd" id="1"]
+[ext_resource type="Script" path="res://game/combat/spells/binding_roots.gd" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = &"binding_roots"
+display_name = "Binding Roots"
+school = "hex"
+is_basic = false
+mana_cost = 18.0
+cooldown = 7.0
+windup = 0.16
+recovery = 0.14
+damage = 8.0
+icon = 5
+description = "Roots burst from the ground at the aimed spot, holding enemies in place for 1.8 s."
+upgrade_name = "Strangling Grove"
+upgrade_description = "The roots linger for 2.5 s, binding and cursing anything that walks in."
+effect = ExtResource("2")
+params = {
+"width": 72.0,
+"root_time": 1.8,
+"linger": 0.9
+}
+upgrade_params = {
+"linger": 2.5
+}

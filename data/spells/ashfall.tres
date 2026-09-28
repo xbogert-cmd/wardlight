@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="SpellData" format=3]
+
+[ext_resource type="Script" path="res://game/combat/spell_data.gd" id="1"]
+[ext_resource type="Script" path="res://game/combat/spells/ashfall.gd" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = &"ashfall"
+display_name = "Ashfall"
+school = "fire"
+is_basic = false
+mana_cost = 26.0
+cooldown = 6.0
+windup = 0.22
+recovery = 0.16
+damage = 6.0
+icon = 3
+description = "A smouldering cloud rains embers on the aimed spot for 1.4 s and leaves the ground burning."
+upgrade_name = "Meteor Ashfall"
+upgrade_description = "A meteor crashes down first (400% damage, knocks enemies up)."
+effect = ExtResource("2")
+params = {
+"width": 70.0,
+"drops": 16,
+"duration": 1.4
+}
+upgrade_params = {
+"meteor_mult": 4.0
+}

@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="SpellData" format=3]
+
+[ext_resource type="Script" path="res://game/combat/spell_data.gd" id="1"]
+[ext_resource type="Script" path="res://game/combat/spells/siphon_circle.gd" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = &"siphon_circle"
+display_name = "Siphon Circle"
+school = "hex"
+is_basic = false
+mana_cost = 20.0
+cooldown = 8.0
+windup = 0.16
+recovery = 0.14
+damage = 5.0
+icon = 6
+description = "A hex circle at your feet drains enemies for 3 s and restores up to 12 health."
+upgrade_name = "Soul Siphon"
+upgrade_description = "Each drain also restores mana, and enemies are dragged toward the centre."
+effect = ExtResource("2")
+params = {
+"duration": 3.0,
+"heal_cap": 12.0
+}
+upgrade_params = {}
