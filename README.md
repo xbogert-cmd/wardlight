@@ -21,12 +21,23 @@ godot --path "/Users/alexanderbogert/wizard game"
 | Levitate (after the fawn) | Hold Space |
 | Talk / use / contextual magic | E |
 | Journal / world map | Q / M |
+| Inventory | I |
+| Build at home | B (at the sanctuary) |
 | Dodge | Shift |
 | Staff attack (free) | Trackpad tap / left click, or J — hold to repeat |
 | Spells | 1 2 3 4 |
 | Aim | Move the cursor. Pointing at an enemy locks it (Assisted aim). With the mouse idle, spells target the nearest enemy in the direction you move. |
 | Pause | Esc (also pauses when the window loses focus) |
 | Debug overlay | F3 |
+
+## Mac build
+
+```bash
+godot --headless --path . --export-release "macOS" build/Wardlight.zip
+```
+
+Unzip and open `Wardlight.app` (universal: Apple Silicon and Intel). It's ad-hoc signed; a copy
+downloaded from elsewhere needs right-click → Open the first time.
 
 ## Regenerating assets
 

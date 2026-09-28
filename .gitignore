@@ -2,3 +2,4 @@
 assets/generated/preview/
 *.tmp
 .DS_Store
+build/

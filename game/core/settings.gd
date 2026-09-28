@@ -69,6 +69,8 @@ func load_settings() -> void:
 
 
 func save_settings() -> void:
+	if " ".join(OS.get_cmdline_user_args()).contains("--demo"):
+		return   # scripted runs never change the player's settings
 	var cf := ConfigFile.new()
 	cf.set_value("game", "aim_mode", aim_mode)
 	cf.set_value("audio", "master", master_vol)

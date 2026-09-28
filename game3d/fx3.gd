@@ -256,9 +256,10 @@ static func tele_line(a: Vector3, b: Vector3, life: float, col: Color, width_px:
 
 ## Bright pop: a camera-facing glow plus a brief real light.
 static func flash(pos: Vector3, radius: float, life: float, col: Color, light_energy: float = 2.0) -> void:
-	glow(pos, life, col, radius / 1.3, radius / 1.1, GLOW_L)
+	var calm := Settings.reduce_flash
+	glow(pos, life, Color(col, col.a * (0.35 if calm else 1.0)), radius / 1.3, radius / 1.1, GLOW_L)
 	if light_energy > 0.0:
-		light(pos, col, light_energy, radius * 3.0, life * 1.5)
+		light(pos, col, light_energy * (0.35 if calm else 1.0), radius * 3.0, life * 1.5)
 
 
 # ------------------------------------------------------------------ lines, lights

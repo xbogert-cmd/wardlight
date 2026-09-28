@@ -119,7 +119,7 @@ func _place_origin() -> void:
 
 
 func set_flash(v: float) -> void:
-	mat.set_shader_parameter(&"flash", v)
+	mat.set_shader_parameter(&"flash", v * (0.4 if Settings.reduce_flash else 1.0))
 
 
 func set_fade(v: float) -> void:

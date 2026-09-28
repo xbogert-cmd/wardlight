@@ -106,7 +106,8 @@ const DEMOS := {
 		[0.3, "flag", "ward_restored"], [0.4, "travel", "hearthmere:west"], [1.8, "map", ""], [2.1, "shot", "m1_map"],
 		[2.3, "key", "4194305"], [2.6, "journal", ""], [2.9, "shot", "m2_journal"], [3.2, "quit", ""],
 	],
-	"title": [[1.0, "shot", "title"], [1.2, "key", "4194322"], [1.4, "shot", "title2"], [1.6, "quit", ""]],
+	"title": [[1.0, "shot", "title"], [1.2, "key", "4194322"], [1.25, "key", "4194322"], [1.3, "key", "4194309"], [1.6, "shot", "settings"],
+		[1.7, "key", "4194322"], [1.8, "key", "4194322"], [1.9, "key", "4194321"], [2.1, "shot", "settings2"], [2.2, "key", "4194305"], [2.5, "shot", "title2"], [2.7, "quit", ""]],
 	"inv": [
 		[0.3, "give", "stormcoil"], [0.35, "give", "moonstone"], [0.4, "give", "moonstone"], [0.45, "give", "ward_bell"], [0.5, "give", "wardweave"],
 		[0.6, "inventory", ""], [0.9, "shot", "i1_inventory"], [1.0, "key", "4194321"], [1.1, "key", "4194309"], [1.4, "shot", "i2_equipped"],

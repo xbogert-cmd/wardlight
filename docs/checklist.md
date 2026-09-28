@@ -1,6 +1,6 @@
 # Implementation checklist
 
-Status: **Stage 3 (first adventure) playable end to end. Stage 4 (discoveries and home) next.**
+Status: **First playable adventure complete (stages 1–5). Needs a human playtest pass for balance.** See `docs/report.md`.
 
 ## Agreed changes to the original brief
 - Cross-relic recipes cut; same-relic tier fusion (I → II → III) kept.
@@ -74,8 +74,20 @@ Status: **Stage 3 (first adventure) playable end to end. Stage 4 (discoveries an
 - [x] Tests: exactly-once rewards, forward-only quests, state round trip, idempotent restoration (18 total)
 
 ## Stage 4 — discoveries and home
-- [ ] Loot, equipment, relic fusion, progression points, cosmetics
-- [ ] Shieldbearer companion, home building, full persistence (herbalist choice done in stage 3)
+- [x] Items: 4 staffs (staff-attack identities), 3 robes (traits), 6 relics tiers I–III, capped bonuses
+- [x] Inventory (I) with comparisons; equipment changes the wizard's look; mirror sets cosmetics
+- [x] Fusion altar: same-relic tier fusion with exact preview, atomic commit (cross recipes cut)
+- [x] Loot: chests, boss rewards, village gifts, Brannoc's shop, enemy coins/XP/relic drops
+- [x] Progression points (XP + milestones) spent on upgrades (U) and training (T) in the spellbook
+- [x] Tamsin the shieldbearer: rescue, recruit, follow, fight, shield wall, downed/recover, unstick, dismiss
+- [x] Home building (B): six placeables, grid ghost, reasons, move free, refunds
+- [x] Saves: versioned, temp + verify + backup, autosaves, damaged-save recovery, new-game confirm
+- [x] Title, pause menu, settings (audio, aim mode, fullscreen, reduce shake/flash, remapping)
 
 ## Stage 5 — refine and hand off
-- [ ] Full playthrough, profiling, save/load verification, Mac export, evidence report
+- [x] Scripted full playthrough (`--demo=story`) + continue from save (`--demo=resume --continue`)
+- [x] Profiling: 110–120 fps on the M3
+- [x] 22 automated rule tests (tests never touch real saves or settings)
+- [x] macOS export: `build/Wardlight.zip` (universal, ad-hoc signed), verified running
+- [x] Evidence report (`docs/report.md`) and asset manifest (`docs/assets.md`)
+- [ ] Human playtest for difficulty and feel

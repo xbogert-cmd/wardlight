@@ -23,6 +23,17 @@ integer scaling, nearest filtering. All art/audio/font is original and generated
   rescued travellers reappear).
 - Title: Wardlight. Git history stays in this repo only.
 
+## Where things live
+- World: `game/world/region.gd` (base: terrain, props, exits, checkpoints) and one script per place
+  (`sanctuary`, `hearthmere`, `briarwood`, `old_ward`). World consequences go in `apply_state()`
+  (runs every visit; must be idempotent).
+- Progress: `GameState` autoload (flags, once-events, quests, unlocks, inventory, home, companion);
+  `SaveSystem` autoload (versioned JSON, temp+verify+backup). Rewards use `GameState.once(id)`.
+- Items: `game/items/items.gd` (definitions), `inventory.gd` (instances, equip, fusion).
+- UI: `game/ui/*` (HUD, dialogue, journal, map, inventory, fusion, build mode, menus, settings).
+- Scripted demos in `game/core/demo_driver.gd` (`story` plays the whole quest).
+- Report and asset manifest: `docs/report.md`, `docs/assets.md`.
+
 ## Review gates
 The owner approves feel and looks from screenshots/clips. Don't ship big visual or combat-feel
 changes as "done" without showing captures; list what changed and wait for OK or changes.
