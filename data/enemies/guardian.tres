@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/enemies/enemy_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"guardian"
+display_name = "The Hollowed Warden"
+sheet = "guardian"
+origin = Vector2(60, 118)
+body_size = Vector2(44, 96)
+max_hp = 900.0
+damage = 24.0
+move_speed = 1.2
+poise = 999.0
+knock_resist = 1.0
+flinch_cooldown = 99.0
+motes = 12
+aggro_range = 13.0
+params = {
+"root_resist": 1.0,
+"roots_windup": 1.0,
+"seed_damage": 14.0,
+"seed_windup": 0.8,
+"sweep_damage": 24.0,
+"sweep_windup": 0.95
+}

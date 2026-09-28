@@ -9,6 +9,9 @@ const Fx = preload("res://tools/art/fx_art.gd")
 const Icons = preload("res://tools/art/icons_art.gd")
 const Props = preload("res://tools/art/props_art.gd")
 const W3 = preload("res://tools/art/world3d_art.gd")
+const Npcs = preload("res://tools/art/npcs_art.gd")
+const Bgs = preload("res://tools/art/backgrounds_art.gd")
+const Bosses = preload("res://tools/art/bosses_art.gd")
 
 
 func _init() -> void:
@@ -22,6 +25,19 @@ func _init() -> void:
 		_save_sheet("hexer", Enemies.hexer())
 		_save_sheet("knot", Enemies.knot())
 		_save_sheet("sentinel", Enemies.sentinel())
+	if want.call("bg"):
+		# parallax layers for the animated journey screen
+		for region in ["woods", "ruins"]:
+			var layers: Dictionary = Bgs.build(region)
+			for k in layers:
+				(layers[k] as Image).save_png(OUT + "bg_%s_%s.png" % [region, k])
+	if want.call("bosses"):
+		_save_sheet("troll", Bosses.troll())
+		_save_sheet("guardian", Bosses.guardian())
+	if want.call("npcs"):
+		for n in Npcs.CAST:
+			_save_sheet("npc_" + n, Npcs.build(Npcs.CAST[n]))
+		_save_sheet("npc_fawn", Npcs.fawn())
 	if want.call("fx"):
 		for s in [16, 32, 64]:
 			Fx.glow(s).save_png(OUT + "glow%d.png" % s)
@@ -57,6 +73,17 @@ func _init() -> void:
 		W3.thorns().save_png(d + "thorns.png")
 		W3.roots().save_png(d + "roots.png")
 		W3.spirit().save_png(d + "spirit.png")
+		W3.plaster().save_png(d + "plaster.png")
+		W3.roof().save_png(d + "roof.png")
+		W3.thatch().save_png(d + "thatch.png")
+		W3.window(true).save_png(d + "window_lit.png")
+		W3.window(false).save_png(d + "window_dark.png")
+		W3.door().save_png(d + "door.png")
+		W3.signpost().save_png(d + "signpost.png")
+		W3.crate().save_png(d + "crate.png")
+		W3.barrel().save_png(d + "barrel.png")
+		W3.ward_crystal(true).save_png(d + "ward_lit.png")
+		W3.ward_crystal(false).save_png(d + "ward_dark.png")
 	if want.call("icons"):
 		Icons.build().save_png(OUT + "icons.png")
 	if want.call("icon"):

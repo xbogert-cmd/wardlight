@@ -1,0 +1,119 @@
+{
+	"anims": {
+		"death": {
+			"fps": 5.0,
+			"frames": [
+				32,
+				33,
+				34,
+				35,
+				36,
+				37
+			],
+			"loop": false
+		},
+		"hurt": {
+			"fps": 10.0,
+			"frames": [
+				31
+			],
+			"loop": false
+		},
+		"idle": {
+			"fps": 4.0,
+			"frames": [
+				0,
+				1,
+				2,
+				3
+			],
+			"loop": true
+		},
+		"idle2": {
+			"fps": 5.0,
+			"frames": [
+				27,
+				28,
+				29,
+				30
+			],
+			"loop": true
+		},
+		"recover": {
+			"fps": 3.0,
+			"frames": [
+				19,
+				20
+			],
+			"loop": true
+		},
+		"roots": {
+			"fps": 8.0,
+			"frames": [
+				12,
+				13
+			],
+			"loop": false
+		},
+		"roots_windup": {
+			"fps": 4.0,
+			"frames": [
+				9,
+				10,
+				11
+			],
+			"loop": false
+		},
+		"seed": {
+			"fps": 10.0,
+			"frames": [
+				17,
+				18
+			],
+			"loop": false
+		},
+		"seed_windup": {
+			"fps": 5.0,
+			"frames": [
+				14,
+				15,
+				16
+			],
+			"loop": false
+		},
+		"sweep": {
+			"fps": 12.0,
+			"frames": [
+				7,
+				8
+			],
+			"loop": false
+		},
+		"sweep_windup": {
+			"fps": 5.0,
+			"frames": [
+				4,
+				5,
+				6
+			],
+			"loop": false
+		},
+		"transform": {
+			"fps": 5.0,
+			"frames": [
+				21,
+				22,
+				23,
+				24,
+				25,
+				26
+			],
+			"loop": false
+		}
+	},
+	"cell": [
+		128,
+		120
+	],
+	"hframes": 8
+}

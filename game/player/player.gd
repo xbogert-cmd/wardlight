@@ -26,7 +26,12 @@ var art: Dictionary
 var state := NORMAL
 var facing := 1
 var look_dir := Vector3.RIGHT      # horizontal: last move / aim direction
-var has_float := false
+var focus: Interactable = null      # nearest usable thing (E)
+var levitating := false
+var float_left := 0.0
+var _float_base := 0.0
+var _last_safe := Vector3.ZERO
+var _shadow: BlobShadow
 ## Incoming-damage multiplier from wards, with its remaining time.
 var guard_mult := 1.0
 var guard_t := 0.0
@@ -57,7 +62,7 @@ var _ghost_t := 0.0
 func _ready() -> void:
 	add_to_group(&"player")
 	collision_layer = 2
-	collision_mask = 1
+	collision_mask = 1 | 64   # world + solid spell targets (brambles)
 	floor_snap_length = 0.4
 	floor_max_angle = deg_to_rad(50.0)
 	floor_constant_speed = true
@@ -79,6 +84,9 @@ func _ready() -> void:
 	add_child(mana)
 	if wiz.loadouts.is_empty():
 		wiz.setup("storm")
+	apply_bonuses()
+	health.hp = health.max_hp
+	mana.mp = mana.max_mp
 	passives = Passives.new()
 	passives.player = self
 	add_child(passives)
@@ -88,7 +96,8 @@ func _ready() -> void:
 	sprite = PixelBillboard.new()
 	add_child(sprite)
 	set_look({})
-	add_child(BlobShadow.make(0.9))
+	_shadow = BlobShadow.make(0.9)
+	add_child(_shadow)
 	aim = Aim.new()
 	aim.player = self
 	add_child(aim)
@@ -105,6 +114,12 @@ func set_look(l: Dictionary) -> void:
 	var cur := sprite.anim if sprite.anim != &"" else &"idle"
 	sprite.setup(art.texture, Vector2i(WizardArt.CELL_W, WizardArt.CELL), WizardArt.COLS, art.anims, Vector2(WizardArt.FOOT))
 	sprite.play(cur, true)
+
+
+## Permanent rewards stored in GameState (max health / mana charms).
+func apply_bonuses() -> void:
+	health.max_hp = tuning.max_hp + float(GameState.flag(&"hp_bonus", 0.0))
+	mana.max_mp = tuning.max_mana + float(GameState.flag(&"mana_bonus", 0.0))
 
 
 func center() -> Vector3:
@@ -153,6 +168,10 @@ func is_alive() -> bool:
 	return state != DEAD
 
 
+func has_float() -> bool:
+	return GameState.has_unlock(&"levitate")
+
+
 func can_cast() -> bool:
 	return state == NORMAL and input_enabled
 
@@ -196,8 +215,11 @@ func _physics_process(delta: float) -> void:
 		guard_t -= delta
 		if guard_t <= 0.0:
 			guard_mult = 1.0
-	if is_on_floor() and state != DASH:
+	if levitating:
+		_levitate(delta)
+	elif is_on_floor() and state != DASH:
 		velocity.y = -0.5
+		float_left = tuning.float_time
 	else:
 		velocity.y -= tuning.gravity * delta
 	match state:
@@ -214,6 +236,8 @@ func _physics_process(delta: float) -> void:
 		DEAD, LOCKED:
 			_brake(tuning.decel, delta)
 	move_and_slide()
+	_check_ground()
+	_find_focus()
 	_animate(delta)
 
 
@@ -237,7 +261,15 @@ func _normal(delta: float) -> void:
 			face(int(signf(input.x)))
 
 	if _just(&"dodge") and _dodge_cd <= 0.0:
+		_end_levitate()
 		_start_dodge(input)
+		return
+	if has_float() and not levitating and _just(&"jump") and float_left > 0.2:
+		_start_levitate()
+	elif levitating and not _held(&"jump"):
+		_end_levitate()
+	if _just(&"interact") and focus and not levitating:
+		focus.activate(self)
 		return
 
 	if _just(&"spell_1"):
@@ -250,6 +282,70 @@ func _normal(delta: float) -> void:
 		caster.request(3)
 	elif _held(&"attack") and not _attack_needs_release:
 		caster.request(SpellCaster.BASIC_SLOT, true)
+
+
+# ------------------------------------------------------------------ levitate
+func _start_levitate() -> void:
+	levitating = true
+	_float_base = global_position.y
+	floor_snap_length = 0.0
+	Sfx.play("perfect_dodge", -12.0)
+	FX3.ring(global_position + Vector3(0, 0.05, 0), 0.2, 0.9, 0.3, Pal.HEAL, 1.0)
+
+
+func _end_levitate() -> void:
+	if levitating:
+		levitating = false
+		floor_snap_length = 0.4
+
+
+func _levitate(delta: float) -> void:
+	float_left -= delta
+	var ground := SpellEffect.ground_at(global_position + Vector3(0, 0.5, 0), self).y
+	# hold altitude over drops (chasms), rise over bumps
+	var want := maxf(ground, _float_base) + tuning.float_height + sin(_state_t * 5.0) * 0.05
+	velocity.y = (want - global_position.y) * 8.0
+	if randf() < delta * 30.0:
+		FX3.burst(global_position + Vector3(randf_range(-0.3, 0.3), 0.1, randf_range(-0.2, 0.2)), 1, Pal.HEAL, Vector2(0.2, 0.6), Vector2(0.3, 0.5), {"dir": Vector3.DOWN, "spread": 1.0})
+	if float_left <= 0.0:
+		_end_levitate()
+
+
+## Chasms (Region.hazards) swallow anyone walking in: back to the last safe
+## ground with a little damage. Levitating crosses them.
+func _check_ground() -> void:
+	var r := Region.current
+	if r == null or state == DEAD:
+		return
+	var over := r.is_hazard(global_position)
+	if levitating or state == DASH:
+		return
+	if over:
+		health.damage(5.0)
+		_flash = 0.6
+		FX3.burst(global_position + Vector3(0, 0.3, 0), 12, Pal.DUST, Vector2(1.0, 3.0), Vector2(0.3, 0.5), {"gravity": 6.0})
+		Sfx.play("hurt", -6.0)
+		global_position = _last_safe
+		velocity = Vector3.ZERO
+		_iframes = maxf(_iframes, 0.6)
+		if health.is_dead():
+			_die()
+	elif is_on_floor():
+		_last_safe = global_position
+
+
+func _find_focus() -> void:
+	focus = null
+	if state != NORMAL or not input_enabled:
+		return
+	var bd := INF
+	for it: Interactable in get_tree().get_nodes_in_group(&"interactable"):
+		if not it.enabled or not it.is_visible_in_tree():
+			continue
+		var d := SpellEffect.flat(global_position, it.global_position)
+		if d < it.radius and d < bd:
+			bd = d
+			focus = it
 
 
 func _start_dodge(input: Vector3) -> void:
@@ -333,6 +429,7 @@ func take_hit(d: Damage) -> void:
 		_iframes = 0.3
 		return
 	caster.interrupt()
+	_end_levitate()
 	health.damage(d.amount * guard_mult)
 	_flash = 0.75
 	_iframes = tuning.hurt_iframes
@@ -375,12 +472,15 @@ func respawn_at(pos: Vector3) -> void:
 	spirits.clear()
 	passives.reset()
 	_iframes = tuning.respawn_iframes
+	_last_safe = pos
+	_end_levitate()
 	sprite.play(&"idle", true)
 
 
 func lock(on: bool) -> void:
 	if state == DEAD:
 		return
+	_end_levitate()
 	state = LOCKED if on else NORMAL
 	if on:
 		caster.interrupt()
@@ -400,6 +500,8 @@ func _animate(delta: float) -> void:
 	sprite.set_flip(facing < 0)
 	var blink := _iframes > 0.0 and state != DODGE and state != DEAD and state != HURT and state != DASH
 	sprite.set_fade(0.5 if blink and int(_iframes * 20.0) % 2 == 0 else 0.0)
+	if _shadow:
+		_shadow.global_position.y = (SpellEffect.ground_at(global_position + Vector3(0, 0.3, 0), self).y + 0.04) if levitating else global_position.y + 0.04
 	match state:
 		DEAD:
 			sprite.play(&"death")
@@ -419,7 +521,9 @@ func _animate(delta: float) -> void:
 	if caster.state == SpellCaster.RECOVER:
 		sprite.play(&"recover")
 		return
-	if Vector2(velocity.x, velocity.z).length() > 0.5:
+	if levitating:
+		sprite.play(&"fall")
+	elif Vector2(velocity.x, velocity.z).length() > 0.5:
 		sprite.play(&"run")
 		var f := sprite.frame
 		if (f == 1 or f == 5) and f != _step_frame:

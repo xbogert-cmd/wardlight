@@ -275,6 +275,112 @@ static func banner() -> Image:
 	return c.img
 
 
+## Lime plaster with a little grime (house walls; tinted per house).
+static func plaster() -> Image:
+	var img := Image.create_empty(S, S, false, Image.FORMAT_RGBA8)
+	img.fill(_c("b8ab94"))
+	var r := _rng(61)
+	for k in 90:
+		_wrap_put(img, r.randi_range(0, S - 1), r.randi_range(0, S - 1), _c("a89a84") if r.randf() < 0.7 else _c("c8bca4"))
+	for k in 5:
+		var x := r.randi_range(0, S - 1)
+		var y := r.randi_range(0, S - 1)
+		for d in r.randi_range(2, 5):
+			_wrap_put(img, x + d, y + (d % 2), _c("8a7c68"))
+	return img
+
+
+## Overlapping dark slate shingles (roofs).
+static func roof() -> Image:
+	var img := Image.create_empty(S, S, false, Image.FORMAT_RGBA8)
+	img.fill(_c("1e1c2a"))
+	var r := _rng(67)
+	for row in 4:
+		var off := 4 if row % 2 else 0
+		for col in 4:
+			var base := _c("3c3a50").lerp(_c("2e2c40"), r.randf())
+			for y in range(row * 8, row * 8 + 7):
+				for x in range(col * 8 + off + 1, col * 8 + off + 8):
+					_wrap_put(img, x, y, base if y < row * 8 + 5 else base.darkened(0.25))
+			_wrap_put(img, col * 8 + off + 2, row * 8, base.lightened(0.2))
+	return img
+
+
+## Straw thatch (sheds, the sanctuary cottage).
+static func thatch() -> Image:
+	var img := Image.create_empty(S, S, false, Image.FORMAT_RGBA8)
+	img.fill(_c("6a5430"))
+	var r := _rng(71)
+	for k in 160:
+		var x := r.randi_range(0, S - 1)
+		var y := r.randi_range(0, S - 1)
+		var c: Color = [_c("8a7040"), _c("9a8050"), _c("5a4628"), _c("b09460")][r.randi_range(0, 3)]
+		for d in r.randi_range(2, 5):
+			_wrap_put(img, x, y + d, c)
+	for row in 4:
+		for x in S:
+			_wrap_put(img, x, row * 8 + 7, _c("4a3a22"))
+	return img
+
+
+static func window(lit: bool) -> Image:
+	var c := PixelCanvas.new(10, 12)
+	c.rect(0, 0, 10, 12, _c("3a2a20"), 1)
+	var glass := _c("ffc868") if lit else _c("1a2030")
+	c.rect(1, 1, 8, 10, glass, 2)
+	if lit:
+		c.rect(2, 2, 3, 3, _c("fff0b0"), 2)
+	else:
+		c.put(2, 2, _c("3a4a60"), 2)
+	c.line(5, 1, 5, 10, _c("3a2a20"), 1)
+	c.line(1, 6, 8, 6, _c("3a2a20"), 1)
+	return c.img
+
+
+static func door() -> Image:
+	var c := PixelCanvas.new(14, 24)
+	c.poly(PackedVector2Array([Vector2(0, 24), Vector2(0, 5), Vector2(3, 1), Vector2(11, 1), Vector2(14, 5), Vector2(14, 24)]), _c("5a3a26"), 1)
+	for x in [3, 7, 10]:
+		c.line(x, 3, x, 23, _c("3a2418"), 1)
+	c.rect(2, 8, 11, 1, _c("2a2a2a"), 2)
+	c.rect(2, 17, 11, 1, _c("2a2a2a"), 2)
+	c.put(10, 13, _c("c8a040"), 3)
+	c.shade(1, _c("7a5238"), _c("3a2418"), 1)
+	c.outline(_c("140c08"), 0.9)
+	return c.img
+
+
+static func signpost() -> Image:
+	var c := PixelCanvas.new(22, 40)
+	c.rect(10, 6, 3, 34, _c("5a3e2a"), 1)
+	c.poly(PackedVector2Array([Vector2(1, 4), Vector2(17, 4), Vector2(21, 8), Vector2(17, 12), Vector2(1, 12)]), _c("7a5a3a"), 2)
+	c.line(4, 8, 14, 8, _c("3a2a1a"), 3)
+	c.shade(1, _c("7a5a3e"), _c("3a2618"), 1)
+	c.outline(_c("120c08"), 0.9)
+	return c.img
+
+
+static func crate() -> Image:
+	var c := PixelCanvas.new(18, 18)
+	c.rect(0, 2, 18, 16, _c("6a4a30"), 1)
+	c.rect(0, 2, 18, 2, _c("8a6a44"), 1)
+	c.line(1, 4, 16, 16, _c("4a3220"), 1)
+	c.line(1, 16, 16, 4, _c("4a3220"), 1)
+	c.rect(0, 9, 18, 1, _c("4a3220"), 1)
+	c.outline(_c("140c08"), 0.9)
+	return c.img
+
+
+static func barrel() -> Image:
+	var c := PixelCanvas.new(14, 18)
+	c.ellipse(7, 9, 6.5, 8.5, _c("6a4a30"), 1)
+	c.rect(1, 4, 12, 1, _c("3a3a40"), 2)
+	c.rect(1, 13, 12, 1, _c("3a3a40"), 2)
+	c.shade(1, _c("8a6a44"), _c("3a2618"), 2)
+	c.outline(_c("140c08"), 0.9)
+	return c.img
+
+
 ## A clump of thorned briar stems bursting from the ground (Briar Knot).
 static func thorns() -> Image:
 	var c := PixelCanvas.new(16, 22)
@@ -331,6 +437,17 @@ static func spirit() -> Image:
 	c.put(13, 4, _c("a89060"), 3)
 	c.shade(1, _c("e8fff4"), _c("1e8a66"), 1)
 	c.outline(_c("0a2a20"), 0.6)
+	return c.img
+
+
+## Glowing ward crystal that sits atop a wardlight post (lit / dark).
+static func ward_crystal(lit: bool) -> Image:
+	var c := PixelCanvas.new(12, 18)
+	var body := _c("9ae8ff") if lit else _c("3a4458")
+	c.poly(PackedVector2Array([Vector2(6, 0), Vector2(11, 7), Vector2(6, 17), Vector2(1, 7)]), body, 1)
+	c.poly(PackedVector2Array([Vector2(6, 2), Vector2(8, 7), Vector2(6, 13), Vector2(4, 7)]), _c("f0ffff") if lit else _c("56607a"), 2)
+	c.shade(1, _c("d8ffff") if lit else _c("5a6480"), _c("3a78c0") if lit else _c("242a3a"), 1)
+	c.outline(_c("0c1420"), 0.8)
 	return c.img
 
 

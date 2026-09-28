@@ -1,0 +1,116 @@
+{
+	"anims": {
+		"death": {
+			"fps": 6.0,
+			"frames": [
+				30,
+				31,
+				32,
+				33,
+				34
+			],
+			"loop": false
+		},
+		"hurt": {
+			"fps": 10.0,
+			"frames": [
+				29
+			],
+			"loop": false
+		},
+		"idle": {
+			"fps": 4.0,
+			"frames": [
+				0,
+				1,
+				2,
+				3
+			],
+			"loop": true
+		},
+		"recover": {
+			"fps": 3.0,
+			"frames": [
+				25,
+				26
+			],
+			"loop": true
+		},
+		"slam": {
+			"fps": 12.0,
+			"frames": [
+				18,
+				19
+			],
+			"loop": false
+		},
+		"slam_windup": {
+			"fps": 4.5,
+			"frames": [
+				15,
+				16,
+				17
+			],
+			"loop": false
+		},
+		"stagger": {
+			"fps": 4.0,
+			"frames": [
+				27,
+				28
+			],
+			"loop": true
+		},
+		"sweep": {
+			"fps": 12.0,
+			"frames": [
+				13,
+				14
+			],
+			"loop": false
+		},
+		"sweep_windup": {
+			"fps": 5.0,
+			"frames": [
+				10,
+				11,
+				12
+			],
+			"loop": false
+		},
+		"throw": {
+			"fps": 12.0,
+			"frames": [
+				23,
+				24
+			],
+			"loop": false
+		},
+		"throw_windup": {
+			"fps": 5.0,
+			"frames": [
+				20,
+				21,
+				22
+			],
+			"loop": false
+		},
+		"walk": {
+			"fps": 7.0,
+			"frames": [
+				4,
+				5,
+				6,
+				7,
+				8,
+				9
+			],
+			"loop": true
+		}
+	},
+	"cell": [
+		88,
+		80
+	],
+	"hframes": 8
+}

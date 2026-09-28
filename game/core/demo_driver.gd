@@ -52,6 +52,34 @@ const DEMOS := {
 		[1.1, "school", "hex"], [1.2, "tp", "-16.5,1"], [1.8, "tap", "spell_3"], [2.3, "shot", "k02_siphon_slope"],
 		[3.6, "school", "fire"], [3.7, "tap", "spell_3"], [4.1, "shot", "k03_ward_slope"], [4.3, "quit", ""],
 	],
+	# every region on arrival, plus a few landmarks
+	"regions": [
+		[0.8, "shot", "r01_sanctuary"], [0.9, "tp", "8,-2"], [1.5, "shot", "r02_sanctuary_study"],
+		[1.6, "tp", "12,4"], [2.2, "shot", "r03_bramble"],
+		[2.4, "travel", "hearthmere:west"], [3.6, "tp", "-2,5"], [4.3, "shot", "r04_square"], [4.4, "tp", "12,-2"], [5.0, "shot", "r05_smithy"],
+		[5.2, "travel", "briarwood:west"], [6.4, "tp", "-12,12"], [7.0, "shot", "r06_roadward"], [7.1, "tp", "20,-11"], [7.8, "shot", "r07_trunk"],
+		[7.9, "tp", "12,9"], [8.5, "shot", "r08_fawn"], [8.6, "tp", "36,-10"], [9.3, "shot", "r09_gate"],
+		[9.4, "travel", "old_ward:waystone"], [13.0, "shot", "r10_oldward"], [13.1, "tp", "0,-9"], [13.8, "shot", "r11_climb"],
+		[13.9, "tp", "0,-22"], [14.6, "shot", "r12_arena"], [14.8, "quit", ""],
+	],
+	# the whole first adventure, driven by script (checks quest/flag order)
+	"story": [
+		[0.5, "tp", "6.3,2.2"], [0.9, "tap", "interact"], [1.3, "next", ""], [1.5, "next", ""], [1.7, "next", ""], [1.9, "next", ""],
+		[2.2, "state", "pell"], [2.4, "aim_enemy", ""], [2.5, "tap", "spell_1"], [3.6, "next", ""], [3.8, "clear_aim", ""], [4.0, "state", "bramble"],
+		[4.4, "travel", "hearthmere:west"], [6.0, "tp", "-3.2,1.6"], [6.4, "tap", "interact"], [6.8, "next", ""], [7.0, "next", ""],
+		[7.2, "next", ""], [7.4, "next", ""], [7.6, "state", "maren"], [7.8, "shot", "s01_village_dark"],
+		[8.2, "travel", "briarwood:west"], [9.8, "tp", "-9.6,10.6"], [10.2, "tap", "interact"], [12.4, "next", ""], [12.6, "next", ""],
+		[12.8, "shot", "s02_ward_lit"], [13.0, "state", "ward"],
+		[13.4, "tp", "22.4,-12"], [13.9, "tap", "interact"], [17.0, "shot", "s03_trunk_moved"], [17.2, "state", "trunk"],
+		[17.6, "tp", "12.2,11.5"], [18.0, "tap", "interact"], [21.4, "next", ""], [21.6, "next", ""], [22.0, "state", "fawn"],
+		[22.4, "tp", "30,-11"], [23.0, "kill", ""], [24.0, "tp", "37.4,-14.2"], [24.5, "tap", "interact"], [24.9, "next", ""],
+		[25.1, "next", ""], [25.3, "next", ""], [25.6, "pick", "1"], [26.0, "next", ""], [26.4, "state", "isolde"],
+		[27.0, "tp", "40,-11.4"], [27.4, "tap", "interact"],
+		[29.0, "shot", "s04_journey"], [32.0, "tp", "0,-26.5"], [32.6, "shot", "s05_arena"], [33.0, "kill", ""], [33.5, "kill", ""],
+		[38.0, "next", ""], [38.3, "next", ""], [38.6, "next", ""], [39.0, "shot", "s06_cleansed"], [39.2, "state", "guardian"],
+		[39.6, "travel", "briarwood:waystone"], [44.0, "travel", "hearthmere:east"], [45.5, "tp", "-3.2,1.6"], [46.0, "shot", "s07_village_restored"],
+		[46.2, "tap", "interact"], [46.6, "next", ""], [46.8, "next", ""], [47.0, "next", ""], [47.4, "state", "done"], [47.6, "shot", "s08_after"], [48.0, "quit", ""],
+	],
 	"idle_die": [
 		[0.1, "hold", "move_right"], [0.8, "release", "move_right"], [40.0, "quit", ""],
 	],
@@ -137,7 +165,7 @@ func _run(s: Array) -> void:
 		"freeze", "unfreeze":
 			for e in get_tree().get_nodes_in_group(&"enemy"):
 				e.set_physics_process(cmd == "unfreeze")
-				if cmd == "freeze":
+				if cmd == "freeze" and e is Enemy:
 					e.sprite.play(&"idle")
 		"quit":
 			print("DEMO fps=%d" % Engine.get_frames_per_second())
@@ -179,6 +207,36 @@ func _run(s: Array) -> void:
 			pl3.velocity = Vector3.ZERO
 		"pos":
 			print("DEMO pos ", s[2], " ", _player().global_position)
+		"travel":
+			# "region:entry"
+			var re: PackedStringArray = (s[2] as String).split(":")
+			get_tree().root.get_node("Main").travel(StringName(re[0]), StringName(re[1]))
+		"flag":
+			GameState.set_flag(StringName(s[2]))
+		"next":
+			if Dialogue.i and Dialogue.i.is_open:
+				Dialogue.i._shown = Dialogue.i._text.length()
+				Dialogue.i._next.emit()
+		"pick":
+			if Dialogue.i and Dialogue.i.is_open:
+				Dialogue.i._sel = int(s[2])
+				Dialogue.i._next.emit()
+		"kill":
+			var pk := _player()
+			var victim: Node3D = null
+			for e in SpellEffect.enemies():
+				if victim == null or pk.global_position.distance_to(e.global_position) < pk.global_position.distance_to(victim.global_position):
+					victim = e
+			if victim:
+				var d := Damage.make(99999.0, pk, &"storm")
+				victim.take_hit(d)
+				if victim.is_alive():
+					victim.take_hit(d)
+		"state":
+			var q := {}
+			for k in GameState.quests:
+				q[k] = GameState.quests[k]
+			print("DEMO state ", s[2], " quests=", q, " flags=", GameState.flags.keys(), " unlocks=", GameState.unlocks.keys(), " region=", Region.current.id if Region.current else "")
 		"tp_near":
 			# stand `arg` metres west of the nearest enemy, facing it
 			var pl2 := _player()

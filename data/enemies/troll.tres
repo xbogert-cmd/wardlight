@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/enemies/enemy_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"troll"
+display_name = "Gatebreaker"
+sheet = "troll"
+origin = Vector2(40, 78)
+body_size = Vector2(40, 64)
+max_hp = 520.0
+damage = 22.0
+move_speed = 1.7
+poise = 999.0
+knock_resist = 0.95
+flinch_cooldown = 99.0
+motes = 8
+aggro_range = 11.0
+params = {
+"rest": 1.2,
+"slam_damage": 26.0,
+"slam_windup": 1.05,
+"sweep_windup": 0.9,
+"throw_damage": 16.0,
+"throw_windup": 0.85
+}

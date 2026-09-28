@@ -23,6 +23,7 @@ var show_debug := false
 
 
 func _ready() -> void:
+	add_to_group(&"hud")
 	layer = 10
 	canvas = Control.new()
 	canvas.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -127,6 +128,14 @@ func _draw_hud() -> void:
 		var a := clampf(_banner_t, 0.0, 1.0)
 		text(_banner, Vector2(0, 60), Color(1, 0.92, 0.75, a), HORIZONTAL_ALIGNMENT_CENTER, 640)
 	_draw_world_marks()
+	_draw_boss()
+	_draw_prompt()
+	_draw_objective()
+	if player.has_float() and (player.levitating or player.float_left < player.tuning.float_time - 0.01):
+		var f := clampf(player.float_left / player.tuning.float_time, 0.0, 1.0)
+		var r := Rect2(31, 34 if school != "" else 30, 40, 2)
+		canvas.draw_rect(r.grow(1), Color("0c0812"))
+		canvas.draw_rect(Rect2(r.position, Vector2(roundf(r.size.x * f), r.size.y)), Pal.HEAL[2])
 	# reticle
 	if player.aim.mouse_active or Settings.aim_mode == "direct":
 		var m := canvas.get_local_mouse_position().round()
@@ -140,6 +149,46 @@ func _draw_hud() -> void:
 	if show_debug:
 		var fx_n := FX3.i.total_particles() if FX3.i else 0
 		text("%d fps  fx %d  enemies %d  ts %.2f" % [Engine.get_frames_per_second(), fx_n, get_tree().get_nodes_in_group(&"enemy").size(), Engine.time_scale], Vector2(6, 350), Color("c0ffc0"))
+
+
+## Name and health of an engaged boss, above the spell slots.
+func _draw_boss() -> void:
+	for e in get_tree().get_nodes_in_group(&"enemy"):
+		if e.is_boss and e.is_alive() and e.get("engaged"):
+			var r := Rect2(170, 300, 300, 5)
+			text(e.data.display_name, Vector2(170, 296), Color("f4d890"))
+			frame(canvas, r.grow(1), Color("0c0812"), COL_FRAME_DARK)
+			canvas.draw_rect(Rect2(r.position, Vector2(roundf(r.size.x * e.health.ratio()), r.size.y)), Color("b03a4a"))
+			canvas.draw_rect(Rect2(r.position, Vector2(roundf(r.size.x * e.health.ratio()), 1)), Color("ff8a8a"))
+			return
+
+
+## "[E] Talk to Maren" above whatever the wizard can use.
+func _draw_prompt() -> void:
+	var it: Interactable = player.focus
+	var cam := player.get_viewport().get_camera_3d()
+	if it == null or cam == null or Dialogue.i.is_open:
+		return
+	var at := cam.unproject_position(it.global_position + Vector3(0, it.prompt_height, 0)).round()
+	var key := Settings.key_label("interact")
+	var s := it.prompt
+	var w := FONT.get_string_size(s, HORIZONTAL_ALIGNMENT_LEFT, -1, 9).x + 20
+	var r := Rect2(at.x - w * 0.5, at.y - 14, w, 13)
+	frame(canvas, r)
+	canvas.draw_rect(Rect2(r.position + Vector2(3, 2), Vector2(9, 9)), Color("f4d890"))
+	canvas.draw_string(FONT, r.position + Vector2(5, 10), key, HORIZONTAL_ALIGNMENT_LEFT, -1, 9, Color("201810"))
+	text(s, r.position + Vector2(15, 10), Color("f0e6d0"))
+
+
+## Current main-quest step under the passive pips.
+func _draw_objective() -> void:
+	var step := Quests.step_text(Quests.MAIN)
+	if step == "":
+		return
+	var y := 44.0
+	for line in Dialogue._wrap(step, 190):
+		text(line, Vector2(8, y), Color("d8c8a0"))
+		y += 10
 
 
 ## Target brackets around the locked enemy and poise bars over elites,

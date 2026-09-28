@@ -23,15 +23,16 @@ const DEFAULT_KEYS := {
 	"inventory": [KEY_I],
 	"journal": [KEY_Q],
 	"build": [KEY_B],
+	"map": [KEY_M],
 	"pause": [KEY_ESCAPE],
 }
 const REMAPPABLE := ["move_left", "move_right", "up", "down", "jump", "dodge", "attack",
-	"spell_1", "spell_2", "spell_3", "spell_4", "interact", "wheel", "inventory", "journal", "build"]
+	"spell_1", "spell_2", "spell_3", "spell_4", "interact", "wheel", "inventory", "journal", "map", "build"]
 const ACTION_NAMES := {
-	"move_left": "Move left", "move_right": "Move right", "up": "Climb / up", "down": "Drop / down",
-	"jump": "Jump / float", "dodge": "Dodge", "attack": "Staff attack", "spell_1": "Spell 1",
+	"move_left": "Move left", "move_right": "Move right", "up": "Move up", "down": "Move down",
+	"jump": "Levitate (hold)", "dodge": "Dodge", "attack": "Staff attack", "spell_1": "Spell 1",
 	"spell_2": "Spell 2", "spell_3": "Spell 3", "spell_4": "Spell 4", "interact": "Interact / magic",
-	"wheel": "Spellbook", "inventory": "Inventory", "journal": "Journal", "build": "Build mode", "pause": "Pause",
+	"wheel": "Spellbook", "inventory": "Inventory", "journal": "Journal", "map": "World map", "build": "Build mode", "pause": "Pause",
 }
 
 var aim_mode := "assisted"  # or "direct"
