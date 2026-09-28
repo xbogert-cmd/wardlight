@@ -1,7 +1,7 @@
 class_name MeleeBox
 extends Node
-## An enemy melee swing: hurts the player once per swing while `active` if
-## they are within `reach` of the enemy and inside `half_angle` of its heading.
+## An enemy melee swing: hurts the player (and the companion) once per swing
+## while `active` if within `reach` and inside `half_angle` of its heading.
 
 var owner_enemy: Enemy
 var reach := 1.4
@@ -11,6 +11,7 @@ var push := 6.0
 var hop := 3.0
 var active := false
 var _hit_this_swing := false
+var _hit_ally := false
 
 
 static func make(owner_e: Enemy, reach_m: float, half_deg: float) -> MeleeBox:
@@ -28,6 +29,7 @@ func swing(dmg: float, push_speed: float, hop_speed: float = 3.0) -> void:
 	hop = hop_speed
 	active = true
 	_hit_this_swing = false
+	_hit_ally = false
 
 
 func stop() -> void:
@@ -35,18 +37,29 @@ func stop() -> void:
 
 
 func _physics_process(_delta: float) -> void:
-	if not active or _hit_this_swing:
+	if not active:
 		return
-	var p := owner_enemy.player()
-	if p == null or not p.is_alive():
-		return
-	var v := p.global_position - owner_enemy.global_position
+	if not _hit_this_swing and _in_arc(owner_enemy.player()):
+		_hit_this_swing = true
+		_strike(owner_enemy.player())
+	if not _hit_ally:
+		for c: Node3D in owner_enemy.get_tree().get_nodes_in_group(&"companion"):
+			if _in_arc(c):
+				_hit_ally = true
+				_strike(c)
+
+
+func _in_arc(t: Node3D) -> bool:
+	if t == null or not t.is_alive():
+		return false
+	var v := t.global_position - owner_enemy.global_position
 	v.y = 0.0
-	if v.length() > reach + p.radius():
-		return
-	if v.length() > 0.5 and absf(SpellEffect.flat_dir(v).angle_to(owner_enemy.heading)) > half_angle:
-		return
-	_hit_this_swing = true
+	if v.length() > reach + t.radius():
+		return false
+	return v.length() <= 0.5 or absf(SpellEffect.flat_dir(v).angle_to(owner_enemy.heading)) <= half_angle
+
+
+func _strike(t: Node3D) -> void:
 	var d := Damage.make(damage, owner_enemy, &"", owner_enemy.heading * push + Vector3(0, hop, 0))
 	d.hit_pos = owner_enemy.global_position
-	p.take_hit(d)
+	t.take_hit(d)

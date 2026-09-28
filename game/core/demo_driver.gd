@@ -114,6 +114,13 @@ const DEMOS := {
 		[3.8, "key", "4194322"], [4.0, "key", "4194309"], [4.3, "shot", "i3_fusion"], [4.5, "key", "4194309"], [4.9, "shot", "i4_fused"],
 		[5.1, "key", "4194305"], [5.5, "state", "inv"], [5.6, "quit", ""],
 	],
+	"tamsin": [
+		[0.3, "travel", "briarwood:west"], [1.8, "tp", "-15.5,2.5"], [2.2, "kill", ""], [2.8, "tp", "-18.2,2.2"], [3.2, "shot", "c1_freed"],
+		[3.4, "tap", "interact"], [3.8, "next", ""], [4.0, "next", ""], [4.2, "next", ""], [4.5, "pick", "0"], [4.9, "state", "tamsin"],
+		[5.0, "hold", "move_right"], [6.5, "shot", "c2_follow"], [7.0, "release", "move_right"],
+		[7.2, "tp", "6,0"], [7.4, "aim_enemy", ""], [8.0, "burst", "c3_fight:60:10"], [8.2, "tap", "spell_1"], [9.5, "hold", "attack"],
+		[11.5, "release", "attack"], [12.0, "tap", "spell_2"], [14.0, "quit", ""],
+	],
 	"idle_die": [
 		[0.1, "hold", "move_right"], [0.8, "release", "move_right"], [40.0, "quit", ""],
 	],
@@ -290,7 +297,7 @@ func _run(s: Array) -> void:
 			var q := {}
 			for k in GameState.quests:
 				q[k] = GameState.quests[k]
-			print("DEMO state ", s[2], " items=", GameState.inv.items.map(func(it: Dictionary) -> String: return Items.display(it)), " quests=", q, " flags=", GameState.flags.keys(), " unlocks=", GameState.unlocks.keys(), " region=", Region.current.id if Region.current else "")
+			print("DEMO state ", s[2], " items=", GameState.inv.items.map(func(it: Dictionary) -> String: return Items.display(it)), " quests=", q, " flags=", GameState.flags.keys(), " unlocks=", GameState.unlocks.keys(), " region=", Region.current.id if Region.current else "", " companion=", GameState.companion)
 		"tp_near":
 			# stand `arg` metres west of the nearest enemy, facing it
 			var pl2 := _player()

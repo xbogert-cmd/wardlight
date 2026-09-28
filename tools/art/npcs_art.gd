@@ -188,3 +188,79 @@ static func _draw_fawn(c: PixelCanvas, o: Dictionary) -> void:
 	for pair: Array in [[P.TOP, fur], [P.BOTTOM, fur], [P.APRON, moss], [P.SKIN, fur]]:
 		c.shade(pair[0], pair[1][0], pair[1][2], 1)
 	c.outline(_c("0e0a14"), 0.85)
+
+
+## Tamsin the shieldbearer (companion): kite shield with a sun sigil, short
+## spear, teal cloak. Cell 48×48, feet at (22, 46).
+static func shieldbearer() -> Dictionary:
+	var defs := [["idle", 4, 5.0, true], ["walk", 6, 10.0, true], ["attack", 3, 14.0, false], ["guard", 2, 6.0, true],
+		["hurt", 1, 10.0, false], ["downed", 2, 3.0, true], ["rise", 2, 6.0, false]]
+	var f := []
+	for i in 4:
+		f.append({"bob": [0, 0, 1, 1][i]})
+	for i in 6:
+		f.append({"step": [3, 1, -2, -3, -1, 2][i], "bob": [0, 1, 0, 0, 1, 0][i]})
+	for i in 3:
+		f.append({"spear": [-10.0, 5.0, 0.0][i], "reach": [0, 8, 4][i], "lean": [-1, 3, 1][i]})
+	for i in 2:
+		f.append({"shield_up": true, "bob": i})
+	f.append({"lean": -3, "hurt": true})
+	for i in 2:
+		f.append({"downed": i})
+	for i in 2:
+		f.append({"bob": 4 - i * 3, "lean": -2})
+	return Sheets.sheet(f, Vector2i(48, 48), _draw_shieldbearer, defs)
+
+
+static func _draw_shieldbearer(c: PixelCanvas, o: Dictionary) -> void:
+	var skin := _ramp("c89070")
+	var hair := _ramp("3a2418")
+	var cloak := _ramp("2a6a6a")
+	var steel := _ramp("a8b0c0")
+	var wood := _ramp("7a5a3a")
+	var sun := _ramp("f0c850")
+	if o.has("downed"):
+		c.poly(PackedVector2Array([Vector2(6, 46), Vector2(10, 40), Vector2(30, 39), Vector2(34, 46)]), cloak[1], P.TOP)
+		c.ellipse(34, 42, 3.5, 3.5, skin[1], P.SKIN)
+		c.ellipse(16 + o.downed, 42, 9, 4, steel[1], P.ITEM)
+		c.put(16 + o.downed, 42, sun[1], P.GLOW)
+		for pair: Array in [[P.TOP, cloak], [P.ITEM, steel], [P.SKIN, skin]]:
+			c.shade(pair[0], pair[1][0], pair[1][2], 1)
+		c.outline(_c("0e0a14"), 0.85)
+		return
+	var bob: float = o.get("bob", 0)
+	var lean: float = o.get("lean", 0)
+	var st: float = o.get("step", 0)
+	var u := Vector2(lean, bob)
+	# legs
+	c.stroke(Vector2(20, 34) + u * 0.4, Vector2(19 - st, 46), 3, steel[2], P.BOTTOM)
+	c.stroke(Vector2(24, 34) + u * 0.4, Vector2(25 + st, 46), 3, steel[1], P.BOTTOM)
+	# cloak behind
+	c.poly(PackedVector2Array([Vector2(16, 20) + u, Vector2(24, 20) + u, Vector2(22, 40) + u * 0.5, Vector2(12, 42) + u * 0.5]), cloak[2], P.APRON)
+	# spear arm (back)
+	var sh := Vector2(18, 22) + u
+	var ang := deg_to_rad(o.get("spear", -10.0))
+	var hand := sh + Vector2(6 + o.get("reach", 0), 6)
+	c.stroke(sh, hand, 3, steel[2], P.TOP)
+	c.stroke(hand - Vector2.from_angle(ang) * 10.0, hand + Vector2.from_angle(ang) * 16.0, 1, wood[1], P.ITEM2)
+	var tip := hand + Vector2.from_angle(ang) * 16.0
+	c.poly(PackedVector2Array([tip, tip + Vector2.from_angle(ang + 2.6) * 4.0, tip + Vector2.from_angle(ang) * 4.0, tip + Vector2.from_angle(ang - 2.6) * 4.0]), steel[0], P.ITEM)
+	# torso: mail and a teal tabard
+	c.poly(PackedVector2Array([Vector2(17, 20) + u, Vector2(27, 20) + u, Vector2(28, 35) + u * 0.5, Vector2(16, 35) + u * 0.5]), steel[1], P.ITEM)
+	c.rect(int(19 + lean), int(22 + bob), 6, 13, cloak[1], P.TOP)
+	# head
+	var head := Vector2(23, 15) + u
+	c.ellipse(head.x, head.y, 3.8, 4.2, skin[1], P.SKIN)
+	c.poly(PackedVector2Array([head + Vector2(-4, 3), head + Vector2(-4, -3), head + Vector2(0, -5), head + Vector2(4, -3), head + Vector2(-1, -2), head + Vector2(-2, 4)]), hair[1], P.HAIR)
+	c.put(int(head.x) + 2, int(head.y) - 1, _c("1a1418"), P.EYE)
+	# the kite shield in front
+	var sp := Vector2(29, 27) + Vector2(lean * 0.5, bob) + (Vector2(2, -6) if o.get("shield_up", false) else Vector2.ZERO)
+	c.poly(PackedVector2Array([sp + Vector2(-5, -9), sp + Vector2(5, -9), sp + Vector2(5, 3), sp + Vector2(0, 11), sp + Vector2(-5, 3)]), steel[1], P.ITEM)
+	c.poly(PackedVector2Array([sp + Vector2(-4, -8), sp + Vector2(4, -8), sp + Vector2(4, 2), sp + Vector2(0, 9), sp + Vector2(-4, 2)]), cloak[1], P.TOP)
+	c.ellipse(sp.x, sp.y - 1, 2.4, 2.4, sun[1], P.GLOW)
+	for k in 4:
+		var a := k * PI / 2 + PI / 4
+		c.put(int(sp.x + cos(a) * 3.6), int(sp.y - 1 + sin(a) * 3.6), sun[0], P.GLOW)
+	for pair: Array in [[P.SKIN, skin], [P.HAIR, hair], [P.TOP, cloak], [P.APRON, cloak], [P.ITEM, steel], [P.BOTTOM, steel]]:
+		c.shade(pair[0], pair[1][0], pair[1][2], 1)
+	c.outline(_c("0e0a14"), 0.85)

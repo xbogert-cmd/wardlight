@@ -8,6 +8,7 @@ extends Region
 var pell: Npc
 var bramble: Bramble
 var isolde: Npc
+var tamsin: Npc
 
 
 func _layout() -> void:
@@ -140,6 +141,19 @@ func _folk() -> void:
 			await get_tree().create_timer(0.6).timeout
 			await Dialogue.i.talk([["Pell", "Ha! That's the {name} I remember. I'll run ahead and tell Maren you're coming!"]])
 			_pell_leaves())
+	tamsin = Npc.new()
+	tamsin.sheet = "tamsin"
+	tamsin.display = "Tamsin"
+	add_child(tamsin)
+	tamsin.global_position = _ground(-2.5, 2.2)
+	tamsin.on_talk = func() -> void:
+		var k: int = await Dialogue.i.choose("Tamsin", "Polishing my shield, {name}. Need it?", ["Come with me", "Rest here a while"])
+		if k == 0:
+			GameState.companion.following = true
+			tamsin.visible = false
+			tamsin.enabled = false
+			get_tree().root.get_node("Main").sync_companion()
+			SaveSystem.autosave()
 	isolde = Npc.new()
 	isolde.sheet = "isolde"
 	isolde.display = "Isolde"
@@ -191,6 +205,9 @@ func apply_state() -> void:
 	if GameState.flag(&"intro_talked") and GameState.flag(&"bramble_cleared"):
 		pell.visible = false
 		pell.enabled = false
+	var waiting: bool = GameState.companion.recruited and not GameState.companion.following
+	tamsin.visible = waiting
+	tamsin.enabled = waiting
 	var here: bool = GameState.flag(&"isolde_home", "") == "sanctuary"
 	isolde.visible = here
 	isolde.enabled = here

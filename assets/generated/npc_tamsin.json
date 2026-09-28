@@ -1,0 +1,71 @@
+{
+	"anims": {
+		"attack": {
+			"fps": 14.0,
+			"frames": [
+				10,
+				11,
+				12
+			],
+			"loop": false
+		},
+		"downed": {
+			"fps": 3.0,
+			"frames": [
+				16,
+				17
+			],
+			"loop": true
+		},
+		"guard": {
+			"fps": 6.0,
+			"frames": [
+				13,
+				14
+			],
+			"loop": true
+		},
+		"hurt": {
+			"fps": 10.0,
+			"frames": [
+				15
+			],
+			"loop": false
+		},
+		"idle": {
+			"fps": 5.0,
+			"frames": [
+				0,
+				1,
+				2,
+				3
+			],
+			"loop": true
+		},
+		"rise": {
+			"fps": 6.0,
+			"frames": [
+				18,
+				19
+			],
+			"loop": false
+		},
+		"walk": {
+			"fps": 10.0,
+			"frames": [
+				4,
+				5,
+				6,
+				7,
+				8,
+				9
+			],
+			"loop": true
+		}
+	},
+	"cell": [
+		48,
+		48
+	],
+	"hframes": 8
+}

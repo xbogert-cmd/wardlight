@@ -19,6 +19,8 @@ var isolde: Npc
 var traveler: Npc
 var troll: Enemy
 var gate_stone: Interactable
+var tamsin: Npc
+var tamsin_thorns: Array[PixelBillboard] = []
 
 
 func _layout() -> void:
@@ -347,7 +349,50 @@ func _gate() -> void:
 			await Dialogue.i.talk([["", "The waystone hums, but the missing travellers come first."]]))
 
 
+func _tamsin() -> void:
+	tamsin = Npc.new()
+	tamsin.sheet = "tamsin"
+	tamsin.display = "Tamsin"
+	add_child(tamsin)
+	tamsin.global_position = _ground(-19.5, 2.2)
+	tamsin.sprite.play(&"guard")
+	for k in 6:
+		var a := k * TAU / 6.0
+		tamsin_thorns.append(bill(load(D + "roots.png"), _ground(-19.5 + cos(a) * 0.8, 2.2 + sin(a) * 0.6), 1.2))
+	tamsin.on_talk = func() -> void:
+		if not GameState.flag(&"tamsin_freed"):
+			await Dialogue.i.talk([["Tamsin", "Wizard! These roots won't give. It's that knot-thing by the stones: it's got its claws in the ground under me."]])
+			return
+		await Dialogue.i.talk([
+			["Tamsin", "Hah! Free. Thank you. Tamsin Holt, shieldbearer of the Gate Watch... what's left of it."],
+			["Tamsin", "That troll smashed our gate and scattered us. I've been fighting roots for two days."],
+			["Tamsin", "You're clearly headed somewhere dangerous. My shield's yours, if you'll have it."],
+		])
+		var k: int = await Dialogue.i.choose("Tamsin", "Shall I come along?", ["Walk with me", "Wait at my sanctuary for now"])
+		GameState.companion = {"recruited": true, "following": k == 0}
+		GameState.once(&"tamsin_recruited")
+		tamsin.visible = false
+		tamsin.enabled = false
+		get_tree().root.get_node("Main").sync_companion()
+		SaveSystem.autosave()
+
+
+func _free_tamsin() -> void:
+	if GameState.flag(&"tamsin_freed"):
+		return
+	GameState.set_flag(&"tamsin_freed")
+	for t in tamsin_thorns:
+		var tw := t.create_tween()
+		tw.tween_property(t, "position:y", t.position.y - 1.2, 0.6)
+	tamsin.sprite.play(&"rise", true)
+	FX3.burst(tamsin.global_position + Vector3(0, 0.5, 0), 20, Pal.DUST, Vector2(1.0, 3.0), Vector2(0.4, 0.7), {"gravity": 5.0})
+	var hud := get_tree().get_first_node_in_group(&"hud") as HUD
+	if hud:
+		hud.toast("The roots around the shieldbearer wither")
+
+
 func _folk() -> void:
+	_tamsin()
 	isolde = Npc.new()
 	isolde.sheet = "isolde"
 	isolde.display = "Isolde"
@@ -403,6 +448,8 @@ func _folk_leave() -> void:
 # ------------------------------------------------------------------ state
 func spawn(kind: StringName, x: float, z: float) -> Enemy:
 	var e := super.spawn(kind, x, z)
+	if kind == &"knot" and Vector2(x, z).distance_to(ruins) < 12.0:
+		e.died.connect(func(_e: Enemy) -> void: _free_tamsin())
 	if kind == &"troll":
 		troll = e
 		e.died.connect(func(_e: Enemy) -> void:
@@ -440,3 +487,10 @@ func apply_state() -> void:
 		traveler.enabled = false
 	if GameState.flag(&"road_ward_lit"):
 		respawn_entry = &"ward"
+	if GameState.companion.recruited:
+		tamsin.visible = false
+		tamsin.enabled = false
+	elif GameState.flag(&"tamsin_freed"):
+		for t in tamsin_thorns:
+			t.visible = false
+		tamsin.sprite.play(&"idle")

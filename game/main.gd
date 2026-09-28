@@ -24,6 +24,7 @@ var dialogue: Dialogue
 var journey: Journey
 var _fade: ColorRect
 var _traveling := false
+var companion: Shieldbearer
 
 
 func _ready() -> void:
@@ -161,6 +162,8 @@ func _load_region(id: StringName, entry: StringName, script: Script = null) -> v
 	if level:
 		level.leave()
 		player.reparent(self)
+		if companion:
+			companion.reparent(self)
 		level.queue_free()
 	var s: Script = script if script else load(REGIONS[id])
 	level = s.new()
@@ -168,10 +171,27 @@ func _load_region(id: StringName, entry: StringName, script: Script = null) -> v
 	add_child(level)
 	level.exit_requested.connect(travel)
 	level.enter(player, entry)
+	sync_companion()
 	GameState.learn_place(id)
 	GameState.region = id
 	GameState.entry = entry
 	hud.banner(level.display_name)
+
+
+## Tamsin walks with the wizard while `following`; otherwise she waits at
+## the sanctuary (as an NPC there) or hasn't been met yet.
+func sync_companion() -> void:
+	var want: bool = GameState.companion.following and level != null
+	if want and companion == null:
+		companion = Shieldbearer.new()
+		level.add_child(companion)
+		companion.warp_near(player)
+	elif want and companion.get_parent() != level:
+		companion.reparent(level)
+		companion.warp_near(player)
+	elif not want and companion:
+		companion.queue_free()
+		companion = null
 
 
 static func _distant(a: StringName, b: StringName) -> bool:

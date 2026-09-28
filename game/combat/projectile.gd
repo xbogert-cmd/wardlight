@@ -112,7 +112,8 @@ func _physics_process(delta: float) -> void:
 
 func _targets() -> Array:
 	if team == &"enemy":
-		return (Engine.get_main_loop() as SceneTree).get_nodes_in_group(&"player")
+		var tree := Engine.get_main_loop() as SceneTree
+		return tree.get_nodes_in_group(&"player") + tree.get_nodes_in_group(&"companion")
 	return SpellEffect.enemies()
 
 

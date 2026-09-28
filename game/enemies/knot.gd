@@ -134,14 +134,15 @@ class ThornPatch extends Node3D:
 		_hurt(damage, true)
 
 	func _hurt(amount: float, eruption: bool) -> void:
-		var p := get_tree().get_first_node_in_group(&"player") as Player
-		if p == null or not p.is_alive():
-			return
-		if SpellEffect.flat(p.global_position, global_position) < radius + p.radius() and absf(p.global_position.y - global_position.y) < 1.2:
-			var d := Damage.make(amount, source, &"", Vector3(0, 7.0 if eruption else 2.0, 0))
-			d.hit_pos = global_position
-			d.active_attack = eruption
-			p.take_hit(d)
+		var targets: Array = get_tree().get_nodes_in_group(&"player") + get_tree().get_nodes_in_group(&"companion")
+		for p: Node3D in targets:
+			if not p.is_alive():
+				continue
+			if SpellEffect.flat(p.global_position, global_position) < radius + p.radius() and absf(p.global_position.y - global_position.y) < 1.2:
+				var d := Damage.make(amount, source, &"", Vector3(0, 7.0 if eruption else 2.0, 0))
+				d.hit_pos = global_position
+				d.active_attack = eruption
+				p.take_hit(d)
 
 	func _physics_process(delta: float) -> void:
 		t += delta
