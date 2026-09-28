@@ -1,0 +1,51 @@
+extends SceneTree
+## Regenerates all static art into res://assets/generated/.
+## godot --headless --path . --script tools/gen_art.gd
+## Then run `godot --headless --path . --import` so Godot picks the files up.
+
+const OUT := "res://assets/generated/"
+const Tiles = preload("res://tools/art/tiles_art.gd")
+const Bgs = preload("res://tools/art/backgrounds_art.gd")
+const Enemies = preload("res://tools/art/enemies_art.gd")
+const Fx = preload("res://tools/art/fx_art.gd")
+const Icons = preload("res://tools/art/icons_art.gd")
+
+
+func _init() -> void:
+	DirAccess.make_dir_recursive_absolute(OUT)
+	var t0 := Time.get_ticks_msec()
+	var only := OS.get_cmdline_user_args()
+	var want := func(k: String) -> bool: return only.is_empty() or only.has(k)
+	if want.call("tiles"):
+		Tiles.build().save_png(OUT + "tiles.png")
+	if want.call("bg"):
+		for region in Bgs.REGIONS:
+			var layers: Dictionary = Bgs.build(region)
+			for k in layers:
+				(layers[k] as Image).save_png(OUT + "bg_%s_%s.png" % [region, k])
+	if want.call("enemies"):
+		_save_sheet("hound", Enemies.hound())
+	if want.call("fx"):
+		for s in [16, 32, 64]:
+			Fx.glow(s).save_png(OUT + "glow%d.png" % s)
+		Fx.rune_ring(24, 3).save_png(OUT + "rune24.png")
+		Fx.rune_ring(40, 7).save_png(OUT + "rune40.png")
+		Fx.rune_ring(64, 11).save_png(OUT + "rune64.png")
+	if want.call("icons"):
+		Icons.build().save_png(OUT + "icons.png")
+	if want.call("icon"):
+		var w := WizardArt.build({})
+		var icon := Image.create_empty(64, 64, false, Image.FORMAT_RGBA8)
+		icon.fill(Color.html("1d1830"))
+		icon.blend_rect(w.image, Rect2i(8, 0, 64, 64), Vector2i(0, 0))
+		icon.resize(256, 256, Image.INTERPOLATE_NEAREST)
+		icon.save_png(OUT + "icon.png")
+	print("art generated in %d ms" % (Time.get_ticks_msec() - t0))
+	quit()
+
+
+func _save_sheet(sheet_name: String, s: Dictionary) -> void:
+	(s.image as Image).save_png(OUT + sheet_name + ".png")
+	var meta := {"cell": [s.cell.x, s.cell.y], "hframes": s.hframes, "anims": s.anims}
+	var f := FileAccess.open(OUT + sheet_name + ".json", FileAccess.WRITE)
+	f.store_string(JSON.stringify(meta, "\t"))

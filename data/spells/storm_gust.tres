@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="SpellData" format=3]
+
+[ext_resource type="Script" path="res://game/combat/spell_data.gd" id="1"]
+[ext_resource type="Script" path="res://game/combat/spells/storm_gust.gd" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = &"storm_gust"
+display_name = "Static Gust"
+school = "storm"
+is_basic = true
+mana_cost = 0.0
+cooldown = 0.32
+windup = 0.0
+recovery = 0.1
+damage = 7.0
+icon = 14
+description = "A free, short electric gust from the staff. Pushes enemies back up close."
+effect = ExtResource("2")
+params = {
+"arc": 36.0,
+"range": 54.0
+}

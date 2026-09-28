@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="SpellData" format=3]
+
+[ext_resource type="Script" path="res://game/combat/spell_data.gd" id="1"]
+[ext_resource type="Script" path="res://game/combat/spells/arc_lance.gd" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = &"arc_lance"
+display_name = "Arc Lance"
+school = "storm"
+mana_cost = 16.0
+cooldown = 0.9
+windup = 0.14
+recovery = 0.12
+damage = 24.0
+icon = 8
+description = "Gather lightning and hurl it as a fast bolt."
+upgrade_name = "Forked Lance"
+upgrade_description = "On impact the bolt forks to 2 more enemies for 50% damage."
+effect = ExtResource("2")
+params = {
+"range": 330.0,
+"speed": 470.0
+}
+upgrade_params = {
+"fork_mult": 0.5,
+"fork_range": 110.0,
+"forks": 2
+}

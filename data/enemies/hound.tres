@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://game/enemies/enemy_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"hound"
+display_name = "Gloamhound"
+sheet = "hound"
+origin = Vector2(28, 38)
+body_size = Vector2(26, 16)
+max_hp = 70.0
+damage = 16.0
+move_speed = 150.0
+poise = 20.0
+knock_resist = 0.1
+flinch_cooldown = 1.4
+motes = 3
+aggro_range = 280.0
+params = {
+"leap_time": 0.52,
+"land_recover": 0.75,
+"preferred_dist": 120.0,
+"rest": 1.1,
+"windup": 0.6
+}
