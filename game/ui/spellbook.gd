@@ -129,6 +129,54 @@ func _unhandled_key_input(e: InputEvent) -> void:
 		_move(Vector2i(0, 1))
 	elif pk in [KEY_ENTER, KEY_KP_ENTER, KEY_SPACE, KEY_E]:
 		_confirm()
+	elif pk == KEY_U:
+		_buy_upgrade()
+	elif pk == KEY_T:
+		_train()
+
+
+## Spend a progression point on the selected spell's upgrade.
+func _buy_upgrade() -> void:
+	var id := _spell_at(cur)
+	var wiz: WizardState = player.wiz
+	var d := SpellDB.get_spell(id)
+	var inv := GameState.inv
+	if not wiz.unlocked.has(id):
+		_say("Learn the spell first")
+	elif d.upgrade_name == "" or wiz.upgrades.has(id):
+		_say("Nothing more to learn here")
+	elif inv.points < 1:
+		_say("Needs 1 progression point")
+	else:
+		inv.points -= 1
+		wiz.upgrades[id] = true
+		inv.changed.emit()
+		Sfx.play("ward_light", -4.0)
+		_say("Learned: " + d.upgrade_name)
+		SaveSystem.autosave()
+		return
+	Sfx.play("fail", -6.0)
+
+
+## Spend a progression point on affinity with the selected spell's school.
+func _train() -> void:
+	var school: String = WizardState.SCHOOLS[cur.y]
+	var wiz: WizardState = player.wiz
+	var inv := GameState.inv
+	if wiz.is_native(school):
+		_say("Your own school needs no training")
+	elif inv.points < 1:
+		_say("Needs 1 progression point")
+	elif not wiz.train(school):
+		_say("Fully trained")
+	else:
+		inv.points -= 1
+		inv.changed.emit()
+		Sfx.play("ward_light", -4.0)
+		_say("%s affinity %d%%" % [WizardState.SCHOOL_NAMES[school], roundi(wiz.affinity_mult(school) * 100.0)])
+		SaveSystem.autosave()
+		return
+	Sfx.play("fail", -6.0)
 
 
 func _is_nav(e: InputEvent) -> bool:
@@ -200,6 +248,7 @@ func _draw() -> void:
 	_t(WizardState.SCHOOL_NAMES[wiz.school], p + Vector2(80, 18), sc)
 	var pas: Array = PASSIVE_TEXT[wiz.school]
 	_t("Passive: " + pas[0], p + Vector2(230, 18), sc)
+	_t("Points %d" % GameState.inv.points, p + Vector2(PANEL.size.x - 62, 18), Color("f4d890"))
 	_wrap(pas[1], p + Vector2(14, 31), 428, Color("b8aa94"), 2)
 	# slots
 	_t("Loadout", p + Vector2(10, 50), Color("c8b898"))
@@ -245,7 +294,7 @@ func _draw() -> void:
 	# details
 	_details(SpellDB.get_spell(_spell_at(cur)), Rect2(p + Vector2(232, 50), Vector2(214, 200)))
 	# footer
-	_t("1-4 slot   Arrows choose   Enter equip   Tab close", p + Vector2(0, PANEL.size.y - 8), Color("8a7a64"), HORIZONTAL_ALIGNMENT_CENTER, PANEL.size.x)
+	_t("1-4 slot   Arrows choose   Enter equip   U upgrade   T train   Tab close", p + Vector2(0, PANEL.size.y - 8), Color("8a7a64"), HORIZONTAL_ALIGNMENT_CENTER, PANEL.size.x)
 	if _msg_t > 0.0:
 		_t(_msg, p + Vector2(0, PANEL.size.y - 20), Color("f4d890"), HORIZONTAL_ALIGNMENT_CENTER, PANEL.size.x)
 
@@ -269,7 +318,7 @@ func _details(d: SpellData, r: Rect2) -> void:
 	y = _wrap(d.description, Vector2(x, y), r.size.x, Color("e8dcc4"), 4) + 4
 	if d.upgrade_name != "":
 		var owned := wiz.upgrades.has(d.id)
-		_t(("Upgrade: " if owned else "Upgrade (not yet earned): ") + d.upgrade_name, Vector2(x, y), Color("f4d890") if owned else Color("a89070"))
+		_t(("Upgrade: " if owned else "Upgrade (U, 1 point): ") + d.upgrade_name, Vector2(x, y), Color("f4d890") if owned else Color("a89070"))
 		y += 11
 		y = _wrap(d.upgrade_description, Vector2(x, y), r.size.x, Color("c8bca4") if owned else Color("8a8070"), 3)
 	if not known:

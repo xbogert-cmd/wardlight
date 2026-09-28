@@ -126,6 +126,7 @@ func _ruins() -> void:
 		var sz: Vector3 = s[1]
 		box(sz, _ground(p.x, p.y) + Vector3(0, sz.y * 0.5 - 0.1, 0), "rune_bricks.png" if sz.y > 1.5 else "bricks.png", Vector3(0, deg_to_rad(s[2]), deg_to_rad(s[2] * 0.3)))
 	brazier(-15.2, -0.6)
+	chest(-19.2, -4.6, &"chest_ruins", [[&"ember_seed"]], 15, 0.2)
 
 
 func _valley() -> void:
@@ -317,16 +318,12 @@ func _ledge() -> void:
 	it.activated.connect(func(p: Player) -> void:
 		it.enabled = false
 		glint.visible = false
-		var got := [""]   # lambdas capture by value: write through an array
 		GameState.once(&"ledge_satchel", func() -> void:
-			for id: StringName in WizardState.BASE[p.wiz.school]:
-				if not p.wiz.upgrades.has(id):
-					p.wiz.upgrades[id] = true
-					got[0] = SpellDB.get_spell(id).upgrade_name
-					break)
+			give(&"gale_feather")
+			give_point())
 		FX3.burst(g + Vector3(0, 0.6, 0), 24, Pal.MANA, Vector2(0.5, 2.5), Vector2(0.5, 1.0), {"gravity": -1.0})
 		Sfx.play("mote", 0.0)
-		var text: String = "Inside, a traveller's spell-notes. You learn: %s." % got[0] if got[0] != "" else "The satchel is empty now."
+		var text := "Tucked inside: a traveller's spell-notes and a feather that never quite settles."
 		await Dialogue.i.talk([["", text]]))
 	set_meta(&"ledge_it", it)
 
@@ -410,9 +407,14 @@ func spawn(kind: StringName, x: float, z: float) -> Enemy:
 		troll = e
 		e.died.connect(func(_e: Enemy) -> void:
 			GameState.set_flag(&"troll_defeated")
+			var at: Vector3 = _e.center()
 			GameState.once(&"troll_reward", func() -> void:
 				player.health.heal(player.health.max_hp)
-				player.mana.refill())
+				player.mana.refill()
+				var staff: StringName = {"fire": &"cinderbrand", "hex": &"gravewood", "storm": &"stormcoil"}[player.wiz.school]
+				Loot.item(self, at, staff)
+				Loot.item(self, at, &"ward_bell")
+				give_decor(&"hut", "Gatewood hut (from the broken gate's timbers)"))
 			var hud := get_tree().get_first_node_in_group(&"hud") as HUD
 			if hud:
 				hud.banner("The Gatebreaker falls"))

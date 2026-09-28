@@ -27,6 +27,25 @@ func dmg(mult: float = 1.0, kb: Vector3 = Vector3.ZERO) -> Damage:
 	return d
 
 
+## The equipped staff's signature on staff attacks.
+func _staff_identity(target_actor: Node3D, d: Damage) -> void:
+	match GameState.inv.staff_id():
+		&"cinderbrand":
+			d.statuses.append({"id": &"burn", "duration": 2.0, "power": 3.0})
+		&"gravewood":
+			d.statuses.append({"id": &"curse", "duration": 2.5})
+		&"stormcoil":
+			if bonus.has("coil"):
+				return
+			bonus["coil"] = true
+			var e := SpellEffect.nearest(target_actor.center(), 3.5, [target_actor], target_actor)
+			if e:
+				FX3.bolt(target_actor.center(), e.center(), 0.15, Pal.school(&"storm"), 0.12)
+				var pd := proc_dmg(d.amount * 0.5, &"storm", &"stormcoil")
+				pd.hit_pos = e.center()
+				SpellEffect.later(0.05, func() -> void: hit(e, pd))
+
+
 ## Proc damage (passives / interactions): cannot trigger further procs.
 func proc_dmg(amount: float, school: StringName, id: StringName) -> Damage:
 	var d := Damage.make(amount, caster, school)
@@ -47,6 +66,8 @@ func hit(target_actor: Node3D, d: Damage) -> void:
 		d.hit_pos = target_actor.center()
 	if bonus.has("heat") and not d.is_proc:
 		d.statuses.append({"id": &"burn", "duration": 2.5, "power": 4.0})
+	if data.is_basic and not d.is_proc:
+		_staff_identity(target_actor, d)
 	for s: Dictionary in d.statuses:
 		target_actor.statuses.apply(s.id, s.duration, s.get("power", 0.0), caster)
 	target_actor.take_hit(d)

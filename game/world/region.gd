@@ -173,6 +173,7 @@ func set_checkpoint(entry: StringName) -> void:
 	respawn_entry = entry
 	GameState.region = id
 	GameState.entry = entry
+	SaveSystem.autosave()
 
 
 func _spawn_enemies() -> void:
@@ -701,6 +702,60 @@ func checkpoint_stone(x: float, z: float, entry: StringName) -> void:
 				hud.banner("Checkpoint"))
 	add_child(t)
 	entries[entry] = [g + Vector3(0.8, 0, 1.0), 1.0]
+
+
+## A chest that gives `contents` ([[item id, tier], ...]) and `coins` once
+## (event `event_id`). Opened chests stay open on later visits.
+func chest(x: float, z: float, event_id: StringName, contents: Array, coins := 0, yaw := 0.0) -> void:
+	var g := _ground(x, z)
+	box(Vector3(1.0, 0.55, 0.65), g + Vector3(0, 0.27, 0), "wood.png", Vector3(0, yaw, 0), true, Color(0.75, 0.55, 0.4))
+	var lid := box(Vector3(1.05, 0.2, 0.7), g + Vector3(0, 0.62, 0), "wood.png", Vector3(0, yaw, 0), false, Color(0.85, 0.65, 0.45))
+	box(Vector3(1.08, 0.08, 0.72), g + Vector3(0, 0.45, 0), "bricks.png", Vector3(0, yaw, 0), false, Color(0.9, 0.8, 0.5))
+	var it := Interactable.make(g, "Open the chest", 1.6, 1.2)
+	add_child(it)
+	var opened := func() -> void:
+		it.enabled = false
+		lid.position.y += 0.25
+		lid.rotation.x = -0.6
+	if GameState.events.has(event_id):
+		opened.call()
+		return
+	it.activated.connect(func(_p: Player) -> void:
+		opened.call()
+		GameState.once(event_id, func() -> void:
+			for c: Array in contents:
+				Loot.item(self, g + Vector3(0, 0.8, 0), c[0], c[1] if c.size() > 1 else 1)
+			for k in mini(coins, 8):
+				Loot.coin(self, g + Vector3(0, 0.8, 0), coins / mini(coins, 8) + (1 if k < coins % mini(coins, 8) else 0))
+			Sfx.play("ward_light", -6.0)
+			FX3.burst(g + Vector3(0, 0.8, 0), 20, [Color("fff0c0"), Color("f0c870"), Color("a07840")], Vector2(1.0, 3.0), Vector2(0.4, 0.8), {"gravity": 3.0})))
+
+
+## A reward notice (items go straight to the bags).
+func reward(lines: Array) -> void:
+	var hud := get_tree().get_first_node_in_group(&"hud") as HUD
+	for l: String in lines:
+		if hud:
+			hud.toast(l)
+
+
+## Grant an item directly (quest gifts), with a notice.
+func give(id: StringName, tier := 1) -> void:
+	var inst := GameState.inv.add(id, tier)
+	if not inst.is_empty():
+		reward(["Received: " + Items.display(inst)])
+
+
+func give_point(n := 1) -> void:
+	GameState.inv.points += n
+	GameState.inv.changed.emit()
+	reward(["+%d progression point%s" % [n, "s" if n > 1 else ""]])
+
+
+func give_decor(id: StringName, label: String) -> void:
+	GameState.inv.decor[id] = true
+	GameState.inv.changed.emit()
+	reward(["New for your home: " + label])
 
 
 ## Contextual magic: lock the wizard in the raise/gather pose for `secs`,

@@ -18,6 +18,11 @@ var _burn_acc := 0.0
 func apply(id: StringName, duration: float, power: float = 0.0, src: Node = null) -> void:
 	if id == &"root":
 		duration *= 1.0 - root_resist
+	if src is Player:
+		if id == &"burn":
+			power *= 1.0 + GameState.inv.relic(&"ember_seed")
+		elif id == &"curse":
+			duration += GameState.inv.relic(&"whisper_bone")
 	var cur: Dictionary = _s.get(id, {})
 	_s[id] = {"t": maxf(duration, cur.get("t", 0.0)), "power": maxf(power, cur.get("power", 0.0)), "src": src}
 	changed.emit()

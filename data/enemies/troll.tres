@@ -18,6 +18,8 @@ flinch_cooldown = 99.0
 motes = 8
 aggro_range = 11.0
 params = {
+"coins": 30,
+"xp": 120,
 "rest": 1.2,
 "slam_damage": 26.0,
 "slam_windup": 1.05,

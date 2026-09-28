@@ -158,6 +158,7 @@ func _die() -> void:
 		m.set("velocity", Vector3(randf_range(-2.8, 2.8), randf_range(3.5, 6.0), randf_range(-2.8, 2.8)))
 		get_parent().add_child.call_deferred(m)
 		m.set_deferred("global_position", center())
+	_rewards()
 	died.emit(self)
 	Interactions.on_enemy_died(self, last_hit)
 	Events.enemy_killed.emit(self, last_hit)
@@ -165,6 +166,23 @@ func _die() -> void:
 	tw.tween_interval(1.4)
 	tw.tween_method(sprite.set_fade, 0.0, 1.0, 0.5)
 	tw.tween_callback(queue_free)
+
+
+## Experience, coins and (rarely) a relic. Bosses give their guaranteed
+## loot through their region instead.
+func _rewards() -> void:
+	var xp := int(data.params.get("xp", data.motes * 5))
+	var got := GameState.inv.gain_xp(xp)
+	if got > 0:
+		var hud := get_tree().get_first_node_in_group(&"hud") as HUD
+		if hud:
+			hud.toast("+%d progression point%s" % [got, "s" if got > 1 else ""])
+	var coins := int(data.params.get("coins", data.motes))
+	for k in mini(coins, 6):
+		Loot.coin(get_parent(), center(), coins / mini(coins, 6) + (1 if k < coins % mini(coins, 6) else 0))
+	if not is_boss and randf() < 0.06:
+		var relics := Items.RELIC.keys()
+		Loot.item(get_parent(), center(), relics[randi() % relics.size()])
 
 
 func _physics_process(delta: float) -> void:

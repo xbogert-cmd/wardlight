@@ -18,6 +18,8 @@ flinch_cooldown = 99.0
 motes = 12
 aggro_range = 13.0
 params = {
+"coins": 50,
+"xp": 200,
 "root_resist": 1.0,
 "roots_windup": 1.0,
 "seed_damage": 14.0,

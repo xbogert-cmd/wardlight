@@ -30,6 +30,8 @@ var focus: Interactable = null      # nearest usable thing (E)
 var levitating := false
 var float_left := 0.0
 var _float_base := 0.0
+var _bell_cd := 0.0
+var _ward_t := 0.0      # Wardweave: window after a dodge
 var _last_safe := Vector3.ZERO
 var _shadow: BlobShadow
 ## Incoming-damage multiplier from wards, with its remaining time.
@@ -95,7 +97,7 @@ func _ready() -> void:
 	add_child(statuses)
 	sprite = PixelBillboard.new()
 	add_child(sprite)
-	set_look({})
+	set_look(GameState.appearance)
 	_shadow = BlobShadow.make(0.9)
 	add_child(_shadow)
 	aim = Aim.new()
@@ -118,8 +120,25 @@ func set_look(l: Dictionary) -> void:
 
 ## Permanent rewards stored in GameState (max health / mana charms).
 func apply_bonuses() -> void:
-	health.max_hp = tuning.max_hp + float(GameState.flag(&"hp_bonus", 0.0))
+	var inv := GameState.inv
+	health.max_hp = tuning.max_hp + float(GameState.flag(&"hp_bonus", 0.0)) + inv.hp_bonus()
+	health.hp = minf(health.hp, health.max_hp)
 	mana.max_mp = tuning.max_mana + float(GameState.flag(&"mana_bonus", 0.0))
+	mana.regen = tuning.mana_regen * (1.0 + inv.relic(&"moonstone"))
+
+
+## Put on equipment: stats follow, and the wizard's silhouette takes the
+## item's look (the appearance mirror can change it back).
+func equipment_changed() -> void:
+	apply_bonuses()
+	var look := GameState.appearance.duplicate()
+	look.merge(GameState.inv.look(), true)
+	GameState.appearance = look
+	set_look(look)
+
+
+func float_time() -> float:
+	return tuning.float_time * (1.5 if GameState.inv.robe_id() == &"mistcloak" else 1.0)
 
 
 func center() -> Vector3:
@@ -207,6 +226,8 @@ func _physics_process(delta: float) -> void:
 	_state_t += delta
 	_iframes = maxf(0.0, _iframes - delta)
 	_dodge_cd = maxf(0.0, _dodge_cd - delta)
+	_bell_cd = maxf(0.0, _bell_cd - delta)
+	_ward_t = maxf(0.0, _ward_t - delta)
 	_release_t = maxf(0.0, _release_t - delta)
 	_input_grace -= delta
 	if _attack_needs_release and not Input.is_action_pressed(&"attack"):
@@ -219,7 +240,7 @@ func _physics_process(delta: float) -> void:
 		_levitate(delta)
 	elif is_on_floor() and state != DASH:
 		velocity.y = -0.5
-		float_left = tuning.float_time
+		float_left = float_time()
 	else:
 		velocity.y -= tuning.gravity * delta
 	match state:
@@ -365,13 +386,16 @@ func _start_dodge(input: Vector3) -> void:
 
 func _dodge(delta: float) -> void:
 	_dodge_t -= delta
-	var sp := tuning.dodge_speed * (0.55 + 0.45 * _dodge_t / tuning.dodge_time)
+	var sp := tuning.dodge_speed * (1.12 if GameState.inv.robe_id() == &"mistcloak" else 1.0) * (0.55 + 0.45 * _dodge_t / tuning.dodge_time)
 	velocity.x = _dodge_dir.x * sp
 	velocity.z = _dodge_dir.z * sp
 	_trail_ghosts(delta, Color(0.5, 0.85, 1.0))
 	if _dodge_t <= 0.0:
 		state = NORMAL
-		_dodge_cd = tuning.dodge_cooldown
+		_dodge_cd = maxf(0.1, tuning.dodge_cooldown - GameState.inv.relic(&"gale_feather"))
+		if GameState.inv.robe_id() == &"wardweave":
+			_ward_t = 1.5
+			FX3.ring(global_position + Vector3(0, 0.05, 0), 0.2, 0.8, 0.25, Pal.MANA, 1.0)
 		velocity.x *= 0.4
 		velocity.z *= 0.4
 
@@ -428,9 +452,22 @@ func take_hit(d: Damage) -> void:
 		sp.intercept(d)
 		_iframes = 0.3
 		return
+	var bell := GameState.inv.relic(&"ward_bell")
+	if bell > 0.0 and _bell_cd <= 0.0 and randf() < bell:
+		_bell_cd = 6.0
+		_iframes = 0.4
+		Sfx.play("hex_block", 0.0)
+		FX3.ring(center(), 0.1, 1.2, 0.35, [Color("fff4c8"), Color("f0d890"), Color("a08850")], 2.0, false)
+		FX3.burst(center(), 12, [Color("fff4c8"), Color("f0d890")], Vector2(1.0, 3.0), Vector2(0.2, 0.4))
+		return
 	caster.interrupt()
 	_end_levitate()
-	health.damage(d.amount * guard_mult)
+	var amount := d.amount * guard_mult
+	if _ward_t > 0.0:
+		_ward_t = 0.0
+		amount *= 0.6
+		FX3.ring(center(), 0.1, 0.8, 0.2, Pal.MANA, 1.0, false)
+	health.damage(amount)
 	_flash = 0.75
 	_iframes = tuning.hurt_iframes
 	var kb := d.knockback

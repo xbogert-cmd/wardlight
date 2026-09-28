@@ -79,6 +79,7 @@ func _stations() -> void:
 		if k < 3 and WizardState.SCHOOLS[k] != p.wiz.school:
 			p.wiz.switch_school(WizardState.SCHOOLS[k])
 			p.passives.reset()
+			SaveSystem.autosave()
 			FX3.ring(p.global_position + Vector3(0, 0.05, 0), 0.2, 1.6, 0.4, Pal.school(StringName(p.wiz.school)), 2.0)
 			FX3.burst(p.center(), 20, Pal.school(StringName(p.wiz.school)), Vector2(1.0, 3.0), Vector2(0.4, 0.8), {"gravity": -1.5})
 			Sfx.play(p.wiz.school + "_gather", 0.0)
@@ -111,8 +112,15 @@ func _stations() -> void:
 	box(Vector3(1.4, 0.15, 1.0), ag + Vector3(0, 0.85, 0), "bricks.png", Vector3.ZERO, false)
 	var altar := Interactable.make(ag, "Fusion altar", 1.8, 1.4)
 	add_child(altar)
-	altar.activated.connect(func(_p: Player) -> void:
-		await Dialogue.i.talk([["", "The fusion altar is cold. Two matching relics laid here could be bound into a stronger one."]]))
+	altar.activated.connect(func(p: Player) -> void:
+		p.input_enabled = false
+		get_tree().paused = true
+		var ui := FusionUI.new()
+		get_tree().root.add_child(ui)
+		ui.open()
+		await ui.finished
+		get_tree().paused = false
+		p.resume_input())
 
 
 func _folk() -> void:

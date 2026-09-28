@@ -14,6 +14,9 @@ var events := {}           # StringName -> true: rewards/recruits granted exactl
 var quests := {}           # quest id -> step index (Quests.DATA); -1 = done
 var unlocks := {}          # &"levitate" ...
 var known := {&"sanctuary": true}   # places the world map shows
+var inv := Inventory.new()
+var placed: Array = []     # home building: [{id, x, z, rot}]
+var companion := {"recruited": false, "following": false}
 var region := &"sanctuary"
 var entry := &"start"      # checkpoint entry id inside `region`
 
@@ -26,9 +29,24 @@ func reset() -> void:
 	quests.clear()
 	unlocks.clear()
 	known = {&"sanctuary": true}
+	inv = Inventory.new()
+	placed = []
+	companion = {"recruited": false, "following": false}
 	region = &"sanctuary"
 	entry = &"start"
 	changed.emit()
+
+
+## A fresh game's starting kit: the crook and the wanderer's robe, worn.
+func new_game_kit() -> void:
+	var st := inv.add(&"crook")
+	var rb := inv.add(&"wanderer")
+	st.bonus = {}
+	rb.bonus = {}
+	inv.equip("staff", int(st.uid))
+	inv.equip("robe", int(rb.uid))
+	for d in [&"lantern", &"bench", &"planter"]:
+		inv.decor[d] = true
 
 
 func flag(id: StringName, default: Variant = false) -> Variant:
@@ -99,7 +117,8 @@ func advance(id: StringName, step: int) -> void:
 
 func to_dict() -> Dictionary:
 	return {"name": wizard_name, "appearance": appearance, "flags": flags, "events": events.keys(),
-		"quests": quests, "unlocks": unlocks.keys(), "known": known.keys(), "region": region, "entry": entry}
+		"quests": quests, "unlocks": unlocks.keys(), "known": known.keys(), "region": region, "entry": entry,
+		"inv": inv.to_dict(), "placed": placed, "companion": companion}
 
 
 func from_dict(d: Dictionary) -> void:
@@ -118,3 +137,11 @@ func from_dict(d: Dictionary) -> void:
 		known[StringName(k)] = true
 	region = StringName(d.get("region", "sanctuary"))
 	entry = StringName(d.get("entry", "start"))
+	inv.from_dict(d.get("inv", {}))
+	placed = []
+	for pl in d.get("placed", []):
+		if pl is Dictionary and pl.has("id"):
+			placed.append({"id": StringName(pl.id), "x": float(pl.get("x", 0)), "z": float(pl.get("z", 0)), "rot": int(pl.get("rot", 0)),
+				"paid": int(pl.get("paid", 0))})
+	var c: Dictionary = d.get("companion", {})
+	companion = {"recruited": bool(c.get("recruited", false)), "following": bool(c.get("following", false))}

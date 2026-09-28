@@ -19,9 +19,9 @@ var hud: HUD
 var spellbook: Spellbook
 var journal: Journal
 var world_map: WorldMap
+var inventory: InventoryUI
 var dialogue: Dialogue
 var journey: Journey
-var paused_overlay: Control
 var _fade: ColorRect
 var _traveling := false
 
@@ -30,7 +30,6 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	Input.mouse_mode = Input.MOUSE_MODE_HIDDEN
 	player = Player.new()
-	player.wiz.setup("storm")
 	hud = HUD.new()
 	add_child(hud)
 	dialogue = Dialogue.new()
@@ -45,8 +44,6 @@ func _ready() -> void:
 	_fade.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_fade.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	fl.add_child(_fade)
-	_load_region(GameState.region, GameState.entry)
-	hud.bind(player)
 	spellbook = Spellbook.new()
 	spellbook.player = player
 	hud.add_child(spellbook)
@@ -55,16 +52,81 @@ func _ready() -> void:
 	hud.add_child(journal)
 	world_map = WorldMap.new()
 	hud.add_child(world_map)
+	inventory = InventoryUI.new()
+	inventory.player = player
+	hud.add_child(inventory)
 	player.died.connect(spellbook.close)
-	_build_pause()
-	if not GameState.flag(&"created"):
-		_character_setup()
+	GameState.quest_updated.connect(func(_id: StringName) -> void: SaveSystem.autosave())
+	if _scripted() and not OS.get_cmdline_user_args().has("--title"):
+		_new_game(false)
+	else:
+		_title()
 
 
-## New game: name, starting school and looks, then a movement hint.
-func _character_setup() -> void:
-	var scripted := " ".join(OS.get_cmdline_user_args()).contains("--demo")
-	if not scripted:
+static func _scripted() -> bool:
+	return " ".join(OS.get_cmdline_user_args()).contains("--demo")
+
+
+# ------------------------------------------------------------------ title
+func _title() -> void:
+	hud.visible = false
+	SaveSystem.enabled = false
+	var bg := TitleBackdrop.new()
+	add_child(bg)
+	Sfx.music("home")
+	while true:
+		var opts: Array = (["Continue"] if SaveSystem.has_save() else []) + ["New game", "Settings", "Quit"]
+		var k: int = await MenuPanel.ask(self, "", "", opts, -1, false)
+		var pick: String = opts[k]
+		if pick == "Continue":
+			if await _continue():
+				break
+		elif pick == "New game":
+			if SaveSystem.has_save():
+				var c: int = await MenuPanel.ask(self, "Start a new journey?", "Your saved journey will be replaced when the new one first saves.", ["Keep my save", "Start new"], 0)
+				if c == 0:
+					continue
+			bg.queue_free()
+			_new_game(true)
+			return
+		elif pick == "Settings":
+			var st := SettingsUI.new()
+			add_child(st)
+			st.open()
+			await st.finished
+		else:
+			get_tree().quit()
+			return
+	bg.queue_free()
+
+
+## Load the save (or its backup). Returns false to stay on the title.
+func _continue() -> bool:
+	var r := SaveSystem.load_main()
+	if r.error != "":
+		var opts: Array = ["Load the backup"] if SaveSystem.has_backup() and SaveSystem.load_backup().error == "" else []
+		opts += ["Back to the title"]
+		var k: int = await MenuPanel.ask(self, "Your save couldn't be read", String(r.error) + " It has not been changed or deleted.", opts, opts.size() - 1)
+		if opts[k] != "Load the backup":
+			return false
+		r = SaveSystem.load_backup()
+	var d: Dictionary = r.data
+	SaveSystem.apply(d)
+	player.wiz = WizardState.new()
+	player.wiz.from_dict(d.wizard)
+	if player.wiz.loadouts.is_empty():
+		player.wiz.setup("storm")
+	_begin(GameState.region, GameState.entry)
+	return true
+
+
+func _new_game(ask_setup: bool) -> void:
+	GameState.reset()
+	GameState.new_game_kit()
+	player.wiz = WizardState.new()
+	player.wiz.setup("storm")
+	_begin(&"sanctuary", &"start")
+	if ask_setup:
 		get_tree().paused = true
 		var ed := LookEditor.new()
 		add_child(ed)
@@ -73,12 +135,26 @@ func _character_setup() -> void:
 		get_tree().paused = false
 		GameState.wizard_name = res.name
 		GameState.appearance = res.look
-		player.set_look(res.look)
 		player.wiz = WizardState.new()
 		player.wiz.setup(res.school)
+		player.set_look(res.look)
 	GameState.set_flag(&"created")
+	SaveSystem.enabled = true
+	SaveSystem.autosave()
 	hud.banner("%s %s %s %s move    %s talk" % [Settings.key_label("up"), Settings.key_label("move_left"), Settings.key_label("down"),
 		Settings.key_label("move_right"), Settings.key_label("interact")])
+
+
+func _begin(region: StringName, entry: StringName) -> void:
+	hud.visible = true
+	_load_region(region, entry)
+	if hud.player == null:
+		hud.bind(player)
+	player.apply_bonuses()
+	player.health.reset()
+	player.mana.refill()
+	player.set_look(GameState.appearance)
+	SaveSystem.enabled = true
 
 
 func _load_region(id: StringName, entry: StringName, script: Script = null) -> void:
@@ -93,6 +169,8 @@ func _load_region(id: StringName, entry: StringName, script: Script = null) -> v
 	level.exit_requested.connect(travel)
 	level.enter(player, entry)
 	GameState.learn_place(id)
+	GameState.region = id
+	GameState.entry = entry
 	hud.banner(level.display_name)
 
 
@@ -127,42 +205,63 @@ func travel(to: StringName, entry: StringName) -> void:
 			return
 	_load_region(to, entry, script)
 	TimeCtl.clear_all()
+	SaveSystem.autosave()
 	tw = create_tween()
 	tw.tween_property(_fade, "color:a", 0.0, 0.3)
 	player.lock(false)
 	_traveling = false
 
 
-func _build_pause() -> void:
-	paused_overlay = Control.new()
-	paused_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
-	paused_overlay.visible = false
-	paused_overlay.draw.connect(func() -> void:
-		paused_overlay.draw_rect(Rect2(0, 0, 640, 360), Color(0.03, 0.02, 0.06, 0.6))
-		HUD.frame(paused_overlay, Rect2(250, 150, 140, 44))
-		paused_overlay.draw_string(HUD.FONT, Vector2(250, 168), "Paused", HORIZONTAL_ALIGNMENT_CENTER, 140, 9, Color("f0e6d0"))
-		paused_overlay.draw_string(HUD.FONT, Vector2(250, 184), "Esc to resume", HORIZONTAL_ALIGNMENT_CENTER, 140, 9, Color("a89878")))
-	hud.add_child(paused_overlay)
+var _pause_open := false
 
 
 func set_paused(on: bool) -> void:
-	if dialogue.is_open or journal.is_open or world_map.is_open or _traveling:
+	if dialogue.is_open or journal.is_open or world_map.is_open or inventory.is_open or _traveling or not hud.visible:
 		return
-	if on:
-		spellbook.close()
-	get_tree().paused = on
-	paused_overlay.visible = on
-	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE if on else Input.MOUSE_MODE_HIDDEN
+	if on and not _pause_open:
+		_pause_menu()
+
+
+func _pause_menu() -> void:
+	_pause_open = true
+	spellbook.close()
+	get_tree().paused = true
+	player.input_enabled = false
+	while true:
+		var k: int = await MenuPanel.ask(self, "Paused", "", ["Resume", "Settings", "Save and return to title", "Quit"], 0)
+		if k == 1:
+			var st := SettingsUI.new()
+			add_child(st)
+			st.open()
+			await st.finished
+			continue
+		if k == 2:
+			SaveSystem.save_now()
+			get_tree().paused = false
+			get_tree().reload_current_scene()
+			return
+		if k == 3:
+			SaveSystem.save_now()
+			get_tree().quit()
+			return
+		break
+	get_tree().paused = false
+	Input.mouse_mode = Input.MOUSE_MODE_HIDDEN
+	player.resume_input()
+	_pause_open = false
 
 
 func _unhandled_input(e: InputEvent) -> void:
 	if e.is_action_pressed(&"pause"):
-		set_paused(not get_tree().paused)
+		set_paused(true)
 	elif e.is_action_pressed(&"wheel") and not get_tree().paused and not _traveling:
 		spellbook.open()
 	elif e.is_action_pressed(&"journal") and not get_tree().paused and not _traveling:
 		player.input_enabled = false
 		journal.open()
+	elif e.is_action_pressed(&"inventory") and not get_tree().paused and not _traveling:
+		player.input_enabled = false
+		inventory.open()
 	elif e.is_action_pressed(&"map") and not get_tree().paused and not _traveling:
 		player.input_enabled = false
 		world_map.open()

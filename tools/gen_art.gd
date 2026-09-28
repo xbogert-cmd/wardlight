@@ -12,6 +12,7 @@ const W3 = preload("res://tools/art/world3d_art.gd")
 const Npcs = preload("res://tools/art/npcs_art.gd")
 const Bgs = preload("res://tools/art/backgrounds_art.gd")
 const Bosses = preload("res://tools/art/bosses_art.gd")
+const ItemsArt = preload("res://tools/art/items_art.gd")
 
 
 func _init() -> void:
@@ -86,6 +87,7 @@ func _init() -> void:
 		W3.ward_crystal(false).save_png(d + "ward_dark.png")
 	if want.call("icons"):
 		Icons.build().save_png(OUT + "icons.png")
+		ItemsArt.build().save_png(OUT + "items.png")
 	if want.call("icon"):
 		var w := WizardArt.build({})
 		var icon := Image.create_empty(64, 64, false, Image.FORMAT_RGBA8)

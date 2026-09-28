@@ -46,6 +46,7 @@ func _build() -> void:
 		var h := randf_range(2.0, 4.0)
 		box(Vector3(0.8, h, 0.8), _ground(p.x, p.y) + Vector3(0, h * 0.5 - 0.2, 0), "rune_bricks.png", Vector3(0, randf(), randf_range(-0.08, 0.08)))
 	checkpoint_stone(1.5, -21.5, &"arena")
+	chest(-7.0, -10.2, &"chest_old_ward", [[&"whisper_bone"], [&"moonstone"]], 25, -0.3)
 	# the plaza: a ring of low broken wall with a gap to the south
 	for k in 20:
 		var a := k * TAU / 20.0
@@ -122,21 +123,19 @@ func _cleansed() -> void:
 	for k in 5:
 		SpellEffect.later(0.25 * k, func() -> void:
 			FX3.ring(_ground(ARENA.x, ARENA.y) + Vector3(0, 0.1, 0), 0.5, ARENA_R + k * 2.0, 0.8, ramp, 2.0))
-	var gift := [""]
+	var at := _ground(ARENA.x, ARENA.y - 1.0) + Vector3(0, 1.0, 0)
 	GameState.once(&"wardheart", func() -> void:
 		GameState.set_flag(&"mana_bonus", 20.0)
 		player.apply_bonuses()
 		player.mana.refill()
-		for id: StringName in WizardState.BASE[player.wiz.school]:
-			if not player.wiz.upgrades.has(id):
-				player.wiz.upgrades[id] = true
-				gift[0] = SpellDB.get_spell(id).upgrade_name
-				break)
+		Loot.item(self, at, &"wardweave")
+		Loot.item(self, at, &"moonstone")
+		give_point(2))
 	await get_tree().create_timer(1.6).timeout
 	var lines := [
 		["", "The roots slacken. Light climbs the ward stone, and the guardian's shape softens into moss and pale glow."],
 		["", "For a moment its carved face turns to you, and it bows. Then it is only an old tree, standing guard again."],
-		["", "Where it stood lies a warm stone heart, humming with the ward's light. +20 mana." + (" You also learn %s." % gift[0] if gift[0] != "" else "")],
+		["", "Where it stood lies a warm stone heart, humming with the ward's light (+20 mana), and the guardian's gifts."],
 	]
 	await Dialogue.i.talk(lines)
 

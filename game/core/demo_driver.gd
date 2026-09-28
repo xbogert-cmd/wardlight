@@ -106,6 +106,14 @@ const DEMOS := {
 		[0.3, "flag", "ward_restored"], [0.4, "travel", "hearthmere:west"], [1.8, "map", ""], [2.1, "shot", "m1_map"],
 		[2.3, "key", "4194305"], [2.6, "journal", ""], [2.9, "shot", "m2_journal"], [3.2, "quit", ""],
 	],
+	"title": [[1.0, "shot", "title"], [1.2, "key", "4194322"], [1.4, "shot", "title2"], [1.6, "quit", ""]],
+	"inv": [
+		[0.3, "give", "stormcoil"], [0.35, "give", "moonstone"], [0.4, "give", "moonstone"], [0.45, "give", "ward_bell"], [0.5, "give", "wardweave"],
+		[0.6, "inventory", ""], [0.9, "shot", "i1_inventory"], [1.0, "key", "4194321"], [1.1, "key", "4194309"], [1.4, "shot", "i2_equipped"],
+		[1.6, "key", "4194305"], [1.8, "travel", "sanctuary:start"], [3.0, "tp", "3,-7.8"], [3.3, "tap", "interact"], [3.6, "key", "4194309"],
+		[3.8, "key", "4194322"], [4.0, "key", "4194309"], [4.3, "shot", "i3_fusion"], [4.5, "key", "4194309"], [4.9, "shot", "i4_fused"],
+		[5.1, "key", "4194305"], [5.5, "state", "inv"], [5.6, "quit", ""],
+	],
 	"idle_die": [
 		[0.1, "hold", "move_right"], [0.8, "release", "move_right"], [40.0, "quit", ""],
 	],
@@ -221,9 +229,14 @@ func _run(s: Array) -> void:
 			get_tree().root.get_node("Main").world_map.open()
 		"journal":
 			get_tree().root.get_node("Main").journal.open()
+		"inventory":
+			get_tree().root.get_node("Main").inventory.open()
+		"give":
+			GameState.inv.add(StringName(s[2]))
 		"key":
 			var ev := InputEventKey.new()
 			ev.physical_keycode = int(s[2])
+			ev.keycode = int(s[2])
 			ev.pressed = true
 			Input.parse_input_event(ev)
 			var up := ev.duplicate()
@@ -277,7 +290,7 @@ func _run(s: Array) -> void:
 			var q := {}
 			for k in GameState.quests:
 				q[k] = GameState.quests[k]
-			print("DEMO state ", s[2], " quests=", q, " flags=", GameState.flags.keys(), " unlocks=", GameState.unlocks.keys(), " region=", Region.current.id if Region.current else "")
+			print("DEMO state ", s[2], " items=", GameState.inv.items.map(func(it: Dictionary) -> String: return Items.display(it)), " quests=", q, " flags=", GameState.flags.keys(), " unlocks=", GameState.unlocks.keys(), " region=", Region.current.id if Region.current else "")
 		"tp_near":
 			# stand `arg` metres west of the nearest enemy, facing it
 			var pl2 := _player()

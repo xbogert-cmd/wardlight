@@ -104,7 +104,9 @@ func request(slot: int, quiet: bool = false) -> bool:
 	ctx.data = data
 	ctx.upgraded = player.wiz.upgrades.has(data.id)
 	ctx.native = player.wiz.is_native(data.school)
-	ctx.power = player.wiz.affinity_mult(data.school)
+	ctx.power = player.wiz.affinity_mult(data.school) * (1.0 + GameState.inv.spell_power_bonus())
+	if data.school == "storm":
+		ctx.power *= 1.0 + GameState.inv.relic(&"stormglass")
 	ctx.world = player.get_parent()
 	_refresh_ctx()
 	cast_started.emit(data)

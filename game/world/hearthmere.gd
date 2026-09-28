@@ -136,16 +136,57 @@ func _people() -> void:
 	maren.global_position = _ground(-2.0, 1.6)
 	maren.on_talk = _talk_maren
 	var restored := func() -> bool: return GameState.flag(&"ward_restored")
-	villagers.append(_npc("smith", "Brannoc the smith", 11.5, -3.2, func() -> Array:
-		return ([["Brannoc", "Heard the Gatebreaker's gone. I'll forge that gate anew, and a lantern for every post on the road."]] if restored.call() else [["Brannoc", "Can't work the forge with that wardlight dark. Feels like the whole wood is leaning in on us."]])))
+	var smith := _npc("smith", "Brannoc the smith", 11.5, -3.2, func() -> Array:
+		return [["Brannoc", "Can't work the forge with that wardlight dark. Feels like the whole wood is leaning in on us."]])
+	smith.on_talk = _talk_smith
+	villagers.append(smith)
 	villagers.append(_npc("farmer", "Hild", -9.5, -4.0, func() -> Array:
 		return ([["Hild", "The lanterns are back! My little ones slept the whole night through."]] if restored.call() else [["Hild", "Oswin went down the Briarwood road three days ago for salt. He's never been gone this long, {name}."]])))
-	villagers.append(_npc("elder_man", "Old Tobin", -5.5, 5.8, func() -> Array:
-		return ([["Old Tobin", "They'll sing about this at harvest, {name}. Not a legend yet, mind. But it's a start."]] if restored.call() else [["Old Tobin", "Seventy winters, and the wardlight never slept once. Something's wrong out at the Old Ward, you mark me."]])))
+	var tobin := _npc("elder_man", "Old Tobin", -5.5, 5.8, func() -> Array:
+		return [["Old Tobin", "Seventy winters, and the wardlight never slept once. Something's wrong out at the Old Ward, you mark me."]])
+	tobin.on_talk = func() -> void:
+		if not restored.call():
+			await Dialogue.i.talk([["Old Tobin", "Seventy winters, and the wardlight never slept once. Something's wrong out at the Old Ward, you mark me."]])
+		elif GameState.once(&"gift_bookshelf", func() -> void: give_decor(&"bookshelf", "Tobin's bookshelf")):
+			await Dialogue.i.talk([["Old Tobin", "They'll sing about this at harvest, {name}. Not a legend yet, mind. But it's a start."],
+				["Old Tobin", "My old books want a wizard's shelf. Take them, and the shelf with them."]])
+		else:
+			await Dialogue.i.talk([["Old Tobin", "Not a legend yet, mind. But it's a start."]])
+	villagers.append(tobin)
 	for t: Array in [["traveler_a", "Oswin", 2.8, 4.8], ["traveler_b", "Wenna", 3.8, 5.5]]:
 		var n := _npc(t[0], t[1], t[2], t[3], func() -> Array:
 			return [[t[1], "We'd be roots and bones by now if you hadn't come, {name}. Hearthmere owes you."]])
+		n.on_talk = func() -> void:
+			if GameState.once(&"gift_tent", func() -> void: give_decor(&"tent", "a travelling tent")):
+				await Dialogue.i.talk([[t[1], "We'd be roots and bones by now if you hadn't come, {name}."],
+					[t[1], "Take our old tent for your sanctuary. We're not going anywhere for a while."]])
+			else:
+				await Dialogue.i.talk([[t[1], "Hearthmere owes you, {name}. We all do."]])
 		returnees.append(n)
+
+
+const SHOP := [[&"stormglass", 35], [&"ember_seed", 35], [&"whisper_bone", 35], [&"moonstone", 35], [&"gale_feather", 35], [&"mistcloak", 80]]
+
+
+func _talk_smith() -> void:
+	if not GameState.flag(&"ward_restored"):
+		await Dialogue.i.talk([["Brannoc", "Can't work the forge with that wardlight dark. Feels like the whole wood is leaning in on us."]])
+		return
+	var first := GameState.once(&"smith_open")
+	var opts: Array = []
+	for s: Array in SHOP:
+		opts.append("%s  (%d coins)" % [Items.def(s[0]).name, s[1]])
+	opts.append("Nothing today")
+	var k: int = await Dialogue.i.choose("Brannoc", ("The forge is lit again, {name}! " if first else "") + "Trinkets from the road, cleaned and mended. Coin's coin. (You have %d.)" % GameState.inv.coins, opts)
+	if k >= SHOP.size():
+		return
+	var item: Array = SHOP[k]
+	if not GameState.inv.spend(item[1]):
+		await Dialogue.i.talk([["Brannoc", "That's more coin than you've got, friend."]])
+		return
+	give(item[0])
+	Sfx.play("mote", 0.0)
+	SaveSystem.autosave()
 
 
 func _talk_maren() -> void:
@@ -159,7 +200,8 @@ func _talk_maren() -> void:
 		GameState.once(&"maren_reward", func() -> void:
 			GameState.set_flag(&"hp_bonus", 20.0)
 			player.apply_bonuses()
-			player.health.heal(player.health.max_hp))
+			player.health.heal(player.health.max_hp)
+			give_point())
 		GameState.advance(Quests.MAIN, -1)
 		var hud := get_tree().get_first_node_in_group(&"hud") as HUD
 		if hud:

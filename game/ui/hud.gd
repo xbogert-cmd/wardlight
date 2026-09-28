@@ -20,6 +20,7 @@ var _banner := ""
 var _banner_t := 0.0
 var _hp_shown := 1.0
 var show_debug := false
+var _toasts: Array = []   # [text, time left]
 
 
 func _ready() -> void:
@@ -35,6 +36,13 @@ func _ready() -> void:
 func bind(p: Player) -> void:
 	player = p
 	p.caster.cast_failed.connect(_on_fail)
+
+
+## Short stacked notices at the right edge (loot, coins, saves).
+func toast(msg: String) -> void:
+	_toasts.append([msg, 3.0])
+	if _toasts.size() > 4:
+		_toasts.pop_front()
 
 
 func banner(text: String) -> void:
@@ -62,6 +70,9 @@ func _process(delta: float) -> void:
 			_fail.erase(k)
 	_fail_msg_t -= real
 	_banner_t -= real
+	for tt: Array in _toasts:
+		tt[1] -= real
+	_toasts = _toasts.filter(func(tt: Array) -> bool: return tt[1] > 0.0)
 	if player:
 		_hp_shown = move_toward(_hp_shown, player.health.ratio(), real * 0.8)
 		if _hp_shown < player.health.ratio():
@@ -129,10 +140,22 @@ func _draw_hud() -> void:
 		text(_banner, Vector2(0, 60), Color(1, 0.92, 0.75, a), HORIZONTAL_ALIGNMENT_CENTER, 640)
 	_draw_world_marks()
 	_draw_boss()
+	var ty := 34.0
+	for tt: Array in _toasts:
+		var a := clampf(tt[1], 0.0, 1.0)
+		var w := FONT.get_string_size(tt[0], HORIZONTAL_ALIGNMENT_LEFT, -1, 9).x + 12
+		frame(canvas, Rect2(634 - w, ty - 10, w, 13), Color(0.08, 0.06, 0.12, 0.85 * a), Color(COL_FRAME, a))
+		text(tt[0], Vector2(640 - w, ty), Color(1.0, 0.92, 0.7, a))
+		ty += 15
+	# coins under the mana bar
+	var cs := "%d" % GameState.inv.coins
+	var cw := FONT.get_string_size(cs, HORIZONTAL_ALIGNMENT_LEFT, -1, 9).x
+	canvas.draw_texture_rect_region(Loot.ICONS, Rect2(622 - cw, 5, 12, 12), Rect2(13 * 16, 0, 16, 16))
+	text(cs, Vector2(636 - cw, 15), Color("f0d890"))
 	_draw_prompt()
 	_draw_objective()
-	if player.has_float() and (player.levitating or player.float_left < player.tuning.float_time - 0.01):
-		var f := clampf(player.float_left / player.tuning.float_time, 0.0, 1.0)
+	if player.has_float() and (player.levitating or player.float_left < player.float_time() - 0.01):
+		var f := clampf(player.float_left / player.float_time(), 0.0, 1.0)
 		var r := Rect2(31, 34 if school != "" else 30, 40, 2)
 		canvas.draw_rect(r.grow(1), Color("0c0812"))
 		canvas.draw_rect(Rect2(r.position, Vector2(roundf(r.size.x * f), r.size.y)), Pal.HEAL[2])
