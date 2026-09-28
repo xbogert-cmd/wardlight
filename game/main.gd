@@ -18,6 +18,7 @@ var level: Region
 var hud: HUD
 var spellbook: Spellbook
 var journal: Journal
+var world_map: WorldMap
 var dialogue: Dialogue
 var journey: Journey
 var paused_overlay: Control
@@ -52,6 +53,8 @@ func _ready() -> void:
 	journal = Journal.new()
 	journal.player = player
 	hud.add_child(journal)
+	world_map = WorldMap.new()
+	hud.add_child(world_map)
 	player.died.connect(spellbook.close)
 	_build_pause()
 	if not GameState.flag(&"created"):
@@ -143,7 +146,7 @@ func _build_pause() -> void:
 
 
 func set_paused(on: bool) -> void:
-	if dialogue.is_open or journal.is_open or _traveling:
+	if dialogue.is_open or journal.is_open or world_map.is_open or _traveling:
 		return
 	if on:
 		spellbook.close()
@@ -160,6 +163,9 @@ func _unhandled_input(e: InputEvent) -> void:
 	elif e.is_action_pressed(&"journal") and not get_tree().paused and not _traveling:
 		player.input_enabled = false
 		journal.open()
+	elif e.is_action_pressed(&"map") and not get_tree().paused and not _traveling:
+		player.input_enabled = false
+		world_map.open()
 	elif OS.is_debug_build() and e is InputEventKey and e.pressed and not e.echo:
 		_dev_key((e as InputEventKey).physical_keycode)
 

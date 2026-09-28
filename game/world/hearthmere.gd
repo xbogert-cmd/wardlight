@@ -20,6 +20,7 @@ var stall: Array[Node3D] = []
 func _layout() -> void:
 	id = &"hearthmere"
 	display_name = "Hearthmere"
+	music = "home"
 	env_preset = &"dusk"
 	seed_value = 91
 	origin = Vector2(-40, -40)

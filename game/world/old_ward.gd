@@ -18,6 +18,7 @@ var home_stone: Interactable
 func _layout() -> void:
 	id = &"old_ward"
 	display_name = "The Old Ward"
+	music = "ruins"
 	env_preset = &"ruins"
 	seed_value = 313
 	origin = Vector2(-40, -54)

@@ -148,6 +148,7 @@ func leave() -> void:
 
 
 func _physics_process(_delta: float) -> void:
+	_boss_music()
 	if player == null or _exiting or not player.is_alive():
 		return
 	var p2 := Vector2(player.global_position.x, player.global_position.z)
@@ -156,6 +157,15 @@ func _physics_process(_delta: float) -> void:
 			_exiting = true
 			exit_requested.emit(ex.to, ex.entry)
 			return
+
+
+func _boss_music() -> void:
+	var fighting := false
+	for e in get_tree().get_nodes_in_group(&"enemy"):
+		if e.is_boss and e.is_alive() and e.get("engaged"):
+			fighting = true
+			break
+	Sfx.music("boss" if fighting else music)
 
 
 ## Make `entry` the respawn point (checkpoint shrines call this).
@@ -648,8 +658,8 @@ func ward_flare(d: Dictionary) -> void:
 	for k in 24:
 		var a := randf() * TAU
 		FX3.burst(Vector3(p.x, _ground(p.x, p.z).y + 0.1, p.z) + Vector3(cos(a), 0, sin(a)) * randf_range(0.5, 5.0), 1, ramp, Vector2(1.0, 3.0), Vector2(0.6, 1.2), {"dir": Vector3.UP, "spread": 0.3})
-	Sfx.play("storm_thunder", -6.0)
-	Sfx.play("perfect_dodge", -2.0)
+	Sfx.play("ward_light", 0.0)
+	Sfx.play("storm_thunder", -8.0)
 	GameCamera3D.shake_all(2.0)
 
 

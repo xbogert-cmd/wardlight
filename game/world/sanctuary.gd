@@ -13,6 +13,7 @@ var isolde: Npc
 func _layout() -> void:
 	id = &"sanctuary"
 	display_name = "The Sanctuary"
+	music = "home"
 	env_preset = &"dusk"
 	seed_value = 77
 	origin = Vector2(-40, -40)

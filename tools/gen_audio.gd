@@ -502,3 +502,93 @@ func mus_explore() -> PackedFloat32Array:
 	S.reverb(b, 0.35, 0.82, true)
 	S.normalize(b, 0.7)
 	return b
+
+
+## Sanctuary and Hearthmere: a slow, warm 3/4 in F with a plucked melody.
+func mus_home() -> PackedFloat32Array:
+	var bpm := 84.0
+	var beat := 60.0 / bpm
+	var bars := 12
+	var b := S.buf(bars * 3 * beat)
+	var chords := [[53, 57, 60], [50, 53, 57], [46, 50, 53], [48, 52, 55]]  # F Dm Bb C
+	var melody := [72, 69, 67, 69, 72, 74, 72, 69, 65, 67, 69, 67, 65, 64, 65, 67, 69, 72, 74, 72, 69, 67, 65, 64]
+	for bar in bars:
+		var ch: Array = chords[bar % 4]
+		var t0 := bar * 3 * beat
+		for n in ch:
+			S.tone(b, t0, 3.2 * beat, hz(n), hz(n), "tri", 0.05, 0.3, 1.0)
+		S.tone(b, t0, 2.8 * beat, hz(ch[0] - 12), hz(ch[0] - 12), "sine", 0.22, 0.02, 0.8)
+		for k in [1, 2]:
+			S.pluck(b, t0 + k * beat, hz(ch[1]), 0.8, 0.08, 0.99, 0.3)
+		for k in 2:
+			var note: int = melody[(bar * 2 + k) % melody.size()]
+			S.pluck(b, t0 + k * 1.5 * beat, hz(note), 1.8, 0.2, 0.996, 0.55)
+	S.lowpass(b, 4800)
+	S.reverb(b, 0.4, 0.85, true)
+	S.normalize(b, 0.62)
+	return b
+
+
+## The Old Ward: low drones, a slow bell and whispering noise.
+func mus_ruins() -> PackedFloat32Array:
+	var dur := 24.0
+	var b := S.buf(dur)
+	for n in [38, 45, 50]:
+		for det in [-0.12, 0.12]:
+			S.tone(b, 0.0, dur, hz(n + det), hz(n + det), "saw", 0.035, 3.0, 3.0)
+	for k in 6:
+		var t := k * 4.0 + 0.5
+		var bell: int = [74, 73, 69, 70, 74, 65][k]
+		S.tone(b, t, 3.5, hz(bell), hz(bell), "sine", 0.12, 0.005, 3.2)
+		S.tone(b, t, 3.5, hz(bell + 12) * 1.003, hz(bell + 12), "sine", 0.04, 0.005, 2.5)
+	for k in 12:
+		S.noise(b, k * 2.0, 1.8, 0.03, 1200, 600, 0.8, 0.9, 400)
+	S.lowpass(b, 3000)
+	S.reverb(b, 0.55, 0.9, true)
+	S.normalize(b, 0.6)
+	return b
+
+
+## Boss fights: driving drums under a minor riff.
+func mus_boss() -> PackedFloat32Array:
+	var bpm := 132.0
+	var beat := 60.0 / bpm
+	var bars := 8
+	var b := S.buf(bars * 4 * beat)
+	var roots := [45, 45, 41, 43, 45, 45, 48, 44]
+	var riff := [0, 0, 3, 0, 5, 3, 0, -2]
+	for bar in bars:
+		var t0 := bar * 4 * beat
+		var r: int = roots[bar]
+		for k in 8:
+			S.tone(b, t0 + k * beat * 0.5, beat * 0.45, hz(r - 12 + riff[k]), hz(r - 12 + riff[k]), "saw", 0.16, 0.005, 0.2)
+		for n in [r, r + 3, r + 7]:
+			S.tone(b, t0, 4 * beat, hz(n), hz(n), "saw", 0.03, 0.05, 0.5)
+		for k in 4:
+			S.tone(b, t0 + k * beat, 0.3, 100, 40, "sine", 0.6, 0.002, 0.1)
+			if k % 2 == 1:
+				S.noise(b, t0 + k * beat, 0.15, 0.25, 5000, 1500, 0.002, 0.1, 800)
+		for k in 8:
+			S.noise(b, t0 + k * beat * 0.5 + beat * 0.25, 0.04, 0.06, 10000, 8000, 0.001, 0.02, 4000)
+	S.lowpass(b, 6000)
+	S.reverb(b, 0.2, 0.7, true)
+	S.normalize(b, 0.66)
+	return b
+
+
+func sfx_ward_light() -> PackedFloat32Array:
+	var b := S.buf(2.2)
+	for k in 4:
+		var n: int = [72, 76, 79, 84][k]
+		S.tone(b, k * 0.09, 1.8, hz(n), hz(n), "sine", 0.3, 0.005, 1.6)
+		S.tone(b, k * 0.09, 1.8, hz(n + 12) * 1.002, hz(n + 12), "sine", 0.1, 0.005, 1.2)
+	S.noise(b, 0.0, 0.8, 0.12, 9000, 3000, 0.01, 0.7, 2000)
+	return fin(b, 0.8, 0.45)
+
+
+func sfx_levitate() -> PackedFloat32Array:
+	var b := S.buf(0.9)
+	S.tone(b, 0.0, 0.8, hz(76), hz(88), "sine", 0.25, 0.02, 0.6)
+	S.tone(b, 0.05, 0.7, hz(83), hz(91), "sine", 0.12, 0.02, 0.5)
+	S.noise(b, 0.0, 0.6, 0.08, 7000, 11000, 0.05, 0.4, 3000)
+	return fin(b, 0.6, 0.3)

@@ -289,7 +289,7 @@ func _start_levitate() -> void:
 	levitating = true
 	_float_base = global_position.y
 	floor_snap_length = 0.0
-	Sfx.play("perfect_dodge", -12.0)
+	Sfx.play("levitate", -6.0)
 	FX3.ring(global_position + Vector3(0, 0.05, 0), 0.2, 0.9, 0.3, Pal.HEAL, 1.0)
 
 

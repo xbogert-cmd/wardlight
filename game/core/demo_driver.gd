@@ -80,6 +80,32 @@ const DEMOS := {
 		[39.6, "travel", "briarwood:waystone"], [44.0, "travel", "hearthmere:east"], [45.5, "tp", "-3.2,1.6"], [46.0, "shot", "s07_village_restored"],
 		[46.2, "tap", "interact"], [46.6, "next", ""], [46.8, "next", ""], [47.0, "next", ""], [47.4, "state", "done"], [47.6, "shot", "s08_after"], [48.0, "quit", ""],
 	],
+	# levitate across the chasm to the ledge, then step off it on foot
+	"levitate": [
+		[0.3, "travel", "briarwood:west"], [1.8, "unlock", "levitate"], [1.9, "tp", "-3,-15.2"], [2.4, "pos", "cliff"],
+		[2.5, "hold", "jump"], [2.6, "hold", "up"], [2.9, "shot", "v01_float"], [3.3, "shot", "v02_over_gap"], [3.55, "release", "up"],
+		[3.6, "release", "jump"], [3.9, "pos", "ledge"], [4.0, "shot", "v03_ledge"], [4.1, "tap", "interact"], [4.6, "next", ""],
+		[5.0, "hold", "up"], [5.6, "release", "up"], [6.0, "pos", "after_fall"], [6.1, "shot", "v04_back"], [6.3, "quit", ""],
+	],
+	# fight the Gatebreaker for real (storm school, all spells), sampling frames
+	"troll": [
+		[0.3, "travel", "briarwood:west"], [1.8, "learn", ""], [1.9, "tp", "27,-11.5"], [2.0, "aim_enemy", ""],
+		[2.4, "tap", "spell_1"], [2.6, "burst", "t_fight:240:10"], [3.4, "tap", "spell_4"], [4.4, "tap", "spell_1"],
+		[5.0, "hold", "attack"], [6.0, "release", "attack"], [6.2, "tap", "dodge"], [6.8, "tap", "spell_1"], [7.6, "tap", "spell_2"],
+		[8.4, "tap", "spell_1"], [9.2, "hold", "move_left"], [9.8, "release", "move_left"], [10.0, "tap", "spell_1"],
+		[11.0, "tap", "spell_4"], [12.0, "tap", "spell_1"], [13.0, "hold", "attack"], [14.5, "release", "attack"], [15.5, "quit", ""],
+	],
+	"warden": [
+		[0.3, "travel", "old_ward:waystone"], [3.5, "learn", ""], [3.6, "tp", "0,-23.5"], [3.8, "aim_enemy", ""],
+		[4.0, "burst", "w_a:120:10"], [4.2, "tap", "spell_1"], [5.2, "tap", "spell_1"], [6.4, "tap", "dodge"], [7.0, "tap", "spell_4"],
+		[8.0, "tap", "spell_1"], [9.0, "hold", "attack"], [10.5, "release", "attack"], [11.0, "wound", "0.5"],
+		[11.2, "burst", "w_b:150:10"], [13.5, "tap", "spell_1"], [14.5, "tap", "dodge"], [15.5, "tap", "spell_1"], [16.5, "tap", "spell_2"],
+		[18.0, "tap", "spell_1"], [20.0, "quit", ""],
+	],
+	"menus": [
+		[0.3, "flag", "ward_restored"], [0.4, "travel", "hearthmere:west"], [1.8, "map", ""], [2.1, "shot", "m1_map"],
+		[2.3, "key", "4194305"], [2.6, "journal", ""], [2.9, "shot", "m2_journal"], [3.2, "quit", ""],
+	],
 	"idle_die": [
 		[0.1, "hold", "move_right"], [0.8, "release", "move_right"], [40.0, "quit", ""],
 	],
@@ -191,6 +217,10 @@ func _run(s: Array) -> void:
 				e.statuses.clear()
 		"book":
 			get_tree().root.get_node("Main").spellbook.open()
+		"map":
+			get_tree().root.get_node("Main").world_map.open()
+		"journal":
+			get_tree().root.get_node("Main").journal.open()
 		"key":
 			var ev := InputEventKey.new()
 			ev.physical_keycode = int(s[2])
@@ -213,6 +243,8 @@ func _run(s: Array) -> void:
 			get_tree().root.get_node("Main").travel(StringName(re[0]), StringName(re[1]))
 		"flag":
 			GameState.set_flag(StringName(s[2]))
+		"unlock":
+			GameState.unlock(StringName(s[2]))
 		"next":
 			if Dialogue.i and Dialogue.i.is_open:
 				Dialogue.i._shown = Dialogue.i._text.length()
@@ -232,6 +264,15 @@ func _run(s: Array) -> void:
 				victim.take_hit(d)
 				if victim.is_alive():
 					victim.take_hit(d)
+		"wound":
+			# nearest enemy down to `arg` of its max health
+			var pw := _player()
+			var tgt: Node3D = null
+			for e in SpellEffect.enemies():
+				if tgt == null or pw.global_position.distance_to(e.global_position) < pw.global_position.distance_to(tgt.global_position):
+					tgt = e
+			if tgt and tgt is Enemy:
+				tgt.take_hit(Damage.make(tgt.health.hp - tgt.health.max_hp * float(s[2]), pw, &"hex"))
 		"state":
 			var q := {}
 			for k in GameState.quests:

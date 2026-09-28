@@ -1,6 +1,6 @@
 # Implementation checklist
 
-Status: **Stage 2 complete and ported to 3D. Stage 3 (adventure) next.**
+Status: **Stage 3 (first adventure) playable end to end. Stage 4 (discoveries and home) next.**
 
 ## Agreed changes to the original brief
 - Cross-relic recipes cut; same-relic tier fusion (I → II → III) kept.
@@ -58,13 +58,24 @@ Status: **Stage 2 complete and ported to 3D. Stage 3 (adventure) next.**
 - [x] Tests ported (14 passing); side-view world code removed
 
 ## Stage 3 — adventure
-- [ ] Sanctuary, Hearthmere, Briarwood, Old Ward ruins; exits and animated journey
-- [ ] Contextual magic ×3, levitate unlock, quests, journal
-- [ ] Troll miniboss, corrupted guardian (2 phases), aftermath and restoration
+- [x] Region base: code-built terrain (hills, pads, roads, streams, cliffs), houses, wards, waystones
+- [x] Sanctuary (home, study, mirror, altar, plot), Hearthmere, Briarwood Road, the Old Ward
+- [x] Walk-off exits with fades; waystone journey with threaded loading and a failure fallback
+- [x] Character setup (name, school, looks); opening with Pell and a bramble spell tutorial
+- [x] Dialogue (typewriter, choices, pauses the world), NPCs, journal (Q), world map (M)
+- [x] Contextual magic: relight the roadside ward, lift the fallen trunk, calm the fawn
+- [x] Levitate (hold Space, recharges on ground) crosses the cliff chasm to a hidden satchel
+- [x] Checkpoints: ward stones and rune stones (one right before each boss)
+- [x] Gatebreaker troll (sweep, slam, thrown rubble; triple throw below half) with boss bar
+- [x] Hollowed Warden, 2 phases (sweep, root eruptions, seed burst; transform without damage)
+- [x] Aftermath: ward relit, roots wither, reward; Hearthmere restored (wardlight, lanterns,
+      travellers home, roots gone, garland arch, changed dialogue); Isolde's choice (sanctuary / village)
+- [x] Boss camera framing, per-region music (home / explore / ruins / boss), new sfx
+- [x] Tests: exactly-once rewards, forward-only quests, state round trip, idempotent restoration (18 total)
 
 ## Stage 4 — discoveries and home
 - [ ] Loot, equipment, relic fusion, progression points, cosmetics
-- [ ] Shieldbearer companion, home building, herbalist choice, full persistence
+- [ ] Shieldbearer companion, home building, full persistence (herbalist choice done in stage 3)
 
 ## Stage 5 — refine and hand off
 - [ ] Full playthrough, profiling, save/load verification, Mac export, evidence report

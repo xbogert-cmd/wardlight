@@ -18,6 +18,9 @@ godot --path "/Users/alexanderbogert/wizard game"
 | Action | Keys |
 | --- | --- |
 | Move | W A S D (arrow keys also work) |
+| Levitate (after the fawn) | Hold Space |
+| Talk / use / contextual magic | E |
+| Journal / world map | Q / M |
 | Dodge | Shift |
 | Staff attack (free) | Trackpad tap / left click, or J — hold to repeat |
 | Spells | 1 2 3 4 |

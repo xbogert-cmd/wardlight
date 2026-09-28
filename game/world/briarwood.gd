@@ -100,12 +100,14 @@ func _build() -> void:
 	_folk()
 	var keep := func(p: Vector2) -> bool:
 		return path_dist(p) > 3.2 and dist_poly(p, streams[0].pts) > 2.7 and p.distance_to(ruins) > 5.5 \
-			and p.y > _cliff_z(p.x) + 1.5 and not (p.x > 21.0 and p.y < _ridge_z(p.x) + 1.5) and p.distance_to(Vector2(13.5, 11.5)) > 3.0
+			and p.y > _cliff_z(p.x) + 1.5 and not (p.x > 19.0 and p.y < _ridge_z(p.x) + 8.0) and p.distance_to(Vector2(13.5, 11.5)) > 3.0
 	var keep_open := func(p: Vector2) -> bool:
 		return keep.call(p) and not (absf(p.x) < 22.0 and p.y > -12.0 and p.y < 16.0 and rng.randf() < 0.75)
 	trees(Rect2(-40, -15, 95, 45), 90, keep_open)
-	# the gorge's rim above the southern wall
-	trees(Rect2(22, -7, 24, 12), 26, func(p: Vector2) -> bool: return p.y > _ridge_z(p.x) + 1.8)
+	# the gorge's rim, set back so it never hides the fight below
+	trees(Rect2(22, -2, 24, 10), 12, func(p: Vector2) -> bool: return p.y > _ridge_z(p.x) + 8.0)
+	# the far side of the gorge, beyond the cliff wall
+	trees(Rect2(22, -24, 26, 7), 14, func(p: Vector2) -> bool: return p.y < _cliff_z(p.x) - 1.5, ["pine_a.png", "pine_b.png"])
 	scenery(Rect2(-32, -14, 78, 40), 300, func(p: Vector2) -> bool:
 		return p.y > _cliff_z(p.x) + 0.8 and dist_poly(p, roads[0]) > 1.7 and dist_poly(p, streams[0].pts) > 1.8)
 	_valley()
