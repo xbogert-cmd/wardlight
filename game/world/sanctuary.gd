@@ -3,17 +3,23 @@ extends Region
 ## (switch school), appearance mirror, fusion altar (relics: stage 4), the lit
 ## sanctuary ward, a home plot, and Isolde's tonic table if she settles here.
 ## The adventure opens here: Pell runs up the path with news, and a bramble
-## on the gate path teaches the first spell.
+## on the gate path teaches the first spell. Companions who aren't in the
+## party wait at the camp by the brazier; talking to one brings them along.
 
 var pell: Npc
 var bramble: Bramble
 var isolde: Npc
-var tamsin: Npc
+var camp := {}     # companion id -> Npc waiting at the camp
+## Camp spots and what each companion says there.
+const CAMP := {
+	&"tamsin": [-2.5, 2.2, "Tamsin", "Polishing my shield, {name}. Need it?"],
+	&"kess": [-0.3, 2.5, "Kess", "Fletching arrows. Say the word and I'm up."],
+}
 var _placed_nodes: Array[Node3D] = []
 ## Services, the ward, NPC spots and the gate path stay reachable.
 const PROTECTED := [[-5.0, -7.0, 5.2, "the cottage"], [6.0, -8.5, 3.8, "the study"], [6.0, -6.4, 1.6, "the study lectern"],
 	[-9.8, -5.6, 1.6, "the mirror"], [2.8, -9.0, 1.9, "the fusion altar"], [0.5, -2.0, 2.0, "the ward stone"],
-	[-1.5, 1.0, 1.5, "the brazier"], [-2.5, 2.2, 1.3, "Tamsin's spot"], [-1.5, -5.5, 1.3, "Isolde's spot"]]
+	[-1.5, 1.0, 1.5, "the brazier"], [-2.5, 2.2, 1.3, "Tamsin's spot"], [-0.3, 2.5, 1.3, "Kess's spot"], [-1.4, 3.6, 2.4, "the companion camp"], [-1.5, -5.5, 1.3, "Isolde's spot"]]
 
 
 func _layout() -> void:
@@ -39,6 +45,7 @@ func _build() -> void:
 	house(6, -8.5, 3.6, 3.2, 3.4, {"wall": "bricks.png", "windows": [0.0], "door": false, "roof_h": 1.8, "tint": Color(0.9, 0.9, 1.0)})
 	ward_stone(0.5, -2.0, true, true)
 	brazier(-1.5, 1.0)
+	_camp()
 	lantern_post(4.0, 2.8, 1.0)
 	lantern_post(13.0, 0.8, -1.0)
 	# garden beds by the cottage
@@ -197,22 +204,15 @@ func _folk() -> void:
 			await get_tree().create_timer(0.6).timeout
 			await Dialogue.i.talk([["Pell", "Ha! That's the {name} I remember. I'll run ahead and tell Maren you're coming!"]])
 			_pell_leaves())
-	tamsin = Npc.new()
-	tamsin.sheet = "tamsin"
-	tamsin.display = "Tamsin"
-	add_child(tamsin)
-	tamsin.global_position = _ground(-2.5, 2.2)
-	tamsin.on_talk = func() -> void:
-		var k: int = await Dialogue.i.choose("Tamsin", "Polishing my shield, {name}. Need it?", ["Come with me", "Rest here a while"])
-		if k == 0:
-			var why := GameState.join_party(&"tamsin")
-			if why != "":
-				await Dialogue.i.talk([["Tamsin", why]])
-				return
-			tamsin.visible = false
-			tamsin.enabled = false
-			get_tree().root.get_node("Main").sync_party()
-			SaveSystem.autosave()
+	for cid: StringName in CAMP:
+		var spot: Array = CAMP[cid]
+		var n := Npc.new()
+		n.sheet = String(cid)
+		n.display = spot[2]
+		add_child(n)
+		n.global_position = _ground(spot[0], spot[1])
+		n.on_talk = func() -> void: await _camp_talk(cid)
+		camp[cid] = n
 	isolde = Npc.new()
 	isolde.sheet = "isolde"
 	isolde.display = "Isolde"
@@ -226,6 +226,30 @@ func _folk() -> void:
 			GameState.set_flag(&"tonic", true)
 			FX3.burst(player.center(), 20, Pal.HEAL, Vector2(0.5, 2.0), Vector2(0.4, 0.8), {"gravity": -1.0})
 			await Dialogue.i.talk([["Isolde", "There. Bitter, but it works."]])
+
+
+## The companion camp: two bedrolls by the brazier, one per companion.
+func _camp() -> void:
+	for b: Array in [[-3.7, 3.4, 0.35, Color(0.45, 0.75, 0.75)], [0.9, 3.5, -0.3, Color(0.55, 0.7, 0.45)]]:
+		var g := _ground(b[0], b[1])
+		var rot := Vector3(0, b[2], 0)
+		box(Vector3(0.8, 0.12, 1.7), g + Vector3(0, 0.06, 0), "plaster.png", rot, false, b[3])
+		box(Vector3(0.8, 0.22, 0.35), g + Vector3(0, 0.11, 0) + Vector3(0, 0, -0.75).rotated(Vector3.UP, b[2]), "plaster.png", rot, false, (b[3] as Color).darkened(0.25))
+
+
+func _camp_talk(cid: StringName) -> void:
+	var n: Npc = camp[cid]
+	var k: int = await Dialogue.i.choose(n.display, CAMP[cid][3], ["Come with me", "Rest here a while"])
+	if k != 0:
+		return
+	var why := GameState.join_party(cid)
+	if why != "":
+		await Dialogue.i.talk([[n.display, why]])
+		return
+	n.visible = false
+	n.enabled = false
+	get_tree().root.get_node("Main").sync_party()
+	SaveSystem.autosave()
 
 
 func _talk_pell() -> void:
@@ -264,9 +288,10 @@ func apply_state() -> void:
 	if GameState.flag(&"intro_talked") and GameState.flag(&"bramble_cleared"):
 		pell.visible = false
 		pell.enabled = false
-	var waiting: bool = GameState.recruited.has(&"tamsin") and not GameState.in_party(&"tamsin")
-	tamsin.visible = waiting
-	tamsin.enabled = waiting
+	for cid: StringName in camp:
+		var waiting: bool = GameState.recruited.has(cid) and not GameState.in_party(cid)
+		(camp[cid] as Npc).visible = waiting
+		(camp[cid] as Npc).enabled = waiting
 	var here: bool = GameState.flag(&"isolde_home", "") == "sanctuary"
 	isolde.visible = here
 	isolde.enabled = here

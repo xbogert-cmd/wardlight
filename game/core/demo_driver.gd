@@ -178,6 +178,12 @@ const DEMOS := {
 		[4.2, "tp", "6,0"], [4.4, "aim_enemy", ""], [5.0, "burst", "p2_fight:90:8"], [5.2, "hold", "attack"],
 		[8.0, "release", "attack"], [8.2, "tap", "spell_1"], [9.0, "hold", "attack"], [12.0, "release", "attack"], [12.5, "state", "party"], [13.0, "quit", ""],
 	],
+	# the sanctuary camp with both companions resting, then one joins
+	"camp": [
+		[0.3, "recruit", "tamsin:rest"], [0.35, "recruit", "kess:rest"], [0.4, "travel", "sanctuary:start"],
+		[1.8, "tp", "-1.4,-0.5"], [2.3, "shot", "k1_camp"], [2.5, "tp", "-0.3,1.3"], [2.8, "tap", "interact"], [3.1, "next", ""], [3.3, "pick", "0"],
+		[3.8, "shot", "k2_joined"], [4.0, "state", "camp"], [4.2, "quit", ""],
+	],
 	# B at home: place a lantern, bench, tent and hut on the plot
 	"build": [
 		[0.3, "coins", "200"], [0.35, "decor_all", ""], [0.5, "tp", "6,6"], [1.0, "key", "66"], [1.3, "key", "4194321"], [1.4, "key", "4194321"],
