@@ -370,7 +370,7 @@ func _tamsin() -> void:
 			["Tamsin", "You're clearly headed somewhere dangerous. My shield's yours, if you'll have it."],
 		])
 		var k: int = await Dialogue.i.choose("Tamsin", "Shall I come along?", ["Walk with me", "Wait at my sanctuary for now"])
-		GameState.companion = {"recruited": true, "following": k == 0}
+		GameState.recruit(&"tamsin", k == 0)
 		GameState.once(&"tamsin_recruited")
 		tamsin.visible = false
 		tamsin.enabled = false
@@ -490,7 +490,7 @@ func apply_state() -> void:
 		traveler.enabled = false
 	if GameState.flag(&"road_ward_lit"):
 		respawn_entry = &"ward"
-	if GameState.companion.recruited:
+	if GameState.recruited.has(&"tamsin"):
 		tamsin.visible = false
 		tamsin.enabled = false
 	elif GameState.flag(&"tamsin_freed"):

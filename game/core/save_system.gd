@@ -6,7 +6,7 @@ extends Node
 
 signal saved
 
-const VERSION := 1
+const VERSION := 2
 
 var enabled := true
 ## Set by the test runner so tests never touch a player's real save.

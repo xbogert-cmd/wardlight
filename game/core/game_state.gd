@@ -16,7 +16,9 @@ var unlocks := {}          # &"levitate" ...
 var known := {&"sanctuary": true}   # places the world map shows
 var inv := Inventory.new()
 var placed: Array = []     # home building: [{id, x, z, rot}]
-var companion := {"recruited": false, "following": false}
+const PARTY_MAX := 2
+var recruited := {}                  # companion id -> true
+var party: Array[StringName] = []    # who walks with the wizard, in order
 var region := &"sanctuary"
 var entry := &"start"      # checkpoint entry id inside `region`
 
@@ -31,7 +33,8 @@ func reset() -> void:
 	known = {&"sanctuary": true}
 	inv = Inventory.new()
 	placed = []
-	companion = {"recruited": false, "following": false}
+	recruited = {}
+	party = []
 	region = &"sanctuary"
 	entry = &"start"
 	changed.emit()
@@ -68,6 +71,37 @@ func once(id: StringName, grant: Callable = Callable()) -> bool:
 		grant.call()
 	changed.emit()
 	return true
+
+
+func in_party(id: StringName) -> bool:
+	return party.has(id)
+
+
+## Recruit a companion; they follow straight away if asked and there's room.
+func recruit(id: StringName, follow: bool) -> void:
+	recruited[id] = true
+	if follow:
+		join_party(id)
+	changed.emit()
+
+
+## Bring a recruited companion along. Returns "" or why they can't come.
+func join_party(id: StringName) -> String:
+	if not recruited.has(id):
+		return "They haven't joined you yet."
+	if party.has(id):
+		return ""
+	if party.size() >= PARTY_MAX:
+		return "Two already walk with you. Ask one to rest at the camp first."
+	party.append(id)
+	changed.emit()
+	return ""
+
+
+func leave_party(id: StringName) -> void:
+	if party.has(id):
+		party.erase(id)
+		changed.emit()
 
 
 func has_unlock(id: StringName) -> bool:
@@ -118,7 +152,7 @@ func advance(id: StringName, step: int) -> void:
 func to_dict() -> Dictionary:
 	return {"name": wizard_name, "appearance": appearance, "flags": flags, "events": events.keys(),
 		"quests": quests, "unlocks": unlocks.keys(), "known": known.keys(), "region": region, "entry": entry,
-		"inv": inv.to_dict(), "placed": placed, "companion": companion}
+		"inv": inv.to_dict(), "placed": placed, "recruited": recruited.keys(), "party": party}
 
 
 func from_dict(d: Dictionary) -> void:
@@ -143,5 +177,14 @@ func from_dict(d: Dictionary) -> void:
 		if pl is Dictionary and pl.has("id"):
 			placed.append({"id": StringName(pl.id), "x": float(pl.get("x", 0)), "z": float(pl.get("z", 0)), "rot": int(pl.get("rot", 0)),
 				"paid": int(pl.get("paid", 0))})
-	var c: Dictionary = d.get("companion", {})
-	companion = {"recruited": bool(c.get("recruited", false)), "following": bool(c.get("following", false))}
+	var c: Dictionary = d.get("companion", {})      # version 1 (Chapter 1)
+	if c.get("recruited", false):
+		recruited[&"tamsin"] = true
+		if c.get("following", false):
+			party.append(&"tamsin")
+	for k in d.get("recruited", []):
+		recruited[StringName(k)] = true
+	for k in d.get("party", []):
+		var id := StringName(k)
+		if recruited.has(id) and not party.has(id) and party.size() < PARTY_MAX:
+			party.append(id)

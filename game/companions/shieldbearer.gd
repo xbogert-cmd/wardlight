@@ -52,7 +52,7 @@ func _ready() -> void:
 	talk.activated.connect(func(_p: Player) -> void:
 		var k: int = await Dialogue.i.choose("Tamsin", "Right behind you, {name}.", ["Keep close", "Wait at the sanctuary"])
 		if k == 1:
-			GameState.companion.following = false
+			GameState.leave_party(&"tamsin")
 			FX3.burst(center(), 12, [Color("d8f8ff"), Color("8ad8f0")], Vector2(0.5, 1.5), Vector2(0.3, 0.6))
 			get_tree().root.get_node("Main").sync_companion()
 			SaveSystem.autosave())

@@ -183,7 +183,7 @@ func _load_region(id: StringName, entry: StringName, script: Script = null) -> v
 ## Tamsin walks with the wizard while `following`; otherwise she waits at
 ## the sanctuary (as an NPC there) or hasn't been met yet.
 func sync_companion() -> void:
-	var want: bool = GameState.companion.following and level != null
+	var want: bool = GameState.in_party(&"tamsin") and level != null
 	if want and companion == null:
 		companion = Shieldbearer.new()
 		level.add_child(companion)

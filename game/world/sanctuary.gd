@@ -205,7 +205,10 @@ func _folk() -> void:
 	tamsin.on_talk = func() -> void:
 		var k: int = await Dialogue.i.choose("Tamsin", "Polishing my shield, {name}. Need it?", ["Come with me", "Rest here a while"])
 		if k == 0:
-			GameState.companion.following = true
+			var why := GameState.join_party(&"tamsin")
+			if why != "":
+				await Dialogue.i.talk([["Tamsin", why]])
+				return
 			tamsin.visible = false
 			tamsin.enabled = false
 			get_tree().root.get_node("Main").sync_companion()
@@ -261,7 +264,7 @@ func apply_state() -> void:
 	if GameState.flag(&"intro_talked") and GameState.flag(&"bramble_cleared"):
 		pell.visible = false
 		pell.enabled = false
-	var waiting: bool = GameState.companion.recruited and not GameState.companion.following
+	var waiting: bool = GameState.recruited.has(&"tamsin") and not GameState.in_party(&"tamsin")
 	tamsin.visible = waiting
 	tamsin.enabled = waiting
 	var here: bool = GameState.flag(&"isolde_home", "") == "sanctuary"

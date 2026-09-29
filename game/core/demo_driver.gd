@@ -393,7 +393,7 @@ func _run(s: Array) -> void:
 			var q := {}
 			for k in GameState.quests:
 				q[k] = GameState.quests[k]
-			print("DEMO state ", s[2], " items=", GameState.inv.items.map(func(it: Dictionary) -> String: return Items.display(it)), " quests=", q, " flags=", GameState.flags.keys(), " unlocks=", GameState.unlocks.keys(), " region=", Region.current.id if Region.current else "", " companion=", GameState.companion, " placed=", GameState.placed.size(), " coins=", GameState.inv.coins)
+			print("DEMO state ", s[2], " items=", GameState.inv.items.map(func(it: Dictionary) -> String: return Items.display(it)), " quests=", q, " flags=", GameState.flags.keys(), " unlocks=", GameState.unlocks.keys(), " region=", Region.current.id if Region.current else "", " party=", GameState.party, " recruited=", GameState.recruited.keys(), " placed=", GameState.placed.size(), " coins=", GameState.inv.coins)
 		"tp_near":
 			# stand `arg` metres west of the nearest enemy, facing it
 			var pl2 := _player()
