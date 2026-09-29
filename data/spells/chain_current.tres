@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="SpellData" format=3]
+
+[ext_resource type="Script" path="res://game/combat/spell_data.gd" id="1"]
+[ext_resource type="Script" path="res://game/combat/spells/chain_current.gd" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = &"chain_current"
+display_name = "Chain Current"
+school = "storm"
+is_basic = false
+mana_cost = 16.0
+cooldown = 3.0
+windup = 0.14
+recovery = 0.16
+damage = 24.0
+icon = 17
+description = "A bolt strikes the enemy nearest the aim and leaps to up to 4 more within 4 m, each jump at 80% of the last."
+upgrade_name = "Endless Current"
+upgrade_description = "6 jumps, and a jump may return to an enemy already struck."
+effect = ExtResource("2")
+params = {
+"reach": 4.0,
+"jumps": 4,
+"falloff": 0.8
+}
+upgrade_params = {
+"jumps": 6
+}

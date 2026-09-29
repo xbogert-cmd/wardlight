@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="SpellData" format=3]
+
+[ext_resource type="Script" path="res://game/combat/spell_data.gd" id="1"]
+[ext_resource type="Script" path="res://game/combat/spells/drowning_grasp.gd" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = &"drowning_grasp"
+display_name = "Drowning Grasp"
+school = "hex"
+is_basic = false
+mana_cost = 18.0
+cooldown = 8.0
+windup = 0.18
+recovery = 0.16
+damage = 12.0
+icon = 18
+description = "Dark water hands drag every enemy within 3 m into the aimed spot, then slow them by 40% for 2 s."
+upgrade_name = "Undertow Curse"
+upgrade_description = "The dragged enemies are also cursed for 3 s."
+effect = ExtResource("2")
+params = {
+"radius": 3.0,
+"slow": 0.4,
+"slow_time": 2.0
+}
+upgrade_params = {
+"curse_time": 3.0
+}

@@ -8,7 +8,9 @@ extends Node
 
 ## Balance check: one school against the Warden for 25 s (wizard can't die),
 ## cycling all four spells while holding the staff attack. Prints damage dealt.
-static func _dps(sch: String) -> Array:
+static func _dps(which: String) -> Array:
+	# "fire", or "fire_lake" to swap the school's lake spell into slot 4
+	var sch := which.trim_suffix("_lake")
 	var out: Array = [[0.3, "travel", "old_ward:waystone"], [3.5, "learn", ""], [3.55, "school", sch], [3.6, "god", ""],
 		[3.6, "tp", "0,-23.5"], [3.8, "aim_enemy", ""], [3.9, "bosshp", "start"], [4.0, "hold", "attack"]]
 	var t := 4.0
@@ -17,8 +19,11 @@ static func _dps(sch: String) -> Array:
 		out.append([t, "tap", "spell_%d" % (k % 4 + 1)])
 		k += 1
 		t += 0.3
-	out.append([29.0, "bosshp", "end_" + sch])
+	if which.ends_with("_lake"):
+		out.append([3.58, "equip", "3:" + String(WizardState.LAKE[sch])])
+	out.append([29.0, "bosshp", "end_" + which])
 	out.append([29.1, "quit", ""])
+	out.sort_custom(func(x: Array, y: Array) -> bool: return x[0] < y[0])
 	return out
 
 
@@ -425,6 +430,11 @@ func _run(s: Array) -> void:
 			get_tree().root.get_node("Main").inventory.open()
 		"give":
 			GameState.inv.add(StringName(s[2]))
+		"equip":
+			# "slot:spell id" (unlocks it first)
+			var ep: PackedStringArray = (s[2] as String).split(":")
+			_player().wiz.unlocked[StringName(ep[1])] = true
+			_player().wiz.equip(int(ep[0]), StringName(ep[1]))
 		"coins":
 			GameState.inv.earn(int(s[2]))
 		"decor_all":

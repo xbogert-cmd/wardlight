@@ -12,7 +12,7 @@ const WOOD := ["a8703e", "7a4c2a", "4c2c1c"]
 static func build() -> Image:
 	var fns := [_ember_spear, _cinder_fan, _hearth_ward, _ashfall, _grave_needle, _binding_roots, _siphon_circle,
 		_spirit_lantern, _arc_lance, _thunder_ring, _slipstream, _tempest_orb, _flame_pulse, _spectral_thrust,
-		_static_gust, _empty]
+		_static_gust, _empty, _boiling_spring, _chain_current, _drowning_grasp]
 	var img := Image.create_empty(S * fns.size(), S, false, Image.FORMAT_RGBA8)
 	for k in fns.size():
 		var c := PixelCanvas.new(S, S)
@@ -162,3 +162,30 @@ static func _static_gust(c: PixelCanvas) -> void:
 
 static func _empty(c: PixelCanvas) -> void:
 	c.ring(8, 8, 5, 1, Color.html("3a3450"), 1)
+
+
+# Chapter 2: the Deepwillow's spells (16, 17, 18)
+static func _boiling_spring(c: PixelCanvas) -> void:
+	c.ellipse(8, 13, 6, 2, Color.html("3a78a0"), 1)
+	c.stroke(Vector2(8, 13), Vector2(8, 4), 3, Color.html("e8f4ff"), 2)
+	c.ellipse(8, 4, 3.5, 2.5, Color.html("ffffff"), 2)
+	for k in 3:
+		c.put(4 + k * 4, 9 - k % 2 * 2, _c(FIRE, 1), 3)
+	c.put(12, 3, _c(FIRE, 2), 3)
+
+
+static func _chain_current(c: PixelCanvas) -> void:
+	var pts := [Vector2(2, 12), Vector2(6, 5), Vector2(9, 10), Vector2(14, 3)]
+	for k in 3:
+		c.linev(pts[k], pts[k + 1], _c(STORM, 1), 1)
+	for q: Vector2 in pts:
+		c.ellipse(q.x, q.y, 1.5, 1.5, _c(STORM, 0), 2)
+
+
+static func _drowning_grasp(c: PixelCanvas) -> void:
+	c.ellipse(8, 12, 7, 3, Color.html("2a3a6a"), 1)
+	for x: int in [4, 8, 12]:
+		c.stroke(Vector2(x, 12), Vector2(x + (8 - x) * 0.3, 5), 2, Color.html("5a7ab8"), 2)
+		c.put(int(x + (8 - x) * 0.3) - 1, 4, Color.html("c8e0ff"), 3)
+		c.put(int(x + (8 - x) * 0.3) + 1, 4, Color.html("c8e0ff"), 3)
+	c.put(8, 12, _c(HEX, 1), 3)

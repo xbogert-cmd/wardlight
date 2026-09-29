@@ -10,6 +10,10 @@ const BASE := {
 	"hex": [&"grave_needle", &"binding_roots", &"siphon_circle", &"spirit_lantern"],
 	"storm": [&"arc_lance", &"thunder_ring", &"slipstream", &"tempest_orb"],
 }
+## Chapter 2: the Deepwillow teaches one more spell per school (a fifth
+## choice for the loadout; never unlocked by switching schools).
+const LAKE := {"fire": &"boiling_spring", "hex": &"drowning_grasp", "storm": &"chain_current"}
+const COLS := 5
 const BASICS := {"fire": &"flame_pulse", "hex": &"spectral_thrust", "storm": &"storm_gust"}
 const AFFINITY := [0.75, 0.85, 0.95, 1.0]
 
@@ -18,6 +22,11 @@ var unlocked := {}                                   # spell id -> true
 var upgrades := {}                                   # spell id -> true
 var affinity := {"fire": 0, "hex": 0, "storm": 0}    # training level 0..3
 var loadouts := {}                                   # school -> Array[StringName] (4)
+
+
+## A school's row in the spellbook: its four base spells, then its lake spell.
+static func grid(s: String) -> Array:
+	return (BASE[s] as Array) + [LAKE[s]]
 
 
 func setup(start: String) -> void:

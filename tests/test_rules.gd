@@ -159,3 +159,34 @@ func test_curse_amplifies_damage() -> void:
 	t.near(b.health.max_hp - b.health.hp, 10.0 * Statuses.CURSE_MULT, "cursed target takes more")
 	a.queue_free()
 	b.queue_free()
+
+
+## Chapter 2's lake spells: the chain weakens as it leaps; the grasp drags
+## toward its centre and slows.
+func test_chain_current_leaps_and_weakens() -> void:
+	var p: Player = t.make_player("storm")
+	var es: Array[Enemy] = []
+	for k in 3:
+		es.append(t.make_enemy(Vector3(4 + k * 2.5, 0, 0)))
+	await t.frames(2)
+	var c := _ctx(p, &"chain_current")
+	c.target = es[0]
+	c.aim_point = es[0].global_position
+	(c.data.effect.new() as SpellEffect).cast(c)
+	await t.frames(30)
+	var lost: Array = es.map(func(e: Enemy) -> float: return e.health.max_hp - e.health.hp)
+	t.check(lost[0] > 0.0 and lost[1] > 0.0 and lost[2] > 0.0, "the bolt reaches all three")
+	t.check(lost[0] > lost[1] and lost[1] > lost[2], "each jump is weaker (%s)" % str(lost))
+	p.queue_free()
+
+
+func test_drowning_grasp_drags_and_slows() -> void:
+	var p: Player = t.make_player("hex")
+	var e: Enemy = t.make_enemy(Vector3(6.5, 0, 0))
+	await t.frames(2)
+	var c := _ctx(p, &"drowning_grasp")
+	c.aim_point = Vector3(4.5, 0, 0)
+	(c.data.effect.new() as SpellEffect).cast(c)
+	t.check(e.statuses.has(&"slow"), "the grasped enemy is slowed")
+	t.check(e._knock.x < -1.0, "and dragged toward the centre")
+	p.queue_free()

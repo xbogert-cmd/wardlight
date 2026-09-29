@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="SpellData" format=3]
+
+[ext_resource type="Script" path="res://game/combat/spell_data.gd" id="1"]
+[ext_resource type="Script" path="res://game/combat/spells/boiling_spring.gd" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = &"boiling_spring"
+display_name = "Boiling Spring"
+school = "fire"
+is_basic = false
+mana_cost = 24.0
+cooldown = 7.0
+windup = 0.2
+recovery = 0.16
+damage = 30.0
+icon = 16
+description = "The aimed ground bubbles for a moment, then a scalding geyser erupts, tossing small enemies up and burning them."
+upgrade_name = "Twin Spring"
+upgrade_description = "The spring erupts a second time a second later (70% damage)."
+effect = ExtResource("2")
+params = {
+"radius": 1.8,
+"delay": 0.6
+}
+upgrade_params = {
+"second_delay": 1.0,
+"second_mult": 0.7
+}

@@ -68,7 +68,7 @@ func _process(delta: float) -> void:
 
 
 func _spell_at(c: Vector2i) -> StringName:
-	return WizardState.BASE[WizardState.SCHOOLS[c.y]][c.x]
+	return WizardState.grid(WizardState.SCHOOLS[c.y])[c.x]
 
 
 func _cell_rect(c: Vector2i) -> Rect2:
@@ -82,7 +82,7 @@ func _slot_rect(k: int) -> Rect2:
 func _gui_input(e: InputEvent) -> void:
 	if e is InputEventMouseMotion:
 		for y in 3:
-			for x in 4:
+			for x in WizardState.COLS:
 				if _cell_rect(Vector2i(x, y)).has_point(e.position):
 					if cur != Vector2i(x, y):
 						cur = Vector2i(x, y)
@@ -98,7 +98,7 @@ func _gui_input(e: InputEvent) -> void:
 				Sfx.play("ui_move", -8.0)
 				return
 		for y in 3:
-			for x in 4:
+			for x in WizardState.COLS:
 				if _cell_rect(Vector2i(x, y)).has_point(e.position):
 					cur = Vector2i(x, y)
 					_confirm()
@@ -185,7 +185,7 @@ func _is_nav(e: InputEvent) -> bool:
 
 
 func _move(d: Vector2i) -> void:
-	cur = Vector2i(posmod(cur.x + d.x, 4), posmod(cur.y + d.y, 3))
+	cur = Vector2i(posmod(cur.x + d.x, WizardState.COLS), posmod(cur.y + d.y, 3))
 	Sfx.play("ui_move", -12.0)
 
 
@@ -273,8 +273,8 @@ func _draw() -> void:
 	_t("Spells", p + Vector2(114, 50), Color("c8b898"))
 	for y in 3:
 		var school: String = WizardState.SCHOOLS[y]
-		draw_rect(Rect2(p + Vector2(114, 56 + y * 30), Vector2(108, 26)), Color(SCHOOL_COL[school], 0.07))
-		for x in 4:
+		draw_rect(Rect2(p + Vector2(114, 56 + y * 30), Vector2(26 * WizardState.COLS + 4, 26)), Color(SCHOOL_COL[school], 0.07))
+		for x in WizardState.COLS:
 			var c := Vector2i(x, y)
 			var r := _cell_rect(c)
 			var id := _spell_at(c)
@@ -292,7 +292,7 @@ func _draw() -> void:
 			if wiz.upgrades.has(id):
 				draw_rect(Rect2(r.position + Vector2(18, 2), Vector2(2, 2)), Color("f4d890"))
 	# details
-	_details(SpellDB.get_spell(_spell_at(cur)), Rect2(p + Vector2(232, 50), Vector2(214, 200)))
+	_details(SpellDB.get_spell(_spell_at(cur)), Rect2(p + Vector2(256, 50), Vector2(190, 200)))
 	# footer
 	_t("1-4 slot   Arrows choose   Enter equip   U upgrade   T train   Tab close", p + Vector2(0, PANEL.size.y - 8), Color("8a7a64"), HORIZONTAL_ALIGNMENT_CENTER, PANEL.size.x)
 	if _msg_t > 0.0:
@@ -321,7 +321,9 @@ func _details(d: SpellData, r: Rect2) -> void:
 		_t(("Upgrade: " if owned else "Upgrade (U, 1 point): ") + d.upgrade_name, Vector2(x, y), Color("f4d890") if owned else Color("a89070"))
 		y += 11
 		y = _wrap(d.upgrade_description, Vector2(x, y), r.size.x, Color("c8bca4") if owned else Color("8a8070"), 3)
-	if not known:
+	if not known and WizardState.LAKE.values().has(d.id):
+		_t("A gift of the Deepwillow, under the lake.", Vector2(x, r.end.y - 6), Color("8a8070"))
+	elif not known:
 		_t("Switch to this school at the sanctuary study to learn it.", Vector2(x, r.end.y - 6), Color("8a8070"))
 
 
