@@ -24,6 +24,11 @@ var state := &"idle"
 var state_t := 0.0
 var home := Vector3.ZERO
 var armored := false       # true during committed attacks: no flinch, reduced knockback
+## Chapter 2: taken by the Hollowing. Set before the enemy enters the tree
+## (Region.spawn): faster, masked, and one extra attack per kind.
+var hollowed := false
+var _mask: PixelBillboard
+static var _mask_tex: Texture2D
 var _flinch_cd := 0.0
 var _poise_dmg := 0.0
 var _flash := 0.0
@@ -60,7 +65,35 @@ func _ready() -> void:
 	var ov := StatusOverlay.new()
 	ov.actor = self
 	add_child(ov)
+	if hollowed:
+		_mask = PixelBillboard.still(_hollow_mask())
+		_mask.mat.set_shader_parameter(&"depth_bias", 0.06)
+		add_child(_mask)
 	_setup()
+
+
+## A pale wooden mask, hollow behind the eyes (drawn once, shared).
+static func _hollow_mask() -> Texture2D:
+	if _mask_tex:
+		return _mask_tex
+	var rows := [".#####.", "#######", "#o##o##", "#o##o##", "##o####", "#######", ".#####.", "..###.."]
+	var img := Image.create_empty(7, 8, false, Image.FORMAT_RGBA8)
+	for y in rows.size():
+		for x in 7:
+			var ch: String = rows[y][x]
+			if ch == "#":
+				img.set_pixel(x, y, Color("e8e0cc") if y < 4 else Color("c8bca4"))
+			elif ch == "o":
+				img.set_pixel(x, y, Color("1a1020"))
+	_mask_tex = ImageTexture.create_from_image(img)
+	return _mask_tex
+
+
+## Where the mask sits: sheet pixels from the feet, forward and up (data
+## param "mask", default mid-face).
+func _mask_at() -> Vector2:
+	var m: Variant = data.params.get("mask", null)
+	return m if m is Vector2 else Vector2(0, data.body_size.y * 0.85)
 
 
 ## Subclass hook for extra nodes.
@@ -209,6 +242,10 @@ func _physics_process(delta: float) -> void:
 	_flash = maxf(0.0, _flash - delta * 9.0)
 	sprite.set_flash(_flash)
 	sprite.set_flip(facing < 0)
+	if _mask:
+		var m := _mask_at()
+		_mask.visible = state != &"dead" and sprite.visible
+		_mask.position = Vector3(m.x * PX * facing, m.y * PX - 4.0 * PX, 0.02)
 
 
 ## Soft push apart so packs don't stack on one spot.

@@ -451,8 +451,8 @@ func _folk_leave() -> void:
 
 
 # ------------------------------------------------------------------ state
-func spawn(kind: StringName, x: float, z: float) -> Enemy:
-	var e := super.spawn(kind, x, z)
+func spawn(kind: StringName, x: float, z: float, opts := {}) -> Enemy:
+	var e := super.spawn(kind, x, z, opts)
 	if kind == &"knot" and Vector2(x, z).distance_to(ruins) < 12.0:
 		e.died.connect(func(_e: Enemy) -> void: _free_tamsin())
 	if kind == &"troll":

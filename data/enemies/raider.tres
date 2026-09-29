@@ -18,6 +18,7 @@ flinch_cooldown = 1.6
 motes = 3
 aggro_range = 10.833
 params = {
+"mask": Vector2(2, 33),
 "bash_damage": 12.0,
 "recover": 0.6,
 "rest": 1.3,

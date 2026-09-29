@@ -5,6 +5,7 @@ extends Node
 ##   curse — hex mark: the bearer takes CURSE_MULT damage; enables Soul Echo,
 ##           Grave Current and Haunted Embers
 ##   root  — cannot move (bosses shrug it off faster via `root_resist`)
+##   slow  — walks slower by `power` (0.4 = 40% slower): Husk spores
 ##   mark  — Kess's arrow: the wizard's next spell hit deals MARK_MULT and
 ##           uses it up (CastContext.hit)
 
@@ -52,7 +53,9 @@ func clear() -> void:
 
 
 func move_scale() -> float:
-	return 0.0 if _s.has(&"root") else 1.0
+	if _s.has(&"root"):
+		return 0.0
+	return 1.0 - clampf(float(_s[&"slow"].power), 0.0, 0.9) if _s.has(&"slow") else 1.0
 
 
 func _physics_process(delta: float) -> void:

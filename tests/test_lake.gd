@@ -35,3 +35,22 @@ func test_enemy_scale_copies_data() -> void:
 	t.near(s.max_hp, hp * 1.25, "health scaled")
 	t.near(s.damage, base.damage * 1.25, "damage scaled")
 	t.near(base.max_hp, hp, "the shared resource is untouched")
+
+
+func test_slow_status_scales_movement() -> void:
+	var st := Statuses.new()
+	t.near(st.move_scale(), 1.0, "unhindered")
+	st.apply(&"slow", 0.3, 0.4)
+	t.near(st.move_scale(), 0.6, "spores slow walkers by 40%")
+	st.apply(&"root", 1.0)
+	t.near(st.move_scale(), 0.0, "roots still hold")
+	st.free()
+
+
+func test_hollowed_spawn_is_faster_copy() -> void:
+	var base: EnemyData = preload("res://data/enemies/raider.tres")
+	var speed := base.move_speed
+	var d := Region.scaled_data(base, 1.0)
+	d.move_speed *= 1.2
+	t.near(d.move_speed, speed * 1.2, "hollowed walk 20% faster")
+	t.near(base.move_speed, speed, "the shared raider data is untouched")

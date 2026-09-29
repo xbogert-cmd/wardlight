@@ -84,8 +84,8 @@ func _build() -> void:
 	arena_wall.collision_layer = 0
 
 
-func spawn(kind: StringName, x: float, z: float) -> Enemy:
-	var e := super.spawn(kind, x, z)
+func spawn(kind: StringName, x: float, z: float, opts := {}) -> Enemy:
+	var e := super.spawn(kind, x, z, opts)
 	if kind == &"guardian":
 		guardian = e as Guardian
 		guardian.died.connect(func(_e: Enemy) -> void: _cleansed())

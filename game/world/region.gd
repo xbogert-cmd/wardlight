@@ -184,13 +184,18 @@ func set_checkpoint(entry: StringName) -> void:
 
 func _spawn_enemies() -> void:
 	for s: Array in spawns:
-		spawn(s[0], s[1], s[2])
+		spawn(s[0], s[1], s[2], s[3] if s.size() > 3 else {})
 
 
-func spawn(kind: StringName, x: float, z: float) -> Enemy:
+## Options: {"hollowed": true} for Chapter 2's masked variants (+20% speed).
+func spawn(kind: StringName, x: float, z: float, opts := {}) -> Enemy:
 	var def: Array = ENEMIES[kind]
 	var e: Enemy = def[0].new()
-	e.data = def[1] if enemy_scale == 1.0 else scaled_data(def[1], enemy_scale)
+	var hollow: bool = opts.get("hollowed", false)
+	e.data = def[1] if enemy_scale == 1.0 and not hollow else scaled_data(def[1], enemy_scale)
+	if hollow:
+		e.hollowed = true
+		e.data.move_speed *= 1.2
 	add_child(e)
 	e.global_position = _ground(x, z)
 	return e

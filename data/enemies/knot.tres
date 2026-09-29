@@ -18,6 +18,7 @@ flinch_cooldown = 2.0
 motes = 3
 aggro_range = 11.667
 params = {
+"mask": Vector2(3, 18),
 "exposed": 1.2,
 "reach": 9.583,
 "rest": 1.4,
