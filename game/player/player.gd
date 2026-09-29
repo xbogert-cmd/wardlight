@@ -138,7 +138,8 @@ func equipment_changed() -> void:
 
 
 func float_time() -> float:
-	return tuning.float_time * (1.5 if GameState.inv.robe_id() == &"mistcloak" else 1.0)
+	var inv := GameState.inv
+	return tuning.float_time * ((1.0 + 0.5 * inv.tier_mult("robe")) if inv.robe_id() == &"mistcloak" else 1.0)
 
 
 func center() -> Vector3:
@@ -386,14 +387,15 @@ func _start_dodge(input: Vector3) -> void:
 
 func _dodge(delta: float) -> void:
 	_dodge_t -= delta
-	var sp := tuning.dodge_speed * (1.12 if GameState.inv.robe_id() == &"mistcloak" else 1.0) * (0.55 + 0.45 * _dodge_t / tuning.dodge_time)
+	var inv := GameState.inv
+	var sp := tuning.dodge_speed * ((1.0 + 0.12 * inv.tier_mult("robe")) if inv.robe_id() == &"mistcloak" else 1.0) * (0.55 + 0.45 * _dodge_t / tuning.dodge_time)
 	velocity.x = _dodge_dir.x * sp
 	velocity.z = _dodge_dir.z * sp
 	_trail_ghosts(delta, Color(0.5, 0.85, 1.0))
 	if _dodge_t <= 0.0:
 		state = NORMAL
 		_dodge_cd = maxf(0.1, tuning.dodge_cooldown - GameState.inv.relic(&"gale_feather"))
-		if GameState.inv.robe_id() == &"wardweave":
+		if inv.robe_id() == &"wardweave":
 			_ward_t = 1.5
 			FX3.ring(global_position + Vector3(0, 0.05, 0), 0.2, 0.8, 0.25, Pal.MANA, 1.0)
 		velocity.x *= 0.4
@@ -465,7 +467,7 @@ func take_hit(d: Damage) -> void:
 	var amount := d.amount * guard_mult
 	if _ward_t > 0.0:
 		_ward_t = 0.0
-		amount *= 0.6
+		amount *= 1.0 - 0.4 * GameState.inv.tier_mult("robe")
 		FX3.ring(center(), 0.1, 0.8, 0.2, Pal.MANA, 1.0, false)
 	health.damage(amount)
 	_flash = 0.75

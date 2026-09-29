@@ -27,13 +27,14 @@ func dmg(mult: float = 1.0, kb: Vector3 = Vector3.ZERO) -> Damage:
 	return d
 
 
-## The equipped staff's signature on staff attacks.
+## The equipped staff's signature on staff attacks, scaled by its tier.
 func _staff_identity(target_actor: Node3D, d: Damage) -> void:
+	var m := GameState.inv.tier_mult("staff")
 	match GameState.inv.staff_id():
 		&"cinderbrand":
-			d.statuses.append({"id": &"burn", "duration": 2.0, "power": 3.0})
+			d.statuses.append({"id": &"burn", "duration": 2.0, "power": 3.0 * m})
 		&"gravewood":
-			d.statuses.append({"id": &"curse", "duration": 2.5})
+			d.statuses.append({"id": &"curse", "duration": 2.5 * m})
 		&"stormcoil":
 			if bonus.has("coil"):
 				return
@@ -41,7 +42,7 @@ func _staff_identity(target_actor: Node3D, d: Damage) -> void:
 			var e := SpellEffect.nearest(target_actor.center(), 3.5, [target_actor], target_actor)
 			if e:
 				FX3.bolt(target_actor.center(), e.center(), 0.15, Pal.school(&"storm"), 0.12)
-				var pd := proc_dmg(d.amount * 0.5, &"storm", &"stormcoil")
+				var pd := proc_dmg(d.amount * 0.5 * m, &"storm", &"stormcoil")
 				pd.hit_pos = e.center()
 				SpellEffect.later(0.05, func() -> void: hit(e, pd))
 
