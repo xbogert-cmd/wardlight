@@ -50,6 +50,8 @@ var exits: Array = []
 ## [kind, x, z]
 var spawns: Array = []
 var respawn_entry := &"start"
+## Health and damage multiplier for this region's enemies (Chapter 2: 1.25).
+var enemy_scale := 1.0
 
 ## Chasms: Rect2 (x, z) areas that swallow walkers (levitate to cross).
 var hazards: Array = []
@@ -188,10 +190,18 @@ func _spawn_enemies() -> void:
 func spawn(kind: StringName, x: float, z: float) -> Enemy:
 	var def: Array = ENEMIES[kind]
 	var e: Enemy = def[0].new()
-	e.data = def[1]
+	e.data = def[1] if enemy_scale == 1.0 else scaled_data(def[1], enemy_scale)
 	add_child(e)
 	e.global_position = _ground(x, z)
 	return e
+
+
+## A copy of `d` with health and damage multiplied (the shared resource is untouched).
+static func scaled_data(d: EnemyData, s: float) -> EnemyData:
+	var out: EnemyData = d.duplicate()
+	out.max_hp *= s
+	out.damage *= s
+	return out
 
 
 func _on_player_died() -> void:

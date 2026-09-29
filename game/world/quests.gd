@@ -2,6 +2,8 @@ class_name Quests
 ## Quest definitions. Progress lives in GameState.quests (id -> step, -1 done).
 
 const MAIN := &"dark_ward"
+const HOLLOWING := &"hollowing"      # Chapter 2
+const SHRINES := [&"shrine_chapel", &"shrine_mire", &"shrine_grove"]
 const DATA := {
 	&"dark_ward": {
 		"title": "The Dark Wardlight",
@@ -15,6 +17,17 @@ const DATA := {
 			"Return to Hearthmere with the news.",
 		],
 	},
+	&"hollowing": {
+		"title": "The Hollowing",
+		"steps": [
+			"Find out who has come to Hearthmere's square.",
+			"Take a waystone to the Fenway with Kess.",
+			"Follow the marsh road to Reedhollow.",
+			"Relight the three lake shrines.",
+			"Defend Reedhollow.",
+			"Cross to the Heart Isle.",
+		],
+	},
 	&"fawn": {
 		"title": "Something in the Reeds",
 		"steps": ["Calm the frightened creature by the stream."],
@@ -24,6 +37,20 @@ const DATA := {
 		"steps": ["Talk to Isolde about where she will settle."],
 	},
 }
+
+
+## Chapter 2 opens once Chapter 1 is finished (and only once).
+static func hollowing_ready() -> bool:
+	return GameState.quest_done(MAIN) and GameState.quest_step(HOLLOWING) == -2
+
+
+## The main quest the HUD and map follow: Chapter 2 once it has begun.
+static func current_main() -> StringName:
+	return HOLLOWING if GameState.quest_step(HOLLOWING) != -2 else MAIN
+
+
+static func shrines_lit() -> int:
+	return SHRINES.filter(func(f: StringName) -> bool: return GameState.flag(f)).size()
 
 
 static func title(id: StringName) -> String:

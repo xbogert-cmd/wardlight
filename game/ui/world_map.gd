@@ -90,7 +90,7 @@ func _draw() -> void:
 		if id == here:
 			var bob := roundf(sin(_t * 5.0) * 1.5)
 			draw_colored_polygon(PackedVector2Array([p + Vector2(-4, -12 + bob), p + Vector2(4, -12 + bob), p + Vector2(0, -6 + bob)]), Color("f4d890"))
-	var step := Quests.step_text(Quests.MAIN)
+	var step := Quests.step_text(Quests.current_main())
 	if step != "":
 		_t2("Objective: " + step, o + Vector2(12, PANEL.size.y - 12), Color("d8c8a0"))
 

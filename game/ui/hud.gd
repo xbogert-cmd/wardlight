@@ -211,7 +211,7 @@ func _draw_prompt() -> void:
 
 ## Current main-quest step under the passive pips.
 func _draw_objective() -> void:
-	var step := Quests.step_text(Quests.MAIN)
+	var step := Quests.step_text(Quests.current_main())
 	if step == "":
 		return
 	var y := 44.0
