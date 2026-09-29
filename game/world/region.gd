@@ -25,6 +25,10 @@ const ENEMIES := {
 	&"sentinel": [preload("res://game/enemies/sentinel.gd"), preload("res://data/enemies/sentinel.tres")],
 	&"troll": [preload("res://game/enemies/troll.gd"), preload("res://data/enemies/troll.tres")],
 	&"guardian": [preload("res://game/enemies/guardian.gd"), preload("res://data/enemies/guardian.tres")],
+	# Chapter 2
+	&"husk": [preload("res://game/enemies/husk.gd"), preload("res://data/enemies/husk.tres")],
+	&"lurker": [preload("res://game/enemies/lurker.gd"), preload("res://data/enemies/lurker.tres")],
+	&"moth": [preload("res://game/enemies/moth.gd"), preload("res://data/enemies/moth.tres")],
 }
 
 var id := &"region"

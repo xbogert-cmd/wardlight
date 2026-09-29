@@ -1,0 +1,26 @@
+{
+	"anims": {
+		"death": {
+			"fps": 14.0,
+			"frames": [
+				2,
+				3,
+				4
+			],
+			"loop": false
+		},
+		"idle": {
+			"fps": 6.0,
+			"frames": [
+				0,
+				1
+			],
+			"loop": true
+		}
+	},
+	"cell": [
+		16,
+		16
+	],
+	"hframes": 8
+}

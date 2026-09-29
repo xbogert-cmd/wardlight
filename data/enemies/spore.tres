@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://game/enemies/enemy_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"spore"
+display_name = "Hollow spore"
+sheet = "spore"
+origin = Vector2(8, 12)
+body_size = Vector2(8, 8)
+max_hp = 1.0
+damage = 10.0
+move_speed = 3.2
+poise = 1.0
+knock_resist = 0.0
+flinch_cooldown = 9.0
+motes = 0
+aggro_range = 20.0
+params = {
+"life": 7.0,
+"turn": 1.6,
+"xp": 0,
+"coins": 0
+}

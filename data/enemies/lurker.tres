@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://game/enemies/enemy_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"lurker"
+display_name = "Mire Lurker"
+sheet = "lurker"
+origin = Vector2(26, 30)
+body_size = Vector2(40, 12)
+max_hp = 90.0
+damage = 18.0
+move_speed = 3.2
+poise = 30.0
+knock_resist = 0.6
+flinch_cooldown = 1.6
+motes = 3
+aggro_range = 8.0
+params = {
+"warn": 0.8,
+"bite_reach": 1.1,
+"exposed": 2.0,
+"rest": 1.2
+}

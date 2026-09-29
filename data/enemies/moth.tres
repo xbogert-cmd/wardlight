@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://game/enemies/enemy_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"moth"
+display_name = "Hollow Moth"
+sheet = "moth"
+origin = Vector2(20, 32)
+body_size = Vector2(22, 16)
+max_hp = 34.0
+damage = 10.0
+move_speed = 3.0
+poise = 8.0
+knock_resist = 0.0
+flinch_cooldown = 1.2
+motes = 2
+aggro_range = 11.0
+params = {
+"hover": 1.8,
+"near": 6.0,
+"far": 9.0,
+"fire_cd": 3.2,
+"windup": 0.6,
+"spore_speed": 3.2
+}

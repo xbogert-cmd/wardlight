@@ -1,0 +1,52 @@
+{
+	"anims": {
+		"death": {
+			"fps": 8.0,
+			"frames": [
+				9,
+				10,
+				11,
+				12
+			],
+			"loop": false
+		},
+		"hurt": {
+			"fps": 10.0,
+			"frames": [
+				8
+			],
+			"loop": false
+		},
+		"idle": {
+			"fps": 10.0,
+			"frames": [
+				0,
+				1,
+				2,
+				3
+			],
+			"loop": true
+		},
+		"shoot": {
+			"fps": 12.0,
+			"frames": [
+				6,
+				7
+			],
+			"loop": false
+		},
+		"windup": {
+			"fps": 8.0,
+			"frames": [
+				4,
+				5
+			],
+			"loop": false
+		}
+	},
+	"cell": [
+		40,
+		40
+	],
+	"hframes": 8
+}

@@ -13,6 +13,7 @@ const Npcs = preload("res://tools/art/npcs_art.gd")
 const Bgs = preload("res://tools/art/backgrounds_art.gd")
 const Bosses = preload("res://tools/art/bosses_art.gd")
 const ItemsArt = preload("res://tools/art/items_art.gd")
+const Hollow = preload("res://tools/art/hollow_art.gd")
 
 
 func _init() -> void:
@@ -26,6 +27,10 @@ func _init() -> void:
 		_save_sheet("hexer", Enemies.hexer())
 		_save_sheet("knot", Enemies.knot())
 		_save_sheet("sentinel", Enemies.sentinel())
+		_save_sheet("husk", Hollow.husk())
+		_save_sheet("lurker", Hollow.lurker())
+		_save_sheet("moth", Hollow.moth())
+		_save_sheet("spore", Hollow.spore())
 	if want.call("bg"):
 		# parallax layers for the animated journey screen
 		for region in ["woods", "ruins", "lake"]:
