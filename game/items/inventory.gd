@@ -97,37 +97,66 @@ func unequip(slot: String) -> void:
 ## What fusing these two would make, or an error explaining why not.
 func fusion_preview(a: int, b: int) -> Dictionary:
 	if a == b:
-		return {"error": "Choose two different relics."}
+		return {"error": "Choose two different items."}
 	var ia := find(a)
 	var ib := find(b)
 	if ia.is_empty() or ib.is_empty():
-		return {"error": "Both relics must be yours."}
-	if Items.kind(ia.id) != "relic" or Items.kind(ib.id) != "relic":
-		return {"error": "Only relics can be fused."}
+		return {"error": "Both items must be yours."}
 	if ia.id != ib.id:
-		return {"error": "Only two of the same relic can be fused."}
+		return {"error": "Only two of the same item can be fused."}
+	if not Items.fusable(ia.id):
+		return {"error": "There is nothing in a plain %s to deepen." % Items.def(ia.id).name}
 	if int(ia.tier) != int(ib.tier):
-		return {"error": "Both relics must be the same tier."}
+		return {"error": "Both must be the same tier."}
 	if int(ia.tier) >= Items.MAX_TIER:
-		return {"error": "Tier III is as strong as a relic can grow."}
-	return {"id": ia.id, "tier": int(ia.tier) + 1}
+		return {"error": "Tier III is as strong as it can grow."}
+	var keep: Dictionary = ia if _bonus_value(ia) >= _bonus_value(ib) else ib
+	return {"id": ia.id, "tier": int(ia.tier) + 1, "bonus": (keep.get("bonus", {}) as Dictionary).duplicate()}
 
 
-## Consume both inputs and create the result in one step (inputs that were
-## equipped are unequipped as part of it; the result starts unequipped).
+## Consume both inputs and create the result in one step. Inputs that were
+## worn are taken off as part of it; a relic result starts unworn, but a
+## staff or robe result goes back into its slot so the wizard is never left
+## without one. The better of the two random bonuses is kept.
 func fuse(a: int, b: int) -> Dictionary:
 	var pv := fusion_preview(a, b)
 	if pv.has("error"):
 		return pv
-	for s in equipped:
+	var rewear := ""
+	for s: String in equipped:
 		if int(equipped[s]) == a or int(equipped[s]) == b:
 			equipped[s] = 0
+			if not s.begins_with("relic"):
+				rewear = s
 	items = items.filter(func(it: Dictionary) -> bool: return int(it.uid) != a and int(it.uid) != b)
-	var out := {"uid": next_uid, "id": pv.id, "tier": pv.tier, "bonus": {}}
+	var out := {"uid": next_uid, "id": pv.id, "tier": pv.tier, "bonus": pv.bonus}
 	next_uid += 1
 	items.append(out)
+	if rewear != "":
+		equipped[rewear] = out.uid
 	changed.emit()
 	return out
+
+
+static func _bonus_value(it: Dictionary) -> float:
+	var b: Dictionary = it.get("bonus", {})
+	return 0.0 if b.is_empty() else float(b.values()[0])
+
+
+## Does a same-id, same-tier partner exist that this item could fuse with?
+func has_partner(uid: int) -> bool:
+	var it := find(uid)
+	if it.is_empty() or not Items.fusable(it.id) or int(it.tier) >= Items.MAX_TIER:
+		return false
+	for o: Dictionary in items:
+		if int(o.uid) != uid and o.id == it.id and int(o.tier) == int(it.tier):
+			return true
+	return false
+
+
+## ponytail: O(n^2) over at most MAX_ITEMS (40) items; fine at this size.
+func any_pair() -> bool:
+	return items.any(func(it: Dictionary) -> bool: return has_partner(int(it.uid)))
 
 
 func spend(amount: int) -> bool:
@@ -177,6 +206,11 @@ func staff_id() -> StringName:
 func robe_id() -> StringName:
 	var it := slot_item("robe")
 	return it.id if not it.is_empty() else &""
+
+
+## Effect strength of the worn staff or robe from its tier (1.0 if empty).
+func tier_mult(slot: String) -> float:
+	return Items.TIER_MULT[clampi(int(slot_item(slot).get("tier", 1)), 1, Items.MAX_TIER)]
 
 
 func spell_power_bonus() -> float:
