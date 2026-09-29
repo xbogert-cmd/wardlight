@@ -1,6 +1,6 @@
 # Implementation checklist
 
-Status: **First playable adventure complete (stages 1–5). Needs a human playtest pass for balance.** See `docs/report.md`.
+Status: **Chapter 1 complete. Chapter 2 (The Hollowing) in progress: see `docs/superpowers/plans/2026-09-29-chapter2-roadmap.md`.**
 
 ## Agreed changes to the original brief
 - Cross-relic recipes cut; same-relic tier fusion (I → II → III) kept.
@@ -91,3 +91,16 @@ Status: **First playable adventure complete (stages 1–5). Needs a human playte
 - [x] macOS export: `build/Wardlight.zip` (universal, ad-hoc signed), verified running
 - [x] Evidence report (`docs/report.md`) and asset manifest (`docs/assets.md`)
 - [ ] Human playtest for difficulty and feel
+
+## Chapter 2 — The Hollowing
+- [x] Step 1: inventory tabs (Staffs / Robes / Relics), staff and robe tiers I–III (×1 / ×1.5 / ×2
+  effect), the altar fuses any two alike items, pair markers and a one-time hint. The plain starter
+  crook and robe can't be fused; a fused staff/robe stays worn; fusion keeps the better bonus.
+- [ ] Step 2: `Companion` base, party of two, Kess, sanctuary camp, save v2
+- [ ] Step 3: opening, Fenway, Reedhollow, boat travel (look)
+- [ ] Step 4: Husk, Mire Lurker, Hollow Moth, hollowed variants (feel)
+- [ ] Step 5: Sunken Chapel, Mire, Stilled Grove, lost child (look)
+- [ ] Step 6: attack on Reedhollow, the Herald (feel)
+- [ ] Step 7: far-watch teaser
+- [ ] Step 8: Heart Isle, the Deepwillow, three new spells, ending (look + feel)
+- [ ] Step 9: balance, `--demo=story2`, report, Mac build
