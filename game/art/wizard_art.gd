@@ -32,11 +32,13 @@ const ROBES := {
 	"wanderer": {"main": ["d9503f", "a53132", "681d2e"], "trim": ["f4cf66", "cc9534", "8c5c22"], "short": false, "mantle": false},
 	"mantle": {"main": ["5474d8", "3449a6", "20296c"], "trim": ["e2e5f5", "a7afcf", "6a7294"], "short": false, "mantle": true},
 	"coat": {"main": ["5a9660", "3a6c45", "224530"], "trim": ["d4ac68", "a07544", "684a2a"], "short": true, "mantle": false},
+	"lake": {"main": ["4a9aa0", "2e6a74", "1a3e48"], "trim": ["d8d0a0", "a89c68", "6a6040"], "short": false, "mantle": false},
 }
 const STAFFS := {
 	"crook": {"wood": ["a8703e", "7a4c2a", "4c2c1c"], "gem": ["b8fcff", "4cc8f4", "2a6ad0"]},
 	"rod": {"wood": ["6a5a6e", "463a4c", "2a2230"], "gem": ["f0e6ff", "ae9ef0", "6454b8"]},
 	"fork": {"wood": ["b08a58", "846238", "523a22"], "gem": ["f4ffb0", "aee468", "5c9c3c"]},
+	"reed": {"wood": ["d8c890", "a89860", "6a5c38"], "gem": ["d0fff0", "70d8c0", "2a8878"]},
 }
 const BOOTS := ["5a4050", "3c2a38", "24182a"]
 const PANTS := ["4a3e52", "342a3c", "201a28"]

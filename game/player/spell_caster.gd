@@ -107,6 +107,8 @@ func request(slot: int, quiet: bool = false) -> bool:
 	ctx.power = player.wiz.affinity_mult(data.school) * (1.0 + GameState.inv.spell_power_bonus())
 	if data.school == "storm":
 		ctx.power *= 1.0 + GameState.inv.relic(&"stormglass")
+	if player.after_dodge > 0.0:
+		ctx.power *= 1.0 + GameState.inv.relic(&"stillwater")
 	ctx.world = player.get_parent()
 	_refresh_ctx()
 	cast_started.emit(data)

@@ -210,11 +210,15 @@ func _rewards() -> void:
 		var hud := get_tree().get_first_node_in_group(&"hud") as HUD
 		if hud:
 			hud.toast("+%d progression point%s" % [got, "s" if got > 1 else ""])
+	var candle := GameState.inv.relic(&"vesper_candle")
+	var p := player()
+	if candle > 0.0 and p:
+		p.mana.gain(candle)
 	var coins := int(data.params.get("coins", data.motes))
 	for k in mini(coins, 6):
 		Loot.coin(get_parent(), center(), coins / mini(coins, 6) + (1 if k < coins % mini(coins, 6) else 0))
 	if not is_boss and randf() < 0.06:
-		var relics := Items.RELIC.keys()
+		var relics := Items.drop_relics()
 		Loot.item(get_parent(), center(), relics[randi() % relics.size()])
 
 

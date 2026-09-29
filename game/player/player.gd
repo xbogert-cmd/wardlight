@@ -32,6 +32,7 @@ var float_left := 0.0
 var _float_base := 0.0
 var _bell_cd := 0.0
 var _ward_t := 0.0      # Wardweave: window after a dodge
+var after_dodge := 0.0  # Stillwater Acorn: window after a dodge
 var _last_safe := Vector3.ZERO
 var _shadow: BlobShadow
 ## Incoming-damage multiplier from wards, with its remaining time.
@@ -229,6 +230,7 @@ func _physics_process(delta: float) -> void:
 	_dodge_cd = maxf(0.0, _dodge_cd - delta)
 	_bell_cd = maxf(0.0, _bell_cd - delta)
 	_ward_t = maxf(0.0, _ward_t - delta)
+	after_dodge = maxf(0.0, after_dodge - delta)
 	_release_t = maxf(0.0, _release_t - delta)
 	_input_grace -= delta
 	if _attack_needs_release and not Input.is_action_pressed(&"attack"):
@@ -395,6 +397,7 @@ func _dodge(delta: float) -> void:
 	if _dodge_t <= 0.0:
 		state = NORMAL
 		_dodge_cd = maxf(0.1, tuning.dodge_cooldown - GameState.inv.relic(&"gale_feather"))
+		after_dodge = 1.0
 		if inv.robe_id() == &"wardweave":
 			_ward_t = 1.5
 			FX3.ring(global_position + Vector3(0, 0.05, 0), 0.2, 0.8, 0.25, Pal.MANA, 1.0)
@@ -469,6 +472,8 @@ func take_hit(d: Damage) -> void:
 		_ward_t = 0.0
 		amount *= 1.0 - 0.4 * GameState.inv.tier_mult("robe")
 		FX3.ring(center(), 0.1, 0.8, 0.2, Pal.MANA, 1.0, false)
+	if GameState.inv.robe_id() == &"lakeweave" and health.hp < health.max_hp * 0.5:
+		amount *= 1.0 - 0.1 * GameState.inv.tier_mult("robe")
 	health.damage(amount)
 	_flash = 0.75
 	_iframes = tuning.hurt_iframes

@@ -35,6 +35,8 @@ func _staff_identity(target_actor: Node3D, d: Damage) -> void:
 			d.statuses.append({"id": &"burn", "duration": 2.0, "power": 3.0 * m})
 		&"gravewood":
 			d.statuses.append({"id": &"curse", "duration": 2.5 * m})
+		&"reedwhistle":
+			d.statuses.append({"id": &"slow", "duration": 1.5, "power": 0.2 * m})
 		&"stormcoil":
 			if bonus.has("coil"):
 				return

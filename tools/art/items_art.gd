@@ -2,9 +2,10 @@ extends RefCounted
 ## 16×16 item icons in one strip, in Items.DEFS "icon" order:
 ## 0 crook, 1 stormcoil, 2 cinderbrand, 3 gravewood, 4 wanderer robe,
 ## 5 wardweave, 6 mistcloak, 7 ember seed, 8 stormglass, 9 whisper bone,
-## 10 gale feather, 11 moonstone, 12 ward bell, 13 coin.
+## 10 gale feather, 11 moonstone, 12 ward bell, 13 coin, 14 vesper candle,
+## 15 bogheart pearl, 16 stillwater acorn, 17 lakeweave robe, 18 reedwhistle staff.
 
-const N := 14
+const N := 19
 
 
 static func _c(s: String) -> Color:
@@ -79,3 +80,23 @@ static func _draw(c: PixelCanvas, k: int) -> void:
 			c.ellipse(8, 8, 4, 4, _c("f0c850"), 1)
 			c.rect(7, 6, 2, 4, _c("a88830"), 2)
 			c.shade(1, _c("fff0a0"), _c("a88830"), 1)
+		14:
+			c.rect(6, 5, 4, 9, _c("e8e0c8"), 1)
+			c.rect(4, 13, 8, 2, _c("6a6a7a"), 1)
+			c.line(8, 5, 8, 3, _c("3a3040"), 2)
+			c.ellipse(8, 2, 1.5, 2, _c("b0a0ff"), 2)
+			c.put(8, 1, _c("ffffff"), 2)
+			c.shade(1, _c("ffffff"), _c("a89c88"), 1)
+		15:
+			c.ellipse(8, 9, 5, 5, _c("7aa870"), 1)
+			c.ellipse(7, 8, 2, 2, _c("d8f0b0"), 2)
+			c.put(6, 7, _c("ffffff"), 2)
+			c.shade(1, _c("b0d890"), _c("3a5a38"), 1)
+		16:
+			c.ellipse(8, 10, 4, 4, _c("c8c0b0"), 1)
+			c.rect(4, 5, 9, 3, _c("8a8070"), 2)
+			c.line(8, 5, 9, 2, _c("6a6050"), 2)
+			c.put(7, 10, _c("a8e8ff"), 2)
+			c.shade(1, _c("f0ece0"), _c("7a7468"), 1)
+		17: _robe(c, "2e6a74", "d8d0a0")
+		18: _staff(c, "c8b880", "70d8c0", true)

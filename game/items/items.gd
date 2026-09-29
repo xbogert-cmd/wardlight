@@ -24,6 +24,8 @@ const DEFS := {
 		"text": "Staff attacks set enemies burning briefly. Tiers II and III burn 1.5x and 2x as hard."},
 	&"gravewood": {"kind": "staff", "name": "Gravewood Staff", "look": {"staff": "rod"}, "icon": 3,
 		"text": "Staff attacks curse enemies for 2.5 / 3.75 / 5 seconds."},
+	&"reedwhistle": {"kind": "staff", "name": "Reedwhistle Staff", "look": {"staff": "reed"}, "icon": 18,
+		"text": "Staff attacks slow enemies by 20% / 30% / 40% for 1.5 seconds."},
 	# ---------------------------------------------------------------- robes
 	&"wanderer": {"kind": "robe", "name": "Wanderer's Robe", "look": {"robe": "wanderer"}, "icon": 4, "plain": true,
 		"text": "Red wool, patched at the hem. Warm enough."},
@@ -31,6 +33,8 @@ const DEFS := {
 		"text": "Dodging leaves a brief ward: the next hit within 1.5 s is reduced by 40% / 60% / 80%."},
 	&"mistcloak": {"kind": "robe", "name": "Mistwalker Coat", "look": {"robe": "coat"}, "icon": 6,
 		"text": "Levitate lasts 50% / 75% / 100% longer and dodges travel 12% / 18% / 24% further."},
+	&"lakeweave": {"kind": "robe", "name": "Lakeweave Robe", "look": {"robe": "lake"}, "icon": 17,
+		"text": "Below half health you take 10% / 15% / 20% less damage."},
 	# ---------------------------------------------------------------- relics
 	&"ember_seed": {"kind": "relic", "name": "Ember Seed", "icon": 7,
 		"text": "Burns you cause tick harder: +20% / +40% / +60%."},
@@ -44,6 +48,13 @@ const DEFS := {
 		"text": "Mana regenerates 25% / 45% / 65% faster."},
 	&"ward_bell": {"kind": "relic", "name": "Ward Bell", "icon": 12,
 		"text": "When struck, 12% / 18% / 24% chance to ring and turn the blow aside (6 s rest)."},
+	# Chapter 2 shrine rewards (never random drops)
+	&"vesper_candle": {"kind": "relic", "name": "Vesper Candle", "icon": 14, "shrine": true,
+		"text": "Each enemy you defeat restores 3 / 5 / 7 mana."},
+	&"bogheart": {"kind": "relic", "name": "Bogheart Pearl", "icon": 15, "shrine": true,
+		"text": "Slows on you (spores, mud) are 40% / 70% / 100% weaker."},
+	&"stillwater": {"kind": "relic", "name": "Stillwater Acorn", "icon": 16, "shrine": true,
+		"text": "A spell cast within 1 s of a dodge deals +12% / +18% / +24% damage."},
 }
 
 ## Random bonus rolled once per new instance: [stat, min, max] (capped).
@@ -98,4 +109,12 @@ const RELIC := {
 	&"gale_feather": [0.0, 0.08, 0.14, 0.2],
 	&"moonstone": [0.0, 0.25, 0.45, 0.65],
 	&"ward_bell": [0.0, 0.12, 0.18, 0.24],
+	&"vesper_candle": [0.0, 3.0, 5.0, 7.0],
+	&"bogheart": [0.0, 0.4, 0.7, 1.0],
+	&"stillwater": [0.0, 0.12, 0.18, 0.24],
 }
+
+
+## Relics that can drop from enemies (not the shrine rewards).
+static func drop_relics() -> Array:
+	return RELIC.keys().filter(func(k: StringName) -> bool: return not def(k).get("shrine", false))

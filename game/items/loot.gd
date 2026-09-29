@@ -37,7 +37,7 @@ static func coin(parent: Node, at: Vector3, amount: int) -> Loot:
 func _ready() -> void:
 	var icon: int = COIN_ICON if coins > 0 else int(Items.def(item_id).get("icon", 0))
 	_icon = PixelBillboard.new()
-	_icon.setup(ICONS, Vector2i(16, 16), 14, {}, Vector2(8, 16))
+	_icon.setup(ICONS, Vector2i(16, 16), ICONS.get_width() / 16, {}, Vector2(8, 16))
 	_icon._apply(icon)
 	_icon.mat.set_shader_parameter(&"emit", 0.8)
 	_icon.scale = Vector3.ONE * (0.6 if coins > 0 else 1.0)

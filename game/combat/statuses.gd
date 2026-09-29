@@ -24,6 +24,8 @@ var _burn_acc := 0.0
 func apply(id: StringName, duration: float, power: float = 0.0, src: Node = null) -> void:
 	if id == &"root":
 		duration *= 1.0 - root_resist
+	if id == &"slow" and owner_actor is Player:
+		power *= 1.0 - GameState.inv.relic(&"bogheart")
 	if src is Player:
 		if id == &"burn":
 			power *= 1.0 + GameState.inv.relic(&"ember_seed")
