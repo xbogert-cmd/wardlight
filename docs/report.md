@@ -86,3 +86,83 @@ Pause on focus loss.
 - Regions build their geometry on arrival, so a short hitch can follow the journey screen.
 - Agreed cuts from the original brief: cross-relic recipes (same-relic fusion kept); jumping
   (levitation is the traversal ability in the 3D world).
+
+# Chapter 2 — The Hollowing
+
+Built 2026-09-29 from the design in `docs/superpowers/specs/2026-09-29-chapter2-hollowing-design.md`
+(nine build steps; plans in `docs/superpowers/plans/2026-09-29-*`). About 45–60 minutes of play.
+
+## What's new
+
+**Story.** Once Chapter 1 is done, a wounded scout, Kess, reaches Hearthmere. Waystones lead to the
+Fenway marsh road and Reedhollow, the Reedfolk's stilt village on the lake. Elder Rhosyn explains the
+Deepwillow under the lake and the sealed Heart Isle; three shrines must be relit. After the second,
+the Herald (the Hollowing's masked gardener) attacks Reedhollow and is driven off at 30%. With all
+three lit, the Heart Isle opens: the Deepwillow is cleansed, not killed, and warns of something in the
+east. Side quests: Pip lost in the Mire (Wenna's thanks), and Orla's spyglass at the Far Watch (a view
+of a grey land and a vast walker in the haze: the teaser for what comes next).
+
+**Places (7 new).** The Fenway, Reedhollow (hub; boats to every lake stop), the Sunken Chapel (ring the
+bell to drain the flooded nave), the Mire (raise the stepping stones to reach Pip), the Stilled Grove
+(frozen villagers; thaw the root wall; colour returns when the shrine burns), the Far Watch, the Heart
+Isle. The shrine areas share `ShrineArea` (landing, guarded shrine, relight channel, reward once).
+Reedhollow recovers with each shrine: lanterns and returning folk, the mended fishing walkway,
+Corrin's shop; after the ending the lake light burns.
+
+**Enemies.** Husk (telegraphed lunge; a slowing spore patch on death), Mire Lurker (hunts hidden,
+surfaces after a ring tell), Hollow Moth (keeps its distance, homing spores that pop to any hit), and
+hollowed versions of the five Chapter 1 enemies (mask, +20% speed, one extra attack each).
+Chapter 2 areas run at ×1.25 health and damage.
+
+**Bosses.** The Herald: blinks between shadow pools (a ring marks where it rises), arc slash, hollow
+seeds that sprout Husks after 6 s, and below half a tether on a companion (break its knot). The
+Deepwillow: four bark knots opened one at a time; then flood surges over the clearing's edge (levitate
+or stay near the trunk) and root lines; at half health the hollow core tears free and everything speeds
+up; spent, it is cleansed by a contextual-magic channel.
+
+**Party.** Kess the scout joins Tamsin (two companions at once; the rest wait at the sanctuary camp).
+She shoots the wizard's target, marks an enemy every 6 s (+25% on the next spell hit), hops back from
+close enemies, and talks.
+
+**Items and spells.** Inventory tabs; staffs and robes now have tiers (×1 / ×1.5 / ×2) and the altar
+fuses any two alike items. New: three shrine relics (Vesper Candle, Bogheart Pearl, Stillwater Acorn),
+the Lakeweave Robe, the Reedwhistle Staff. The Deepwillow teaches Boiling Spring (fire), Chain Current
+(storm) and Drowning Grasp (hex), a fifth spellbook column. Home decor: reed boat, lake lamp.
+
+**Saves.** Version 2 (Chapter 1 saves migrate: companion → party, staff/robe tiers).
+
+## Verification
+
+- `tools/dev/check.sh`: 159 files load, **53 rule tests pass** (Chapter 2 adds: fusion for every
+  kind, tier scaling, party limit and migration, the mark used by one hit, the opening only after
+  Chapter 1, per-area enemy scaling, spores, the hidden Lurker, spores popping, shrine relic effects,
+  shrines in any order with each reward once, Chain Current weakening per jump, Drowning Grasp
+  dragging and slowing).
+- `--demo=story2` plays Chapter 2 from a finished Chapter 1 save to the epilogue, printing the state
+  after each stage (opening → Reedhollow → chapel → mire → Herald → grove → Heart Isle → done);
+  `--demo=resume --continue` reloads it with the chapter complete, spells and decor kept.
+- Per-step demos: `lake`, `lakelook`, `bestiary`, `masks`, `shrines`, `herald`, `farwatch`,
+  `deepwillow`, `party`, `camp`.
+- Spell balance against the Warden (`--demo=dps_<school>_lake`, 25 s, lake spell in slot 4):
+  Chain Current about 22 per cast single-target (Arc Lance about 20); Boiling Spring 30 per eruption;
+  Drowning Grasp 16 (a setup spell). No school became the outlier.
+- 110–120 fps on the M3 throughout the scripted run.
+
+## Screenshots
+
+| | |
+| --- | --- |
+| ![opening](evidence/ch2_01_opening.png) | ![fenway](evidence/ch2_02_fenway.png) |
+| ![reedhollow](evidence/ch2_03_reedhollow.png) | ![chapel bell](evidence/ch2_04_chapel_bell.png) |
+| ![mire stones](evidence/ch2_05_mire_stones.png) | ![stilled grove](evidence/ch2_06_stilled_grove.png) |
+| ![herald](evidence/ch2_07_herald.png) | ![spyglass](evidence/ch2_08_spyglass.png) |
+| ![deepwillow core](evidence/ch2_09_deepwillow_core.png) | ![healed](evidence/ch2_10_healed.png) |
+| ![spellbook](evidence/ch2_11_spellbook.png) | ![epilogue](evidence/ch2_12_epilogue.png) |
+
+## Known limits
+
+- Difficulty and boss health were checked by scripted runs only; the Herald and the Deepwillow
+  need a human playtest (numbers in `data/enemies/herald.tres`, `deepwillow.tres`, `deep_knot.tres`).
+- Kess's route hints are in her arrival lines; Tamsin–Kess banter beyond those is still thin.
+- The Deepwillow's crown is a simple shape; a look pass may want more detail.
+

@@ -86,6 +86,58 @@ static func _shrines() -> Array:
 	return out
 
 
+## The whole of Chapter 2 from a finished Chapter 1: the opening, the Fenway,
+## Reedhollow, two shrines, the Herald's attack, the third shrine, the Heart
+## Isle and the ending (checks quest/flag order; screenshots along the way).
+static func _story2() -> Array:
+	var out: Array = []
+	for st: Array in DEMOS["lake"]:
+		if st[0] <= 20.3:
+			out.append(st)
+	var clk := [21.0]   # shared clock (lambdas copy plain numbers)
+	var at := func(rel: Array) -> void:
+		for st: Array in rel:
+			out.append([float(clk[0]) + float(st[0])] + st.slice(1))
+	var nexts := func(from: float, n: int) -> Array:
+		var r: Array = []
+		for k in n:
+			r.append([from + k * 0.3, "next", ""])
+		return r
+	at.call([[0.0, "tp", "2.2,3.3"], [0.3, "tap", "interact"]] + nexts.call(0.7, 3))
+	clk[0] += 2.0
+	# a shrine by boat: [boat choice, prefix, moment spot, moment wait]
+	var shrine := func(area: Array) -> void:
+		at.call([[0.0, "tp", "19,-10.8"], [0.3, "tap", "interact"], [0.7, "pick", area[0]]])
+		clk[0] += 6.5
+		at.call(nexts.call(0.0, 3) + [[1.0, "shot", "t_" + area[1] + "1"], [1.2, "clear", ""], [1.3, "tp", area[2]], [1.7, "tap", "interact"]])
+		clk[0] += 1.7 + float(area[3])
+		at.call(nexts.call(0.0, 4) + [[1.4, "tp", "21,-1.2"], [1.6, "clear", ""], [1.8, "tap", "interact"], [4.0, "shot", "t_" + area[1] + "2"]])
+		clk[0] += 7.8
+		at.call(nexts.call(0.0, 4) + [[1.3, "state", area[1]], [1.4, "tp", "-24.6,0.5"], [1.7, "tap", "interact"]])
+		clk[0] += 8.0
+	shrine.call(["0", "chapel", "1.0,-1.4", 7.0])
+	shrine.call(["1", "mire", "2.0,1.8", 6.5])
+	# back to a burning Reedhollow: the Herald
+	at.call([[0.0, "shot", "t_attack"], [0.2, "tp", "0,0.6"]] + nexts.call(0.7, 5) + [[2.4, "aim_enemy", ""], [2.5, "hold", "attack"],
+		[3.0, "tap", "spell_1"], [6.0, "wound", "0.2"], [6.5, "tap", "spell_1"], [7.0, "release", "attack"]] + nexts.call(8.0, 5) + nexts.call(11.0, 4)
+		+ [[12.8, "shot", "t_after_herald"], [13.0, "state", "herald"]])
+	clk[0] += 13.5
+	shrine.call(["2", "grove", "10.4,0.4", 5.0])
+	# the Heart Isle (the fourth stop now: chapel, mire, grove, heart)
+	at.call([[0.0, "tp", "19,-10.8"], [0.3, "tap", "interact"], [0.7, "pick", "3"]])
+	clk[0] += 6.5
+	at.call([[0.2, "shot", "t_isle"], [0.4, "tp", "2,-3.5"]] + nexts.call(0.9, 4) + [[2.2, "equip", "3:chain_current"], [2.3, "aim_enemy", ""],
+		[2.4, "hold", "attack"], [3.0, "break_knot", ""], [4.0, "break_knot", ""], [5.0, "break_knot", ""], [6.0, "break_knot", ""],
+		[8.0, "wound", "0.45"], [10.0, "wound", "0.0"], [10.2, "release", "attack"]] + nexts.call(11.0, 2)
+		+ [[12.0, "tp", "2,-9.4"], [12.3, "tap", "interact"]] + nexts.call(17.2, 6) + nexts.call(21.8, 2) + [[23.0, "shot", "t_healed"], [23.2, "state", "healed"]])
+	clk[0] += 23.5
+	at.call([[0.0, "tp", "-20.6,3.0"], [0.3, "tap", "interact"], [7.0, "tp", "2.2,3.3"], [7.3, "tap", "interact"]] + nexts.call(7.7, 2)
+		+ [[8.8, "tp", "-0.2,4.6"], [9.1, "tap", "interact"]] + nexts.call(9.5, 2)
+		+ [[10.4, "shot", "t_epilogue"], [10.6, "state", "done2"], [10.8, "quit", ""]])
+	out.sort_custom(func(a: Array, b: Array) -> bool: return a[0] < b[0])
+	return out
+
+
 const DEMOS := {
 	# first look: walk in, lance a hound, gust, dodge
 	"look": [
@@ -325,7 +377,7 @@ func _ready() -> void:
 	for a in OS.get_cmdline_user_args():
 		if a.begins_with("--demo="):
 			var nm := a.trim_prefix("--demo=")
-			steps = _all_spells() if nm == "allspells" else _shrines() if nm == "shrines" else _dps(nm.trim_prefix("dps_")) if nm.begins_with("dps_") else DEMOS.get(nm, [])
+			steps = _all_spells() if nm == "allspells" else _shrines() if nm == "shrines" else _story2() if nm == "story2" else _dps(nm.trim_prefix("dps_")) if nm.begins_with("dps_") else DEMOS.get(nm, [])
 			if nm.begins_with("dps_"):
 				Events.damage_dealt.connect(func(_t: Node3D, d: Damage) -> void:
 					_tally[d.spell_id] = roundf(_tally.get(d.spell_id, 0.0) + d.amount))

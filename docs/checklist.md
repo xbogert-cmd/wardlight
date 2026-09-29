@@ -1,6 +1,6 @@
 # Implementation checklist
 
-Status: **Chapter 1 complete. Chapter 2 (The Hollowing) in progress: see `docs/superpowers/plans/2026-09-29-chapter2-roadmap.md`.**
+Status: **Chapters 1 and 2 built. Chapter 2 (The Hollowing) awaits the owner's look/feel reviews for steps 5, 6 and 8: see `docs/superpowers/plans/2026-09-29-chapter2-roadmap.md`.**
 
 ## Agreed changes to the original brief
 - Cross-relic recipes cut; same-relic tier fusion (I → II → III) kept.
@@ -127,4 +127,8 @@ Status: **Chapter 1 complete. Chapter 2 (The Hollowing) in progress: see `docs/s
   light burns in Reedhollow). Three new spells in a fifth spellbook column: Boiling Spring, Chain Current,
   Drowning Grasp (checked against the Warden: none an outlier). Home decor: reed boat, lake lamp.
   `mus_deepwillow`. `--demo=deepwillow`; `--demo=dps_<school>_lake`.
-- [ ] Step 9: balance, `--demo=story2`, report, Mac build
+- [x] Step 9: `--demo=story2` plays the whole chapter from a finished Chapter 1 save to the epilogue, and
+  `resume --continue` reloads it; lake spells checked against the Warden; report (`docs/report.md`,
+  Chapter 2 section) and asset list updated; Mac build exported and verified.
+- [ ] Owner reviews still open: step 5 (look), step 6 (feel), step 8 (look + feel); a human playtest
+  for Chapter 2 difficulty (Herald, Deepwillow).

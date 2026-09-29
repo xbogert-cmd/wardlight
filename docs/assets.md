@@ -9,15 +9,17 @@ third-party images, sounds or fonts. Regenerate with the commands in the README,
 | `generated/w3d/*.png` (grass, cobble, dirt, rock, bricks, rune bricks, wood, water, plaster, roof, thatch, windows, door, signpost, crate, barrel, ward crystals, trees, lantern, banner, flames, castle, far village, thorns, roots, spirit) | `tools/art/world3d_art.gd` via `tools/gen_art.gd w3d` | 32×32 tiling surfaces at 24 px per metre; upright billboard sprites |
 | `generated/hound, raider, hexer, knot, sentinel .png/.json` | `tools/art/enemies_art.gd` (`enemies`) | Sprite sheets and animation tables |
 | `generated/troll, guardian .png/.json` | `tools/art/bosses_art.gd` (`bosses`) | Gatebreaker (88×80 cells), Hollowed Warden (128×120) |
-| `generated/npc_*.png/.json` | `tools/art/npcs_art.gd` (`npcs`) | Parametric villagers, the fawn, Tamsin the shieldbearer |
+| `generated/npc_*.png/.json` | `tools/art/npcs_art.gd` (`npcs`) | Parametric villagers (incl. the Reedfolk, Wenna, Pip, Corrin, Orla), the fawn, Tamsin, Kess |
+| `generated/husk, lurker, moth, spore, hollow_seed, tether_knot, deep_knot .png/.json` | `tools/art/hollow_art.gd` (`enemies`, `bosses`) | Chapter 2 creatures of the Hollowing |
+| `generated/herald, deepwillow .png/.json` | `tools/art/hollow_art.gd` (`bosses`) | The Herald (72×76 cells), the Deepwillow (168×156) |
 | `generated/items.png` | `tools/art/items_art.gd` (`icons`) | 16×16 icons: staffs, robes, relics, coin |
 | `generated/icons.png` | `tools/art/icons_art.gd` (`icons`) | Spell and HUD icons |
 | `generated/glow*, rune*, cloud96.png` | `tools/art/fx_art.gd` (`fx`) | Effect textures |
 | `generated/props_woods.png/.json` | `tools/art/props_art.gd` (`props`) | Grass tufts, bushes, rocks, mushrooms, stumps |
-| `generated/bg_woods_*, bg_ruins_*.png` | `tools/art/backgrounds_art.gd` (`bg`) | Parallax layers for the journey and title screens |
+| `generated/bg_woods_*, bg_ruins_*, bg_lake_*.png` | `tools/art/backgrounds_art.gd` (`bg`) | Parallax layers for the journey and title screens |
 | `generated/icon.png` | `tools/gen_art.gd` (`icon`) | App icon built from the wizard sprite |
 | Wizard sprite sheet | `game/art/wizard_art.gd` (at runtime) | Built from the chosen appearance |
 | `audio/sfx/*.wav` | `tools/gen_audio.gd` + `tools/audio/synth.gd` | Synthesised effects: casting, impacts, steps, UI, ward light, levitate… |
-| `audio/music/explore, home, ruins, boss .wav` | `tools/gen_audio.gd` (`mus_*`) | Looping tracks (import loop mode 2) |
+| `audio/music/explore, home, ruins, boss, lake, herald, deepwillow .wav` | `tools/gen_audio.gd` (`mus_*`) | Looping tracks (import loop mode 2) |
 | `fonts/wardhand.tres` | `tools/gen_font.gd` | Original 5×7 pixel font |
 | Shaders `game3d/*.gdshader` | hand-written | Terrain, sprites, props, water, FX |
