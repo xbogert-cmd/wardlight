@@ -20,6 +20,7 @@ var _sub := ""
 var _failed := false
 var _art: Dictionary
 var _frames: Array = []
+var _boat := false            # a boat ride: the wizard stands in a boat on the water
 
 
 func _ready() -> void:
@@ -33,7 +34,8 @@ func _ready() -> void:
 
 
 ## Returns the loaded resource at `path`, or null if loading failed.
-func run(title: String, sub: String, region_look: String, path: String) -> Resource:
+func run(title: String, sub: String, region_look: String, path: String, boat := false) -> Resource:
+	_boat = boat
 	_title = title
 	_sub = sub
 	_failed = false
@@ -42,7 +44,7 @@ func run(title: String, sub: String, region_look: String, path: String) -> Resou
 	for k in ["sky", "far", "mid", "near"]:
 		_layers.append(load("res://assets/generated/bg_%s_%s.png" % [region_look, k]))
 	_art = WizardArt.build(GameState.appearance)
-	_frames = _art.anims.run.frames
+	_frames = (_art.anims.idle if boat else _art.anims.run).frames
 	visible = true
 	var err := ResourceLoader.load_threaded_request(path)
 	var res: Resource = null
@@ -82,6 +84,15 @@ func _draw_scene() -> void:
 		var off := fmod(_t * speeds[k], float(tex.get_width()))
 		for x in [-off, tex.get_width() - off]:
 			canvas.draw_texture(tex, Vector2(roundf(x), 360 - tex.get_height()))
+	if _boat:
+		# still water with drifting glints, and the boat's hull
+		canvas.draw_rect(Rect2(0, 282, 640, 18), Color("0c1a22"))
+		for k in 24:
+			var gx := fposmod(k * 53.0 - _t * 30.0, 640.0)
+			canvas.draw_rect(Rect2(roundf(gx), 284 + (k * 7) % 14, 6, 1), Color(0.6, 0.8, 0.85, 0.35))
+		var bob := roundf(sin(_t * 2.0))
+		canvas.draw_colored_polygon(PackedVector2Array([Vector2(214, 292 + bob), Vector2(292, 292 + bob), Vector2(282, 302 + bob), Vector2(222, 302 + bob)]), Color(0.04, 0.03, 0.06))
+		canvas.draw_texture(SpellEffect.GLOW_S, Vector2(284, 282 + bob), Color(1.0, 0.7, 0.35, 0.9))
 	# walking wizard silhouette with a faint staff glow
 	var f: int = _frames[int(_t * 10.0) % _frames.size()]
 	var cell := Vector2(WizardArt.CELL_W, WizardArt.CELL)

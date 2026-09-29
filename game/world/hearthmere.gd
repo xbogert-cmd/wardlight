@@ -4,6 +4,8 @@ extends Region
 ## Old Ward is cleansed the wardlight and lanterns return, rescued travellers
 ## are in the square, the roots are gone from the east road, and everyone's
 ## lines change. Isolde keeps a garden stall here if she chose the village.
+## Chapter 2 opens here: once Chapter 1 is done, wounded Kess reaches the
+## square, and afterwards a waystone by the west road leads to the Fenway.
 
 var wardlight: Dictionary
 var lanterns: Array = []
@@ -15,6 +17,8 @@ var villagers: Array[Npc] = []
 var returnees: Array[Npc] = []
 var isolde: Npc
 var stall: Array[Node3D] = []
+var kess: Npc
+var way: Interactable
 
 
 func _layout() -> void:
@@ -33,7 +37,7 @@ func _layout() -> void:
 		[-11, 8.5, 3.5, 0.25], [10, 9, 3.8, 0.25]]
 	dirt_spots = [[0, 0, 6.0], [12.5, -4.8, 2.5]]
 	entries = {&"west": [Vector3(-21.5, 0, 2.0), 1.0], &"start": [Vector3(-21.5, 0, 2.0), 1.0], &"east": [Vector3(21.5, 0, -1.0), -1.0],
-		&"square": [Vector3(-2.5, 0, 3.0), 1.0]}
+		&"square": [Vector3(-2.5, 0, 3.0), 1.0], &"waystone": [Vector3(-16.0, 0, -1.4), 1.0]}
 	exits = [{"rect": Rect2(-25, -3, 2.5, 10), "to": &"sanctuary", "entry": &"east"},
 		{"rect": Rect2(22.5, -6, 2.5, 10), "to": &"briarwood", "entry": &"west"}]
 	respawn_entry = &"square"
@@ -135,6 +139,12 @@ func _people() -> void:
 	add_child(maren)
 	maren.global_position = _ground(-2.0, 1.6)
 	maren.on_talk = _talk_maren
+	kess = Npc.new()
+	kess.sheet = "kess"
+	kess.display = "Kess"
+	add_child(kess)
+	kess.global_position = _ground(0.3, 2.6)
+	kess.on_talk = _opening
 	var restored := func() -> bool: return GameState.flag(&"ward_restored")
 	var smith := _npc("smith", "Brannoc the smith", 11.5, -3.2, func() -> Array:
 		return [["Brannoc", "Can't work the forge with that wardlight dark. Feels like the whole wood is leaning in on us."]])
@@ -189,7 +199,58 @@ func _talk_smith() -> void:
 	SaveSystem.autosave()
 
 
+func enter(p: Player, entry: StringName) -> void:
+	super.enter(p, entry)
+	if Quests.hollowing_ready():
+		GameState.start_quest(Quests.HOLLOWING)
+		apply_state()
+		SaveSystem.autosave()
+		var hud := get_tree().get_first_node_in_group(&"hud") as HUD
+		if hud:
+			hud.banner("Voices in the square: Elder Maren is calling for you")
+
+
+## Chapter 2's opening: Kess, wounded, with a shard of a hollow mask.
+func _opening() -> void:
+	if GameState.quest_step(Quests.HOLLOWING) != 0:
+		await Dialogue.i.talk([["Kess", "Ready when you are. The waystone by the west road."]])
+		return
+	await Dialogue.i.talk([
+		["Kess", "You're the wizard? The one who woke the Old Ward?"],
+		["Elder Maren", "{name}, this is Kess. She came out of the east marsh an hour ago, bleeding."],
+		["Kess", "Reedhollow sent me. Our lake's light is failing, the way yours did. Only worse."],
+		["Kess", "Something came up out of the water wearing a face. It left this behind."],
+		["", "Kess holds out a shard of pale wood, carved like a mask and hollow behind the eyes."],
+		["Elder Maren", "The Hollowed Warden at the Old Ward wore a mask like that."],
+		["Elder Maren", "So it was never one sick ward. Something is doing this. The wider world has come knocking, {name}."],
+		["Kess", "The Fenway road starts at a waystone. I can still walk. I'll show you the way."],
+		["Elder Maren", "The old waystone by the west road has woken. Go carefully, both of you."],
+	])
+	GameState.recruit(&"kess", true)
+	GameState.advance(Quests.HOLLOWING, 1)
+	apply_state()
+	get_tree().root.get_node("Main").sync_party()
+	SaveSystem.autosave()
+
+
+## The waystone by the west road wakes with Chapter 2 (built once, on demand).
+func _ensure_waystone() -> void:
+	if way:
+		return
+	way = waystone(-17.5, -4.2, "Waystone: travel")
+	way.activated.connect(func(_p: Player) -> void:
+		var k: int = await Dialogue.i.choose("", "The waystone hums with the road's memory.", ["The Fenway", "Stay"])
+		if k == 0:
+			exit_requested.emit(&"fenway", &"waystone"))
+
+
 func _talk_maren() -> void:
+	if GameState.quest_step(Quests.HOLLOWING) == 0:
+		await _opening()
+		return
+	if GameState.quest_active(Quests.HOLLOWING):
+		await Dialogue.i.talk([["Elder Maren", "Reedhollow needs you, {name}. The waystone by the west road will take you to the Fenway."]])
+		return
 	var step := GameState.quest_step(Quests.MAIN)
 	if GameState.flag(&"ward_restored") and not GameState.quest_done(Quests.MAIN):
 		await Dialogue.i.talk([
@@ -229,6 +290,11 @@ func _talk_maren() -> void:
 
 
 func apply_state() -> void:
+	var met: bool = GameState.quest_step(Quests.HOLLOWING) == 0
+	kess.visible = met
+	kess.enabled = met
+	if GameState.quest_step(Quests.HOLLOWING) >= 1 or GameState.quest_done(Quests.HOLLOWING):
+		_ensure_waystone()
 	var restored: bool = GameState.flag(&"ward_restored")
 	set_ward(wardlight, restored)
 	for l: Dictionary in lanterns:

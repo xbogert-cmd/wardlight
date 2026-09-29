@@ -12,9 +12,11 @@ const PLACES := {
 	&"hearthmere": [Vector2(165, 170), "Hearthmere"],
 	&"briarwood": [Vector2(265, 140), "Briarwood Road"],
 	&"old_ward": [Vector2(345, 70), "The Old Ward"],
+	&"fenway": [Vector2(290, 215), "The Fenway"],
+	&"reedhollow": [Vector2(370, 190), "Reedhollow"],
 }
-const ROADS := [[&"sanctuary", &"hearthmere"], [&"hearthmere", &"briarwood"]]
-const JOURNEYS := [[&"briarwood", &"old_ward"]]
+const ROADS := [[&"sanctuary", &"hearthmere"], [&"hearthmere", &"briarwood"], [&"fenway", &"reedhollow"]]
+const JOURNEYS := [[&"briarwood", &"old_ward"], [&"hearthmere", &"fenway"], [&"briarwood", &"fenway"]]
 
 var is_open := false
 var _t := 0.0

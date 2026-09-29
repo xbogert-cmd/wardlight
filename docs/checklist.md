@@ -100,7 +100,10 @@ Status: **Chapter 1 complete. Chapter 2 (The Hollowing) in progress: see `docs/s
   (`GameState.party`), Kess the scout (shoots the wizard's target, marking arrow every 6 s = +25% on
   the next spell hit, hops back from close enemies), sanctuary companion camp, save version 2
   (Chapter 1 saves migrate). Kess's recruitment scene, route hints and banter come with steps 3 and 5.
-- [ ] Step 3: opening, Fenway, Reedhollow, boat travel (look)
+- [x] Step 3 (built, awaiting look review): Hearthmere opening (Kess arrives once Chapter 1 is done;
+  she's a guest until Reedhollow), waystones to the Fenway (Hearthmere, Briarwood), the Fenway marsh road
+  (enemies ×1.25), Reedhollow (lake to the north, stilt houses, dock, elder; deep water puts you back ashore),
+  boat menu and boat journey (no stops until step 5), lake music, map places. `--demo=lake` plays it.
 - [ ] Step 4: Husk, Mire Lurker, Hollow Moth, hollowed variants (feel)
 - [ ] Step 5: Sunken Chapel, Mire, Stilled Grove, lost child (look)
 - [ ] Step 6: attack on Reedhollow, the Herald (feel)

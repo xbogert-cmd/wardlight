@@ -39,6 +39,15 @@ func greeting() -> String:
 	return "Eyes open, {name}. I've got your back."
 
 
+## Kess travels as a guest until Reedhollow; after that she can wait at camp.
+func can_rest() -> bool:
+	return GameState.flag(&"kess_joined")
+
+
+func rest_refusal() -> String:
+	return "Not before Reedhollow, {name}. I'm not leaving you on the marsh road."
+
+
 func _act(p: Player, delta: float) -> void:
 	_shot_cd -= delta
 	_mark_cd -= delta
@@ -63,7 +72,8 @@ func _act(p: Player, delta: float) -> void:
 		_draw_t += delta
 		if _draw_t >= DRAW_TIME:
 			_draw_t = -1.0
-			_loose(_target)
+			if is_instance_valid(_target):
+				_loose(_target)
 		return
 	if _shot_cd <= 0.0:
 		_draw_t = 0.0
@@ -74,9 +84,10 @@ func _act(p: Player, delta: float) -> void:
 
 ## The wizard's target if Kess can reach and see it, else the nearest she can.
 func _pick_target(p: Player) -> Node3D:
-	var t: Node3D = p.aim.target if p.aim else null
-	if _can_shoot(t):
-		return t
+	# the aim can still hold an enemy freed by a region change: check before typing it
+	var t: Object = p.aim.target if p.aim else null
+	if is_instance_valid(t) and _can_shoot(t as Node3D):
+		return t as Node3D
 	var best: Node3D = null
 	var bd := RANGE
 	for e: Node3D in SpellEffect.enemies():
@@ -88,7 +99,7 @@ func _pick_target(p: Player) -> Node3D:
 
 
 func _can_shoot(e: Node3D) -> bool:
-	return is_instance_valid(e) and e.is_alive() and not (e is Bramble) \
+	return e != null and e.is_alive() and not (e is Bramble) \
 		and SpellEffect.flat(e.global_position, global_position) < RANGE and SpellEffect.has_los(center(), e.center(), self)
 
 

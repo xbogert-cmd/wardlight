@@ -8,10 +8,16 @@ const REGIONS := {
 	&"hearthmere": "res://game/world/hearthmere.gd",
 	&"briarwood": "res://game/world/briarwood.gd",
 	&"old_ward": "res://game/world/old_ward.gd",
+	&"fenway": "res://game/world/fenway.gd",
+	&"reedhollow": "res://game/world/reedhollow.gd",
 }
-const NAMES := {&"sanctuary": "The Sanctuary", &"hearthmere": "Hearthmere", &"briarwood": "Briarwood Road", &"old_ward": "The Old Ward"}
+const NAMES := {&"sanctuary": "The Sanctuary", &"hearthmere": "Hearthmere", &"briarwood": "Briarwood Road", &"old_ward": "The Old Ward",
+	&"fenway": "The Fenway", &"reedhollow": "Reedhollow", &"sunken_chapel": "The Sunken Chapel", &"mire": "The Mire",
+	&"stilled_grove": "The Stilled Grove", &"far_watch": "The Far Watch", &"heart_isle": "The Heart Isle"}
 ## Pairs joined by a waystone journey rather than a walk.
-const DISTANT := [[&"briarwood", &"old_ward"]]
+const DISTANT := [[&"briarwood", &"old_ward"], [&"hearthmere", &"fenway"], [&"briarwood", &"fenway"]]
+## Places Reedhollow's boats sail to (a boat journey, not a waystone).
+const LAKE := [&"sunken_chapel", &"mire", &"stilled_grove", &"far_watch", &"heart_isle"]
 
 var player: Player
 var level: Region
@@ -208,10 +214,16 @@ func sync_party() -> void:
 
 
 static func _distant(a: StringName, b: StringName) -> bool:
+	if _boat(a, b):
+		return true
 	for pair: Array in DISTANT:
 		if pair.has(a) and pair.has(b):
 			return true
 	return false
+
+
+static func _boat(a: StringName, b: StringName) -> bool:
+	return (a == &"reedhollow" and LAKE.has(b)) or (b == &"reedhollow" and LAKE.has(a))
 
 
 ## Move to another region. Walks between neighbours fade briefly; distant
@@ -228,7 +240,10 @@ func travel(to: StringName, entry: StringName) -> void:
 	var script: Script = null
 	if _distant(level.id, to):
 		get_tree().paused = true
-		script = await journey.run("To " + NAMES[to], "The waystone's road hums underfoot", "ruins" if to == &"old_ward" else "woods", REGIONS[to])
+		var boat := _boat(level.id, to)
+		var look := "lake" if boat or to == &"fenway" or level.id == &"fenway" else ("ruins" if to == &"old_ward" else "woods")
+		var sub := "The boat glides over the still lake" if boat else "The waystone's road hums underfoot"
+		script = await journey.run("To " + NAMES[to], sub, look, REGIONS[to], boat)
 		get_tree().paused = false
 		if script == null:
 			tw = create_tween()

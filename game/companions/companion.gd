@@ -60,7 +60,9 @@ func _ready() -> void:
 	add_child(talk)
 	talk.activated.connect(func(_p: Player) -> void:
 		var k: int = await Dialogue.i.choose(display, greeting(), ["Keep close", "Wait at the sanctuary"])
-		if k == 1:
+		if k == 1 and not can_rest():
+			await Dialogue.i.talk([[display, rest_refusal()]])
+		elif k == 1:
 			GameState.leave_party(id)
 			FX3.burst(center(), 12, [Color("d8f8ff"), Color("8ad8f0")], Vector2(0.5, 1.5), Vector2(0.3, 0.6))
 			get_tree().root.get_node("Main").sync_party()
@@ -70,6 +72,15 @@ func _ready() -> void:
 
 func greeting() -> String:
 	return "Right behind you, {name}."
+
+
+## Whether they'll go and wait at the sanctuary camp right now.
+func can_rest() -> bool:
+	return true
+
+
+func rest_refusal() -> String:
+	return ""
 
 
 func player() -> Player:

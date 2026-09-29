@@ -344,7 +344,11 @@ func _gate() -> void:
 	checkpoint_stone(21.3, -10.9, &"gorge")
 	gate_stone = waystone(41.0, -12.4, "Travel to the Old Ward")
 	gate_stone.activated.connect(func(_p: Player) -> void:
-		if GameState.quest_step(Quests.MAIN) >= 4 or GameState.quest_done(Quests.MAIN):
+		if GameState.quest_step(Quests.HOLLOWING) >= 1 or GameState.quest_done(Quests.HOLLOWING):
+			var k: int = await Dialogue.i.choose("", "The waystone hums with the road's memory.", ["The Old Ward", "The Fenway", "Stay"])
+			if k < 2:
+				exit_requested.emit([&"old_ward", &"fenway"][k], &"waystone")
+		elif GameState.quest_step(Quests.MAIN) >= 4 or GameState.quest_done(Quests.MAIN):
 			exit_requested.emit(&"old_ward", &"waystone")
 		else:
 			await Dialogue.i.talk([["", "The waystone hums, but the missing travellers come first."]]))

@@ -315,12 +315,12 @@ func _environment() -> void:
 			moon.rotation_degrees = Vector3(-46, 30, 0)
 		&"lake":   # Reedhollow: cold water, warm lanterns
 			env.background_color = Color(0.04, 0.05, 0.09)
-			env.ambient_light_color = Color(0.26, 0.3, 0.44)
-			env.ambient_light_energy = 0.6
+			env.ambient_light_color = Color(0.36, 0.36, 0.46)
+			env.ambient_light_energy = 0.78
 			env.fog_light_color = Color(0.2, 0.26, 0.38)
 			env.fog_density = 0.005
-			moon.light_color = Color(0.6, 0.72, 1.0)
-			moon.light_energy = 0.42
+			moon.light_color = Color(0.72, 0.78, 1.0)
+			moon.light_energy = 0.5
 			moon.rotation_degrees = Vector3(-44, 40, 0)
 		&"ruins":  # old ward: cold, misty, violet
 			env.background_color = Color(0.04, 0.035, 0.07)
@@ -358,6 +358,14 @@ func _water(s: Dictionary) -> void:
 		for j in n:
 			pts.append(a.lerp(b, float(j) / n))
 	pts.append(src[src.size() - 1])
+	if s.get("cap", false):
+		# pools: run the water on past both ends so its edge meets rising
+		# ground (a natural shoreline) instead of ending in a straight cut
+		var n0: Vector2 = (pts[0] - pts[1]).normalized()
+		var n1: Vector2 = (pts[pts.size() - 1] - pts[pts.size() - 2]).normalized()
+		var reach := float(s.get("width", 1.4)) + 1.6
+		pts.push_front(pts[0] + n0 * reach)
+		pts.append(pts[pts.size() - 1] + n1 * reach)
 	var y: float = s.get("water_y", -0.95)
 	var half: float = float(s.get("width", 1.4))
 	var st := SurfaceTool.new()

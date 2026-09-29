@@ -178,6 +178,19 @@ const DEMOS := {
 		[4.2, "tp", "6,0"], [4.4, "aim_enemy", ""], [5.0, "burst", "p2_fight:90:8"], [5.2, "hold", "attack"],
 		[8.0, "release", "attack"], [8.2, "tap", "spell_1"], [9.0, "hold", "attack"], [12.0, "release", "attack"], [12.5, "state", "party"], [13.0, "quit", ""],
 	],
+	# Chapter 2 opening from a finished Chapter 1: Hearthmere -> waystone -> Fenway -> Reedhollow
+	"lake": [
+		[0.2, "god", ""], [0.3, "quest", "dark_ward:-1"], [0.31, "flag", "ward_restored"], [0.32, "recruit", "tamsin"],
+		[0.5, "travel", "hearthmere:square"], [2.0, "shot", "h1_banner"], [2.2, "tp", "0.9,3.6"], [2.5, "tap", "interact"], [2.9, "shot", "h2_opening"],
+		[3.1, "next", ""], [3.3, "next", ""], [3.5, "next", ""], [3.7, "next", ""], [3.9, "next", ""], [4.1, "next", ""], [4.3, "next", ""], [4.5, "next", ""], [4.7, "next", ""],
+		[5.0, "state", "opening"], [5.3, "shot", "h3_party"], [5.5, "tp", "-17.0,-2.7"], [5.8, "tap", "interact"], [6.1, "pick", "0"], [7.0, "shot", "j1_journey"],
+		[10.6, "next", ""], [10.9, "next", ""], [11.2, "shot", "f1_fenway"], [11.4, "tp", "-11,0"], [11.6, "aim_enemy", ""], [11.7, "hold", "attack"],
+		[12.0, "burst", "f2_fight:50:10"], [15.0, "release", "attack"], [15.2, "tp", "10,1.5"], [15.6, "shot", "f3_road"], [15.8, "tp", "26.5,-1.2"], [16.0, "hold", "move_right"],
+		[17.0, "release", "move_right"], [18.2, "shot", "r1_arrive"], [18.4, "tp", "-1.5,6.0"], [18.7, "tap", "interact"],
+		[19.0, "next", ""], [19.2, "next", ""], [19.4, "next", ""], [19.6, "next", ""], [19.8, "next", ""], [20.0, "next", ""], [20.3, "state", "reedhollow"],
+		[20.5, "tp", "0,1.0"], [20.9, "shot", "r2_village"], [21.1, "tp", "19,-6"], [21.5, "shot", "r3_dock"], [21.7, "tp", "19,-10.8"], [22.0, "tap", "interact"],
+		[22.4, "shot", "r4_boat"], [22.6, "next", ""], [22.8, "tp", "-12,-7.2"], [23.2, "shot", "r5_stilts"], [23.4, "tp", "-1,-4.5"], [23.8, "shot", "r6_water"], [24.4, "pos", "after_water"], [24.6, "quit", ""],
+	],
 	# the sanctuary camp with both companions resting, then one joins
 	"camp": [
 		[0.3, "recruit", "tamsin:rest"], [0.35, "recruit", "kess:rest"], [0.4, "travel", "sanctuary:start"],
@@ -374,6 +387,10 @@ func _run(s: Array) -> void:
 			GameState.set_flag(StringName(s[2]))
 		"unlock":
 			GameState.unlock(StringName(s[2]))
+		"quest":
+			# "id:step" (-1 = done)
+			var qp: PackedStringArray = (s[2] as String).split(":")
+			GameState.quests[StringName(qp[0])] = int(qp[1])
 		"recruit":
 			# "id" follows, "id:rest" waits at the camp
 			var rp: PackedStringArray = (s[2] as String).split(":")
