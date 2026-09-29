@@ -191,6 +191,12 @@ const DEMOS := {
 		[20.5, "tp", "0,1.0"], [20.9, "shot", "r2_village"], [21.1, "tp", "19,-6"], [21.5, "shot", "r3_dock"], [21.7, "tp", "19,-10.8"], [22.0, "tap", "interact"],
 		[22.4, "shot", "r4_boat"], [22.6, "next", ""], [22.8, "tp", "-12,-7.2"], [23.2, "shot", "r5_stilts"], [23.4, "tp", "-1,-4.5"], [23.8, "shot", "r6_water"], [24.4, "pos", "after_water"], [24.6, "quit", ""],
 	],
+	# Chapter 2 bestiary: one clip per new creature and hollowed variant (feel review)
+	"bestiary": [
+		[0.3, "travel", "fenway:waystone"], [1.6, "god", ""], [1.8, "clear", ""], [1.85, "tp", "-10,1"], [1.90, "spawn", "husk:-6,1"], [1.90, "spawn", "husk:-5,3.5"], [2.00, "burst", "c1_husk:660:5"], [5.6, "kill", ""], [6.4, "kill", ""], [5.00, "aim_enemy", ""], [5.10, "hold", "attack"], [8.20, "release", "attack"], [8.8, "clear", ""], [8.85, "tp", "-10,1"], [8.90, "spawn", "lurker:-4,1"], [9.00, "burst", "c2_lurker:660:5"], [12.00, "aim_enemy", ""], [12.10, "hold", "attack"], [15.20, "release", "attack"], [15.8, "clear", ""], [15.85, "tp", "-10,1"], [15.90, "spawn", "moth:-3,-2"], [15.90, "spawn", "moth:-4,3.5"], [16.00, "burst", "c3_moth:660:5"], [20.4, "kill", ""], [19.00, "aim_enemy", ""], [19.10, "hold", "attack"], [22.20, "release", "attack"], [22.8, "clear", ""], [22.85, "tp", "-10,1"], [22.90, "spawn", "hound:-4.5,1:h"], [23.00, "burst", "c4_hound_h:660:5"], [29.8, "clear", ""], [29.85, "tp", "-10,1"], [29.90, "spawn", "raider:-8.4,1:h"], [30.00, "burst", "c5_raider_h:660:5"], [36.8, "clear", ""], [36.85, "tp", "-10,1"], [36.90, "spawn", "hexer:-4,1:h"], [37.00, "burst", "c6_hexer_h:660:5"], [43.8, "clear", ""], [43.85, "tp", "-10,1"], [43.90, "spawn", "knot:-6,2:h"], [44.00, "burst", "c7_knot_h:660:5"], [50.8, "clear", ""], [50.85, "tp", "-10,1"], [50.90, "spawn", "sentinel:-7.6,1:h"], [51.00, "burst", "c8_sentinel_h:660:5"], [57.8, "quit", ""],
+	],
+	"masks": [[0.3, "travel", "fenway:waystone"], [1.6, "clear", ""], [1.7, "tp", "-10,1"], [1.8, "spawn", "hound:-9,1:h"], [1.8, "spawn", "raider:-7,1:h"],
+		[1.8, "spawn", "hexer:-5,1:h"], [1.8, "spawn", "knot:-3,1:h"], [1.8, "spawn", "sentinel:-1,1:h"], [1.9, "freeze", ""], [2.3, "shot", "masks"], [2.4, "quit", ""]],
 	# look pass: the Fenway's features and Reedhollow's piers
 	"lakelook": [[0.2, "god", ""], [0.3, "travel", "fenway:waystone"], [1.6, "freeze", ""], [1.7, "tp", "-6,-2"], [2.0, "shot", "l1_hut"], [2.2, "tp", "6,-4"], [2.5, "shot", "l2_mounds"],
 		[2.7, "tp", "4,3"], [3.0, "shot", "l3_boardwalk"], [3.2, "tp", "18,0"], [3.5, "shot", "l4_east"], [3.7, "travel", "reedhollow:west"],
@@ -400,6 +406,16 @@ func _run(s: Array) -> void:
 				out.append("%.1f=%.2f" % [z, Region.current.terrain.height_at(float(hp[0]), z)])
 				z += 0.5
 			print("DEMO heights x=", hp[0], " ", " ".join(out))
+		"spawn":
+			# "kind:x:z" or "kind:x:z:h" (hollowed)
+			var sp: PackedStringArray = (s[2] as String).split(":")
+			var xz2: PackedStringArray = sp[1].split(",")
+			Region.current.spawn(StringName(sp[0]), float(xz2[0]), float(xz2[1]), {"hollowed": sp.size() > 2 and sp[2] == "h"})
+		"clear":
+			# remove every enemy (hidden ones too), spores and patches
+			for n in Region.current.get_children():
+				if n is Enemy or n is Husk.SporePatch or n is Projectile or n is Knot.ThornPatch:
+					n.queue_free()
 		"quest":
 			# "id:step" (-1 = done)
 			var qp: PackedStringArray = (s[2] as String).split(":")

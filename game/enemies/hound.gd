@@ -4,6 +4,7 @@ extends Enemy
 ## spread to different sides), then crouches with a clear tell: eyes flare,
 ## it snarls and a red ring marks the landing spot. The leap is committed;
 ## the skidding landing is the punish window. No contact damage outside the leap.
+## Hollowed: lands and leaps again at once (a second, quicker marked windup).
 
 var _leap_hit := false
 var _land_at := Vector3.ZERO
@@ -11,6 +12,8 @@ var _orbit := 1.0
 var _rest := 0.8
 var _side_t := 0.0
 var _mark: MeshInstance3D
+var _wind := 0.6             # this windup's length
+var _second := false         # hollowed: the follow-up leap is next
 
 
 func _setup() -> void:
@@ -76,14 +79,14 @@ func _ai(delta: float) -> void:
 		&"windup":
 			steer(Vector3.ZERO, 50.0, delta)
 			anim(&"windup")
-			if alive_p and state_t < _p("windup") * 0.6:
+			if alive_p and state_t < _wind * 0.6:
 				face_toward(p.global_position)
 				_land_at = p.global_position
 				if is_instance_valid(_mark):
 					_mark.global_position = _land_at + Vector3(0, 0.04, 0)
 			if randf() < delta * 20.0:
 				FX3.burst(center() + heading * 0.4 + Vector3(0, 0.1, 0), 1, Pal.DANGER, Vector2(0.2, 0.8), Vector2(0.15, 0.3), {"gravity": -1.0})
-			if state_t >= _p("windup"):
+			if state_t >= _wind:
 				_leap()
 		&"leap":
 			anim(&"leap")
@@ -100,7 +103,11 @@ func _ai(delta: float) -> void:
 		&"land":
 			steer(Vector3.ZERO, 16.0, delta)
 			anim(&"land")
-			if state_t >= _p("land_recover"):
+			if hollowed and not _second and alive_p and state_t >= 0.2:
+				_second = true
+				_start_windup(p, 0.7)
+			elif state_t >= _p("land_recover"):
+				_second = false
 				_rest = _p("rest")
 				_orbit = -_orbit
 				set_state(&"retreat")
@@ -121,12 +128,13 @@ func _ai(delta: float) -> void:
 				set_state(&"stalk")
 
 
-func _start_windup(p: Node3D) -> void:
+func _start_windup(p: Node3D, speed := 1.0) -> void:
+	_wind = _p("windup") * speed
 	set_state(&"windup")
 	face_toward(p.global_position)
 	_land_at = p.global_position
 	Sfx.play("hound_snarl", -2.0)
-	_mark = FX3.tele_ring(_land_at, 0.8, _p("windup") + 0.15, Color(1.0, 0.4, 0.2, 0.9))
+	_mark = FX3.tele_ring(_land_at, 0.8, _wind + 0.15, Color(1.0, 0.4, 0.2, 0.9))
 
 
 func _leap() -> void:

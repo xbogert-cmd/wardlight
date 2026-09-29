@@ -104,7 +104,10 @@ Status: **Chapter 1 complete. Chapter 2 (The Hollowing) in progress: see `docs/s
   she's a guest until Reedhollow), waystones to the Fenway (Hearthmere, Briarwood), the Fenway marsh road
   (enemies ×1.25), Reedhollow (lake to the north, stilt houses, dock, elder; deep water puts you back ashore),
   boat menu and boat journey (no stops until step 5), lake music, map places. `--demo=lake` plays it.
-- [ ] Step 4: Husk, Mire Lurker, Hollow Moth, hollowed variants (feel)
+- [x] Step 4 (built, awaiting feel review): Husk (lunge, spore patch slows 40% for 3 s), Mire Lurker (hidden
+  ripple, 0.8 s ring, 2 s exposed), Hollow Moth (hovers 1.8 m, keeps 6–9 m, homing spores that pop to any hit),
+  hollowed variants (+20% speed, mask; hound double lunge, raider spin, hexer echo bolt, knot wider ring,
+  sentinel second wider wave). First Husks on the Fenway road. `--demo=bestiary` records a clip per enemy.
 - [ ] Step 5: Sunken Chapel, Mire, Stilled Grove, lost child (look)
 - [ ] Step 6: attack on Reedhollow, the Herald (feel)
 - [ ] Step 7: far-watch teaser

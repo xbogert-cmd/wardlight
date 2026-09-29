@@ -36,7 +36,9 @@ func _layout() -> void:
 	entries = {&"waystone": [Vector3(-24.5, 0, 1.8), 1.0], &"start": [Vector3(-24.5, 0, 1.8), 1.0], &"east": [Vector3(27.0, 0, -1.2), -1.0]}
 	exits = [{"rect": Rect2(29.0, -7, 2.5, 12), "to": &"reedhollow", "entry": &"west"}]
 	respawn_entry = &"waystone"
-	spawns = [[&"hound", -8.0, -1.0], [&"hound", -5.0, 1.8], [&"raider", 12.0, 0.8], [&"hexer", 16.5, -3.2], [&"knot", 21.0, 3.2]]
+	# familiar enemies, and the first Husks (the Hollowing's emptied villagers)
+	spawns = [[&"hound", -8.0, -1.0], [&"hound", -5.0, 1.8], [&"husk", 5.0, 2.6], [&"raider", 12.0, 0.8], [&"hexer", 16.5, -3.2],
+		[&"knot", 21.0, 3.2], [&"husk", 24.0, -2.4], [&"husk", 25.5, 0.6]]
 
 
 func _build() -> void:

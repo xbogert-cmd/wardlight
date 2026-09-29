@@ -30,7 +30,7 @@ func _ai(delta: float) -> void:
 	_cd -= delta
 	var alive_p := p != null and p.is_alive()
 	steer(Vector3.ZERO, 60.0, delta)
-	var r := _p("width") * 0.5
+	var r := _p("width") * (0.72 if hollowed else 0.5)   # hollowed: a larger thorn ring
 	match state:
 		&"idle":
 			anim(&"idle")

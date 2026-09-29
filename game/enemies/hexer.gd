@@ -100,6 +100,12 @@ func _ai(delta: float) -> void:
 				_clear_line()
 				_fire()
 				set_state(&"cast")
+				if hollowed:
+					var end := global_position + SpellEffect.flat_dir(_aim - global_position) * 12.0
+					FX3.tele_line(global_position, end, ECHO_DELAY, Color(1.0, 0.48, 0.85, 0.6), 1.0, true)
+					SpellEffect.later(ECHO_DELAY, func() -> void:
+						if is_alive() and state != &"flinch":
+							_fire())
 		&"cast":
 			anim(&"cast")
 			if state_t >= 0.2:
@@ -132,6 +138,10 @@ func _place_line() -> void:
 	(_line.material_override as ShaderMaterial).set_shader_parameter(&"size_m", (_line.mesh as QuadMesh).size)
 	_line.global_position = (a + _aim) * 0.5 + Vector3(0, 0.05, 0)
 	_line.rotation = Vector3(-PI / 2, -atan2(d.z, d.x), 0)
+
+
+## Hollowed: the echo bolt follows the first down the same line.
+const ECHO_DELAY := 0.7
 
 
 func _fire() -> void:

@@ -8,12 +8,15 @@ extends Enemy
 
 const WAVE_SPEED := 6.5
 const WAVE_MAX := 4.2
+const ECHO_DELAY := 0.4
 var box: MeleeBox
 var poise_left := 0.0
 var _cd := 1.0
 var _next_slam := true
 var _wave_at := Vector3.ZERO
 var _wave_r := -1.0
+var _wave_max := WAVE_MAX
+var _echoed := false        # hollowed: the second, wider wave has gone out
 var _wave_hit := false
 
 
@@ -142,6 +145,8 @@ func _slam(p: Player) -> void:
 		p.take_hit(d)
 	_wave_at = at
 	_wave_r = 0.3
+	_wave_max = WAVE_MAX
+	_echoed = false
 	_wave_hit = false
 	FX3.ring(at + Vector3(0, 0.06, 0), 0.3, WAVE_MAX, WAVE_MAX / WAVE_SPEED, [Color("ffffff"), Color("c8c0e0"), Color("8a80a0")], 3.0)
 
@@ -162,5 +167,16 @@ func _update_wave(delta: float, p: Player) -> void:
 	if randf() < 0.6:
 		var a := randf() * TAU
 		FX3.burst(_wave_at + Vector3(cos(a), 0.05, sin(a)) * _wave_r, 2, Pal.DUST, Vector2(0.5, 1.5), Vector2(0.2, 0.35), {"dir": Vector3.UP, "spread": 1.0, "gravity": 6.0})
-	if _wave_r >= WAVE_MAX:
+	if _wave_r >= _wave_max:
 		_wave_r = -1.0
+		if hollowed and not _echoed:
+			_echoed = true
+			# the tell: the slam point flares, then a wider wave rolls out
+			FX3.flash(_wave_at + Vector3(0, 0.3, 0), 0.6, ECHO_DELAY, Color(1.0, 0.5, 0.3), 2.0)
+			SpellEffect.later(ECHO_DELAY, func() -> void:
+				if is_alive():
+					_wave_r = 0.3
+					_wave_max = WAVE_MAX * 1.5
+					_wave_hit = false
+					Sfx.play("sentinel_slam", -6.0, 0.2)
+					FX3.ring(_wave_at + Vector3(0, 0.06, 0), 0.3, _wave_max, _wave_max / WAVE_SPEED, [Color("ffd0b0"), Color("e0a080"), Color("a06050")], 3.0))

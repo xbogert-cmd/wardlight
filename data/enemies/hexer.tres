@@ -18,7 +18,7 @@ flinch_cooldown = 1.0
 motes = 3
 aggro_range = 12.5
 params = {
-"mask": Vector2(1, 44),
+"mask": Vector2(2, 47),
 "bolt_speed": 7.083,
 "far": 8.75,
 "recover": 1.1,

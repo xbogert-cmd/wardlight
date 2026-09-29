@@ -245,7 +245,8 @@ func _physics_process(delta: float) -> void:
 	if _mask:
 		var m := _mask_at()
 		_mask.visible = state != &"dead" and sprite.visible
-		_mask.position = Vector3(m.x * PX * facing, m.y * PX - 4.0 * PX, 0.02)
+		# sprites stretch upward by 1/cos(camera pitch) (sprite_lit.gdshader); follow suit
+		_mask.position = Vector3(m.x * PX * facing, (m.y - 4.0) * PX / cos(deg_to_rad(50.0)), 0.12)
 
 
 ## Soft push apart so packs don't stack on one spot.

@@ -62,6 +62,20 @@ func _find_ward() -> void:
 				ward = e
 
 
+const SPIN_R := 1.8
+const SPIN_WINDUP := 0.45
+
+
+## Hollowed follow-up: one cut all the way round.
+func _spin(p: Player) -> void:
+	Sfx.play("slash", -2.0)
+	FX3.ring(global_position + Vector3(0, 0.6, 0), 0.4, SPIN_R, 0.2, [Color("ffffff"), Color("e0d8c8"), Color("a09888")], 2.0, false)
+	if p and p.is_alive() and dist_to(p.global_position) < SPIN_R + p.radius():
+		var d := Damage.make(data.damage * 0.8, self, &"", SpellEffect.push(global_position, p.global_position, 6.0, 3.0))
+		d.hit_pos = center()
+		p.take_hit(d)
+
+
 func _ai(delta: float) -> void:
 	var p := player()
 	_cd -= delta
@@ -125,6 +139,22 @@ func _ai(delta: float) -> void:
 			steer(Vector3.ZERO, 38.0, delta)
 			if state_t >= 0.16:
 				box.stop()
+				if hollowed and state == &"slash":
+					set_state(&"spin_windup")
+					FX3.tele_ring(global_position, SPIN_R, SPIN_WINDUP, Color(1.0, 0.45, 0.3, 0.9))
+					Sfx.play("raider_grunt", -6.0, 0.2)
+				else:
+					set_state(&"recover")
+		&"spin_windup":
+			steer(Vector3.ZERO, 35.0, delta)
+			anim(&"slash_windup")
+			if state_t >= SPIN_WINDUP:
+				set_state(&"spin")
+				_spin(p)
+		&"spin":
+			anim(&"slash")
+			facing = -facing if int(state_t * 20.0) % 2 == 0 else facing
+			if state_t >= 0.25:
 				set_state(&"recover")
 		&"recover":
 			steer(Vector3.ZERO, 33.0, delta)
