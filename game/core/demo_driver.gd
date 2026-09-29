@@ -157,11 +157,12 @@ const DEMOS := {
 	"title": [[1.0, "shot", "title"], [1.2, "key", "4194322"], [1.25, "key", "4194322"], [1.3, "key", "4194309"], [1.6, "shot", "settings"],
 		[1.7, "key", "4194322"], [1.8, "key", "4194322"], [1.9, "key", "4194321"], [2.1, "shot", "settings2"], [2.2, "key", "4194305"], [2.5, "shot", "title2"], [2.7, "quit", ""]],
 	"inv": [
-		[0.3, "give", "stormcoil"], [0.35, "give", "moonstone"], [0.4, "give", "moonstone"], [0.45, "give", "ward_bell"], [0.5, "give", "wardweave"],
-		[0.6, "inventory", ""], [0.9, "shot", "i1_inventory"], [1.0, "key", "4194321"], [1.1, "key", "4194309"], [1.4, "shot", "i2_equipped"],
-		[1.6, "key", "4194305"], [1.8, "travel", "sanctuary:start"], [3.0, "tp", "3,-7.8"], [3.3, "tap", "interact"], [3.6, "key", "4194309"],
-		[3.8, "key", "4194322"], [4.0, "key", "4194309"], [4.3, "shot", "i3_fusion"], [4.5, "key", "4194309"], [4.9, "shot", "i4_fused"],
-		[5.1, "key", "4194305"], [5.5, "state", "inv"], [5.6, "quit", ""],
+		[0.3, "give", "stormcoil"], [0.32, "give", "stormcoil"], [0.35, "give", "moonstone"], [0.4, "give", "moonstone"], [0.45, "give", "ward_bell"], [0.5, "give", "wardweave"],
+		[0.6, "inventory", ""], [0.9, "shot", "i1_staffs"], [1.0, "key", "4194321"], [1.1, "key", "4194309"], [1.4, "shot", "i2_equipped"],
+		[1.5, "key", "4194306"], [1.6, "key", "4194306"], [1.8, "shot", "i2b_relics"],
+		[2.0, "key", "4194305"], [2.2, "travel", "sanctuary:start"], [3.4, "tp", "3,-7.8"], [3.7, "tap", "interact"], [4.0, "key", "4194309"],
+		[4.2, "key", "4194322"], [4.4, "key", "4194309"], [4.7, "shot", "i3_fusion"], [4.9, "key", "4194309"], [5.3, "shot", "i4_fused"],
+		[5.5, "key", "4194305"], [5.9, "state", "inv"], [6.0, "quit", ""],
 	],
 	"tamsin": [
 		[0.3, "travel", "briarwood:west"], [1.8, "tp", "-15.5,2.5"], [2.2, "kill", ""], [2.8, "tp", "-18.2,2.2"], [3.2, "shot", "c1_freed"],

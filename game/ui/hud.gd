@@ -45,6 +45,12 @@ func toast(msg: String) -> void:
 		_toasts.pop_front()
 
 
+## One-time nudge the first time two alike items could be fused.
+func fusion_hint() -> void:
+	if GameState.inv.any_pair() and GameState.once(&"hint_fusion"):
+		toast("Two alike: fuse them at the sanctuary altar")
+
+
 func banner(text: String) -> void:
 	_banner = text
 	_banner_t = 3.0

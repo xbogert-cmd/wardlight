@@ -752,6 +752,9 @@ func give(id: StringName, tier := 1) -> void:
 	var inst := GameState.inv.add(id, tier)
 	if not inst.is_empty():
 		reward(["Received: " + Items.display(inst)])
+		var hud := get_tree().get_first_node_in_group(&"hud") as HUD
+		if hud:
+			hud.fusion_hint()
 
 
 func give_point(n := 1) -> void:

@@ -87,5 +87,6 @@ func _collect(p: Player) -> void:
 		var hud := get_tree().get_first_node_in_group(&"hud") as HUD
 		if hud:
 			hud.toast("Found: " + Items.display(inst))
+			hud.fusion_hint()
 		SaveSystem.autosave()
 	queue_free()

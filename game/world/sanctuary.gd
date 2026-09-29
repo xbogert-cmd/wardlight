@@ -163,11 +163,11 @@ func _stations() -> void:
 			GameState.appearance = res.look
 			p.set_look(res.look)
 			GameState.changed.emit())
-	# fusion altar (relic fusion arrives with stage 4 loot)
+	# fusion altar: two alike items of a tier become the next tier
 	var ag := _ground(2.8, -9.0)
 	box(Vector3(1.2, 0.8, 0.8), ag + Vector3(0, 0.4, 0), "rune_bricks.png")
 	box(Vector3(1.4, 0.15, 1.0), ag + Vector3(0, 0.85, 0), "bricks.png", Vector3.ZERO, false)
-	var altar := Interactable.make(ag, "Fusion altar", 1.8, 1.4)
+	var altar := Interactable.make(ag, "Fusion altar: fuse two alike items", 1.8, 1.4)
 	add_child(altar)
 	altar.activated.connect(func(p: Player) -> void:
 		p.input_enabled = false
