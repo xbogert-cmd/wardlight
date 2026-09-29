@@ -504,6 +504,43 @@ func mus_explore() -> PackedFloat32Array:
 	return b
 
 
+## Chapter 2's lake (Fenway, Reedhollow, the shrines): slow 3/4 in D dorian,
+## soft pads, a bell melody and water-drop plucks; no drums.
+func mus_lake() -> PackedFloat32Array:
+	var bpm := 70.0
+	var beat := 60.0 / bpm
+	var bars := 16
+	var b := S.buf(bars * 3 * beat)
+	var chords := [[50, 53, 57, 64], [48, 52, 55, 62], [46, 50, 53, 60], [48, 52, 55, 59]]  # Dm9 C Bb C(maj7)
+	var melody := [69, 72, 71, 69, 67, 69, 64, 65, 67, 69, 72, 74, 72, 71, 69, 67]
+	var drops := [74, 76, 79, 81, 84, 86]
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 31
+	for bar in bars:
+		var ch: Array = chords[(bar / 2) % 4]
+		var t0 := bar * 3 * beat
+		if bar % 2 == 0:
+			for n in ch:
+				for det in [-0.06, 0.06]:
+					S.tone(b, t0, 6.4 * beat, hz(n + det), hz(n + det), "tri", 0.035, 1.4, 1.8)
+			S.tone(b, t0, 6.0 * beat, hz(ch[0] - 12), hz(ch[0] - 12), "sine", 0.2, 0.3, 1.5)
+		# a slow bell melody, one note a bar with a soft echo an octave up
+		var note: int = melody[bar % melody.size()]
+		S.tone(b, t0 + 0.5 * beat, 2.6 * beat, hz(note), hz(note), "sine", 0.1, 0.01, 2.2)
+		S.tone(b, t0 + 0.5 * beat, 2.0 * beat, hz(note + 12) * 1.002, hz(note + 12), "sine", 0.03, 0.01, 1.6)
+		# water drops
+		for k in 6:
+			if rng.randf() < 0.3:
+				var d: int = drops[rng.randi_range(0, drops.size() - 1)]
+				S.pluck(b, t0 + k * beat * 0.5, hz(d), 0.7, 0.07, 0.99, 0.2)
+		# lapping water: a slow swell of soft noise
+		S.noise(b, t0, 3 * beat, 0.018, 900, 500, 1.2, 1.4, 300)
+	S.lowpass(b, 4200)
+	S.reverb(b, 0.5, 0.88, true)
+	S.normalize(b, 0.6)
+	return b
+
+
 ## Sanctuary and Hearthmere: a slow, warm 3/4 in F with a plucked melody.
 func mus_home() -> PackedFloat32Array:
 	var bpm := 84.0

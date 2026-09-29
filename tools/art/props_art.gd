@@ -30,6 +30,9 @@ static func build() -> Dictionary:
 		"flowers": [9, 7, _flowers, 1.0],
 		"dead_tree": [30, 76, _dead_tree, 1.0],
 		"roots": [22, 6, _roots, 1.0],
+		# Chapter 2 marsh (appended so earlier atlas positions don't move)
+		"reeds": [12, 22, _reeds.bind(7, false), 1.0],
+		"cattails": [10, 26, _reeds.bind(4, true), 1.0],
 	}
 	var canvases := {}
 	var total_w := 0
@@ -88,6 +91,21 @@ static func _fern(c: PixelCanvas, w: int, h: int) -> void:
 			var p := base.lerp(tip, t)
 			c.put(roundi(p.x + 1), roundi(p.y), l[0], R.LEAF2)
 			c.put(roundi(p.x - 1), roundi(p.y), l[2], R.LEAF2)
+
+
+## Tall marsh reeds; cattails get brown seed heads.
+static func _reeds(c: PixelCanvas, w: int, h: int, n: int, heads: bool) -> void:
+	var g := _cols(["a8c070", "6a8a4a", "3e5a36"])
+	var head := _cols(["a07050", "6a4430", "4a2e22"])
+	for k in n:
+		var x := 1.0 + (w - 2.0) * k / maxf(1.0, n - 1.0)
+		var tall := h * (0.62 + 0.38 * float((k * 5) % 3) / 2.0)
+		var lean := (k - n * 0.5) * 0.35
+		var tip := Vector2(x + lean, h - tall)
+		c.linev(Vector2(x, h), tip, g[k % 3], R.GRASS)
+		if heads and k % 2 == 0:
+			c.rect(int(tip.x), int(tip.y) + 2, 2, 5, head[1], R.WOOD)
+			c.put(int(tip.x), int(tip.y) + 2, head[0], R.WOOD)
 
 
 static func _tuft(c: PixelCanvas, w: int, h: int, n: int) -> void:

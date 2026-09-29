@@ -1,0 +1,41 @@
+{
+	"anims": {
+		"idle": {
+			"fps": 4.0,
+			"frames": [
+				0,
+				1,
+				2,
+				3
+			],
+			"loop": true
+		},
+		"talk": {
+			"fps": 7.0,
+			"frames": [
+				4,
+				5,
+				6,
+				7
+			],
+			"loop": true
+		},
+		"walk": {
+			"fps": 9.0,
+			"frames": [
+				8,
+				9,
+				10,
+				11,
+				12,
+				13
+			],
+			"loop": true
+		}
+	},
+	"cell": [
+		32,
+		48
+	],
+	"hframes": 8
+}

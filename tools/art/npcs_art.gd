@@ -23,6 +23,13 @@ const CAST := {
 		"height": 40, "build": 1, "beard": "e0e0e0", "item": "cane"},
 	"traveler_a": {"skin": "a87058", "hair": "1a1a20", "hair_style": "hood", "hood": "5a4a3a", "top": "6a5a44", "bottom": "3a3228",
 		"height": 44, "build": 1, "item": "pack"},
+	# Chapter 2: the Reedfolk of Reedhollow (reed greens, lake teals, woven hoods)
+	"reed_elder": {"skin": "b08868", "hair": "d8d8c8", "hair_style": "hood", "hood": "3a5a4a", "top": "2e4e52", "bottom": "243a3e",
+		"dress": true, "height": 40, "build": 0, "item": "cane", "shawl": "8a9a6a"},
+	"reedfolk_a": {"skin": "c89878", "hair": "4a3020", "hair_style": "short", "top": "4a6a4a", "bottom": "2a3a3a", "apron": "8a7a5a",
+		"height": 42, "build": 1, "item": "basket"},
+	"reedfolk_b": {"skin": "9a6a50", "hair": "2a2420", "hair_style": "long", "top": "3a5a6a", "bottom": "2a3440", "dress": true,
+		"height": 40, "build": 0},
 	"traveler_b": {"skin": "e0b090", "hair": "8a3a20", "hair_style": "long", "top": "3a5a6a", "bottom": "2a3a44",
 		"height": 42, "build": 0, "item": "pack"},
 }

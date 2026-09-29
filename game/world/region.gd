@@ -302,6 +302,26 @@ func _environment() -> void:
 			moon.light_color = Color(0.9, 0.7, 0.62)
 			moon.light_energy = 0.5
 			moon.rotation_degrees = Vector3(-38, 55, 0)
+		&"marsh":  # the Fenway: reed green under teal fog
+			env.background_color = Color(0.035, 0.06, 0.07)
+			env.ambient_light_color = Color(0.24, 0.34, 0.36)
+			env.ambient_light_energy = 0.62
+			env.fog_light_color = Color(0.18, 0.3, 0.3)
+			env.fog_density = 0.01
+			env.fog_height = -0.6
+			env.fog_height_density = 0.25
+			moon.light_color = Color(0.66, 0.84, 0.86)
+			moon.light_energy = 0.4
+			moon.rotation_degrees = Vector3(-46, 30, 0)
+		&"lake":   # Reedhollow: cold water, warm lanterns
+			env.background_color = Color(0.04, 0.05, 0.09)
+			env.ambient_light_color = Color(0.26, 0.3, 0.44)
+			env.ambient_light_energy = 0.6
+			env.fog_light_color = Color(0.2, 0.26, 0.38)
+			env.fog_density = 0.005
+			moon.light_color = Color(0.6, 0.72, 1.0)
+			moon.light_energy = 0.42
+			moon.rotation_degrees = Vector3(-44, 40, 0)
 		&"ruins":  # old ward: cold, misty, violet
 			env.background_color = Color(0.04, 0.035, 0.07)
 			env.ambient_light_color = Color(0.26, 0.24, 0.42)
@@ -495,6 +515,8 @@ func bridge(a: Vector2, b: Vector2, deck_y: float, width := 2.3) -> void:
 ## camera-facing (south) wall. Returns {windows: [PixelBillboard], ...}.
 func house(x: float, z: float, w: float, d: float, wall_h: float, opts := {}) -> Dictionary:
 	var g := _ground(x, z)
+	if opts.has("base_y"):   # stilt houses stand on a deck, not the ground
+		g.y = float(opts.base_y)
 	var tint: Color = opts.get("tint", Color(1, 1, 1))
 	box(Vector3(w, wall_h, d), g + Vector3(0, wall_h * 0.5 - 0.1, 0), opts.get("wall", "plaster.png"), Vector3.ZERO, true, tint)
 	if opts.get("wall", "plaster.png") == "plaster.png":

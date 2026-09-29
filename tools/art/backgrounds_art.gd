@@ -25,6 +25,12 @@ const REGIONS := {
 		"far": "5a3444", "far_hi": "6e4250", "mid": "3a2634", "mid_hi": "4c3040", "near": "241824", "near_hi": "342432",
 		"fog": "c07850",
 	},
+	"lake": {
+		"sky": ["08101c", "10202e", "1a3442", "2a4a54", "3e6264"],
+		"stars": 150, "moon": Vector2(430, 76), "moon_r": 15.0, "moon_col": ["eef4e8", "c4d4c8", "90a4a0"],
+		"far": "1c3440", "far_hi": "284652", "mid": "142630", "mid_hi": "1e3640", "near": "0c1820", "near_hi": "16282e",
+		"fog": "3a6a6a",
+	},
 	"village": {
 		"sky": ["141026", "221a3a", "36264a", "553452", "7a4458"],
 		"stars": 110, "moon": Vector2(120, 80), "moon_r": 14.0, "moon_col": ["f8e8c8", "d8c098", "a89070"],

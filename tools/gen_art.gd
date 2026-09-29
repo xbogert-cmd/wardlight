@@ -28,7 +28,7 @@ func _init() -> void:
 		_save_sheet("sentinel", Enemies.sentinel())
 	if want.call("bg"):
 		# parallax layers for the animated journey screen
-		for region in ["woods", "ruins"]:
+		for region in ["woods", "ruins", "lake"]:
 			var layers: Dictionary = Bgs.build(region)
 			for k in layers:
 				(layers[k] as Image).save_png(OUT + "bg_%s_%s.png" % [region, k])
