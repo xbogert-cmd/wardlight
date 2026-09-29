@@ -191,6 +191,10 @@ const DEMOS := {
 		[20.5, "tp", "0,1.0"], [20.9, "shot", "r2_village"], [21.1, "tp", "19,-6"], [21.5, "shot", "r3_dock"], [21.7, "tp", "19,-10.8"], [22.0, "tap", "interact"],
 		[22.4, "shot", "r4_boat"], [22.6, "next", ""], [22.8, "tp", "-12,-7.2"], [23.2, "shot", "r5_stilts"], [23.4, "tp", "-1,-4.5"], [23.8, "shot", "r6_water"], [24.4, "pos", "after_water"], [24.6, "quit", ""],
 	],
+	# look pass: the Fenway's features and Reedhollow's piers
+	"lakelook": [[0.2, "god", ""], [0.3, "travel", "fenway:waystone"], [1.6, "freeze", ""], [1.7, "tp", "-6,-2"], [2.0, "shot", "l1_hut"], [2.2, "tp", "6,-4"], [2.5, "shot", "l2_mounds"],
+		[2.7, "tp", "4,3"], [3.0, "shot", "l3_boardwalk"], [3.2, "tp", "18,0"], [3.5, "shot", "l4_east"], [3.7, "travel", "reedhollow:west"],
+		[5.2, "tp", "-12,1"], [5.5, "shot", "l5_pier_w"], [5.7, "tp", "10,1"], [6.0, "shot", "l6_pier_e"], [6.2, "tp", "19,0.5"], [6.5, "shot", "l7_dock"], [6.7, "quit", ""]],
 	# the sanctuary camp with both companions resting, then one joins
 	"camp": [
 		[0.3, "recruit", "tamsin:rest"], [0.35, "recruit", "kess:rest"], [0.4, "travel", "sanctuary:start"],
@@ -387,6 +391,15 @@ func _run(s: Array) -> void:
 			GameState.set_flag(StringName(s[2]))
 		"unlock":
 			GameState.unlock(StringName(s[2]))
+		"heights":
+			# "x:z0:z1": print ground height along a line (debug)
+			var hp: PackedStringArray = (s[2] as String).split(":")
+			var out := []
+			var z := float(hp[1])
+			while z <= float(hp[2]):
+				out.append("%.1f=%.2f" % [z, Region.current.terrain.height_at(float(hp[0]), z)])
+				z += 0.5
+			print("DEMO heights x=", hp[0], " ", " ".join(out))
 		"quest":
 			# "id:step" (-1 = done)
 			var qp: PackedStringArray = (s[2] as String).split(":")

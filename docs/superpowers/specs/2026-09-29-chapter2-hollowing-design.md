@@ -32,6 +32,7 @@ Hollowed Warden was an early victim. The Hollowing has three layers:
 - bigger battles with more than two companions
 - mixing different items into new ones (recipes)
 - a music pass
+- castles (owner, 2026-09-29): a castle as a place to explore in a later chapter, not necessarily Chapter 2
 
 ## Chapter 2 summary
 

@@ -18,6 +18,7 @@ const STOPS := [
 	[&"heart_isle", "The Heart Isle", &"heart"],
 ]
 
+const DECK_Y := 0.15           # pier and stilt decks: flush with the shore (land is at 0)
 var piers: Array[Rect2] = []   # walkable decks over deep water (x, z)
 var lanterns: Array = []
 var folk_later: Array[Npc] = []  # appear as the shrines are relit
@@ -102,6 +103,15 @@ func _build() -> void:
 	bill(load(D + "signpost.png"), _ground(-21.5, 3.0))
 
 
+## Where a pier from the water meets flat land at `x`: a little way past the
+## top of the bank, so its end rests on the ground instead of the slope.
+func _land_z(x: float) -> float:
+	var z := shore_z(x)
+	while z < shore_z(x) + 5.0 and terrain.height_at(x, z) < -0.02:
+		z += 0.1
+	return z + 0.7
+
+
 func _on_pier(p: Vector2, grow := 0.0) -> bool:
 	for r in piers:
 		if r.grow(grow).has_point(p):
@@ -112,7 +122,7 @@ func _on_pier(p: Vector2, grow := 0.0) -> bool:
 ## A house on a stilted deck over the water, reached by a pier from the shore.
 func _stilt_house(x: float, z: float, w: float, tint: Color) -> void:
 	var d := 3.6
-	var deck_y := 0.35
+	var deck_y := DECK_Y
 	var deck := Rect2(x - w * 0.5 - 0.7, z - d * 0.5 - 0.4, w + 1.4, d + 1.9)
 	box(Vector3(deck.size.x, 0.3, deck.size.y), Vector3(deck.get_center().x, deck_y - 0.15, deck.get_center().y), "wood.png")
 	for cx: float in [deck.position.x + 0.3, deck.end.x - 0.3]:
@@ -120,19 +130,19 @@ func _stilt_house(x: float, z: float, w: float, tint: Color) -> void:
 			box(Vector3(0.24, 2.4, 0.24), Vector3(cx, deck_y - 1.35, cz), "wood.png", Vector3.ZERO, false, Color(0.6, 0.5, 0.42))
 	piers.append(deck)
 	var h := house(x, z, w, d, 2.3, {"roof": "thatch.png", "base_y": deck_y, "tint": tint, "light": true})
-	var sz := shore_z(x)
-	var pier_len := (sz + 0.6) - deck.end.y
-	bridge(Vector2(x, sz + 0.6), Vector2(x, deck.end.y - 0.1), deck_y, 1.8)
+	var sz := _land_z(x)
+	var pier_len := sz - deck.end.y
+	bridge(Vector2(x, sz), Vector2(x, deck.end.y - 0.1), deck_y, 1.8)
 	piers.append(Rect2(x - 1.1, deck.end.y - 0.2, 2.2, pier_len + 0.4))
 
 
 ## The boat dock: a long pier with two boats moored alongside.
 func _dock(x: float) -> void:
-	var sz := shore_z(x)
+	var sz := _land_z(x)
 	var end_z := -11.0
-	var deck_y := 0.35
-	bridge(Vector2(x, sz + 0.6), Vector2(x, end_z), deck_y, 2.2)
-	piers.append(Rect2(x - 1.3, end_z - 0.3, 2.6, sz + 0.9 - end_z))
+	var deck_y := DECK_Y
+	bridge(Vector2(x, sz), Vector2(x, end_z), deck_y, 2.2)
+	piers.append(Rect2(x - 1.3, end_z - 0.3, 2.6, sz + 0.3 - end_z))
 	box(Vector3(3.6, 0.3, 2.4), Vector3(x, deck_y - 0.15, end_z - 1.0), "wood.png")
 	piers.append(Rect2(x - 1.9, end_z - 2.3, 3.8, 2.6))
 	for bz: Array in [[x - 2.2, -7.5, 0.1], [x + 2.2, -8.8, -0.12]]:
