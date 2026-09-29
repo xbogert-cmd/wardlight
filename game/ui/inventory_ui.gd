@@ -1,8 +1,10 @@
 class_name InventoryUI
 extends Control
-## Inventory (I): four equipment slots on the left, the bag on the right,
-## details and a comparison with what is worn at the bottom. Arrows move,
-## Enter equips/unequips, I/Esc closes; the mouse works too.
+## Inventory (I): four equipment slots on the left, the bag on the right
+## split into Staffs / Robes / Relics tabs (Tab or click to switch; landing
+## on an equipment slot shows its tab), details and a comparison with what is
+## worn at the bottom. Arrows move, Enter equips/unequips, I/Esc closes; the
+## mouse works too. A gold corner marks items that have a fusion partner.
 
 const FONT := preload("res://assets/fonts/wardhand.tres")
 const ICONS := preload("res://assets/generated/items.png")
@@ -11,10 +13,13 @@ const COLS := 8
 const ROWS := 5
 const CELL := 24
 const SLOT_NAMES := {"staff": "Staff", "robe": "Robe", "relic1": "Relic", "relic2": "Relic"}
+const TABS := ["staff", "robe", "relic"]
+const TAB_NAMES := {"staff": "Staffs", "robe": "Robes", "relic": "Relics"}
 
 var player: Player
 var is_open := false
 var cur := Vector2i(-1, 0)     # x == -1: equipment slot column (y = slot); else bag cell
+var tab := "staff"
 var _msg := ""
 var _msg_t := 0.0
 
@@ -62,7 +67,28 @@ func _cell_rect(c: Vector2i) -> Rect2:
 
 
 func _bag() -> Array:
-	return GameState.inv.items
+	return tab_items(GameState.inv, tab)
+
+
+## One tab's items: highest tier first, then by name.
+static func tab_items(inv: Inventory, kind: String) -> Array:
+	var out := inv.items.filter(func(it: Dictionary) -> bool: return Items.kind(it.id) == kind)
+	out.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		if int(a.tier) != int(b.tier):
+			return int(a.tier) > int(b.tier)
+		return String(Items.def(a.id).name) < String(Items.def(b.id).name))
+	return out
+
+
+func _tab_rect(k: int) -> Rect2:
+	return Rect2(PANEL.position + Vector2(200 + k * 56, 26), Vector2(52, 14))
+
+
+## Move the cursor; an equipment slot shows its own tab.
+func _set_cur(c: Vector2i) -> void:
+	cur = c
+	if c.x < 0:
+		tab = "relic" if c.y >= 2 else String(Items.SLOTS[c.y])
 
 
 func _selected() -> Dictionary:
@@ -83,13 +109,21 @@ func _input(e: InputEvent) -> void:
 		var mp := get_local_mouse_position()
 		for k in 4:
 			if _slot_rect(k).has_point(mp):
-				cur = Vector2i(-1, k)
+				_set_cur(Vector2i(-1, k))
 		for y in ROWS:
 			for x in COLS:
 				if _cell_rect(Vector2i(x, y)).has_point(mp):
 					cur = Vector2i(x, y)
-		if e is InputEventMouseButton and (e as InputEventMouseButton).double_click:
-			_use()
+		if e is InputEventMouseButton:
+			for k in TABS.size():
+				if _tab_rect(k).has_point(mp):
+					_switch_tab(TABS[k])
+			if (e as InputEventMouseButton).double_click:
+				_use()
+		return
+	if e is InputEventKey and e.pressed and (e as InputEventKey).keycode == KEY_TAB:
+		get_viewport().set_input_as_handled()
+		_switch_tab(TABS[(TABS.find(tab) + 1) % TABS.size()])
 		return
 	var d := Vector2i.ZERO
 	if e.is_action_pressed(&"ui_left") or e.is_action_pressed(&"move_left"):
@@ -110,14 +144,23 @@ func _input(e: InputEvent) -> void:
 			if d.x > 0:
 				cur = Vector2i(0, mini(cur.y, ROWS - 1))
 			else:
-				cur.y = posmod(cur.y + d.y, 4)
+				_set_cur(Vector2i(-1, posmod(cur.y + d.y, 4)))
 		else:
 			var nx := cur.x + d.x
 			if nx < 0:
-				cur = Vector2i(-1, mini(cur.y, 3))
+				_set_cur(Vector2i(-1, mini(cur.y, 3)))
 			else:
 				cur = Vector2i(mini(nx, COLS - 1), posmod(cur.y + d.y, ROWS))
 		Sfx.play("ui_move", -10.0)
+
+
+## Show another tab; the cursor moves into the bag so the slot column
+## doesn't switch it straight back.
+func _switch_tab(k: String) -> void:
+	tab = k
+	if cur.x < 0:
+		cur = Vector2i(0, 0)
+	Sfx.play("ui_move", -10.0)
 
 
 ## Enter: equip the bag item (to its slot, or the free/first relic slot);
@@ -179,6 +222,12 @@ func _draw() -> void:
 	_t("Equipment", p + Vector2(14, 18), Color("f4d890"))
 	_t("Bag  %d/%d" % [inv.items.size(), Inventory.MAX_ITEMS], p + Vector2(200, 18), Color("f4d890"))
 	_t("Coins %d   Points %d   XP %d/%d" % [inv.coins, inv.points, inv.xp, Inventory.XP_PER_POINT], p + Vector2(330, 18), Color("c8b898"))
+	for k in TABS.size():
+		var tr := _tab_rect(k)
+		var on: bool = TABS[k] == tab
+		HUD.frame(self, tr, HUD.COL_BG, Color("f4d890") if on else HUD.COL_FRAME_DARK)
+		_t(TAB_NAMES[TABS[k]], tr.position + Vector2(6, 10), Color("f4d890") if on else Color("8a7a60"))
+	var bag := _bag()
 	for k in 4:
 		var slot: String = Items.SLOTS[k]
 		var r := _slot_rect(k)
@@ -196,11 +245,13 @@ func _draw() -> void:
 			var sel := cur == c
 			HUD.frame(self, r, HUD.COL_BG, Color("f4d890") if sel else HUD.COL_FRAME_DARK)
 			var i := y * COLS + x
-			if i < inv.items.size():
-				var it: Dictionary = inv.items[i]
+			if i < bag.size():
+				var it: Dictionary = bag[i]
 				_icon(r, it.id)
-				if Items.kind(it.id) == "relic" and int(it.tier) > 1:
+				if int(it.tier) > 1:
 					_t(Items.TIER_NAMES[int(it.tier)], r.position + Vector2(2, 22), Color("f4d890"))
+				if inv.has_partner(int(it.uid)):
+					draw_rect(Rect2(r.position + Vector2(2, 2), Vector2(4, 4)), Color("f4d890"))
 				if inv.is_equipped(int(it.uid)) != "":
 					draw_rect(Rect2(r.end - Vector2(6, 6), Vector2(4, 4)), Color("9ae8ff"))
 	# details
@@ -220,6 +271,9 @@ func _draw() -> void:
 		var b := Items.bonus_text(it)
 		if b != "":
 			_t(b, Vector2(dr.position.x + 8, y), Color("9ae8ff"))
+			y += 11
+		if inv.has_partner(int(it.uid)):
+			_t("A matching pair: fuse them at the sanctuary altar.", Vector2(dr.position.x + 8, y), Color("f4d890"))
 			y += 11
 		var cmp := _compare(it)
 		if cmp != "":

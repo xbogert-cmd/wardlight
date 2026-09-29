@@ -168,3 +168,17 @@ func test_tiers_scale_equipment_effects() -> void:
 	CastContext.new()._staff_identity(e, d2)
 	t.near(float(d2.statuses[0].duration), 3.75, "tier II Gravewood curses 1.5x as long")
 	GameState.reset()
+
+
+func test_bag_tabs_sort() -> void:
+	var inv := Inventory.new()
+	inv.add(&"moonstone", 1)
+	inv.add(&"stormcoil")
+	inv.add(&"ember_seed", 1)
+	inv.add(&"ward_bell", 2)
+	inv.add(&"wardweave")
+	var relics: Array = InventoryUI.tab_items(inv, "relic")
+	t.eq(relics.map(func(it: Dictionary) -> String: return Items.display(it)),
+		["Ward Bell II", "Ember Seed I", "Moonstone I"], "relics: tier first, then name")
+	t.eq(InventoryUI.tab_items(inv, "staff").size(), 1, "only staffs on the staff tab")
+	t.eq(InventoryUI.tab_items(inv, "robe").size(), 1, "only robes on the robe tab")
