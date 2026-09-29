@@ -1,5 +1,5 @@
 class_name Placeables
-## The six home objects: complete pieces, not walls and roofs. Each is built
+## The home objects (six from Chapter 1, two gifts of the lake): complete pieces, not walls and roofs. Each is built
 ## as one Node3D (meshes + a solid footprint) so it can be placed, moved,
 ## previewed as a ghost or removed.
 
@@ -14,8 +14,10 @@ const DEFS := {
 	&"tent": {"name": "Tent", "cost": 15, "size": Vector2(2.4, 2.2)},
 	&"bookshelf": {"name": "Bookshelf", "cost": 20, "size": Vector2(1.4, 0.7)},
 	&"hut": {"name": "Gatewood hut", "cost": 40, "size": Vector2(3.2, 2.8)},
+	&"reed_boat": {"name": "Reed boat", "cost": 12, "size": Vector2(2.6, 1.0)},
+	&"lake_lantern": {"name": "Lake lamp", "cost": 10, "size": Vector2(0.8, 0.8)},
 }
-const ORDER := [&"lantern", &"bench", &"planter", &"tent", &"bookshelf", &"hut"]
+const ORDER := [&"lantern", &"bench", &"planter", &"tent", &"bookshelf", &"hut", &"reed_boat", &"lake_lantern"]
 
 
 static func footprint(id: StringName, rot: int) -> Vector2:
@@ -131,6 +133,22 @@ static func build(id: StringName, rot: int, solid := true) -> Node3D:
 			var win := _bill(n, load(D + "window_lit.png"), Vector3(0.9, 1.1, 1.33).rotated(Vector3.UP, rot * PI / 2))
 			win.mat.set_shader_parameter(&"depth_bias", 0.02)
 			win.mat.set_shader_parameter(&"emit", 1.2)
+		&"reed_boat":   # a Reedfolk punt drawn up on the grass, bundled reeds inside
+			_box(inner, Vector3(2.5, 0.35, 0.9), Vector3(0, 0.18, 0), "wood.png", Color(0.62, 0.5, 0.4))
+			_box(inner, Vector3(2.2, 0.08, 0.66), Vector3(0, 0.37, 0), "wood.png", Color(0.42, 0.32, 0.26))
+			_box(inner, Vector3(1.2, 0.22, 0.4), Vector3(-0.3, 0.46, 0), "thatch.png", Color(0.8, 0.85, 0.6))
+			_box(inner, Vector3(0.08, 0.08, 1.8), Vector3(0.6, 0.5, 0), "wood.png", Color(0.7, 0.6, 0.45), Vector3(0.3, 0.2, 0))
+		&"lake_lantern":   # a reed-woven lamp on a low post, glowing lake blue
+			_box(inner, Vector3(0.16, 1.4, 0.16), Vector3(0, 0.7, 0), "wood.png", Color(0.75, 0.65, 0.5))
+			_box(inner, Vector3(0.5, 0.5, 0.5), Vector3(0, 1.55, 0), "thatch.png", Color(0.75, 0.9, 1.0))
+			var glow := _bill(n, load(D + "ward_lit.png"), Vector3(0, 1.3, 0.3), 0.6)
+			glow.mat.set_shader_parameter(&"emit", 1.4)
+			var ll := OmniLight3D.new()
+			ll.light_color = Color(0.55, 0.85, 1.0)
+			ll.light_energy = 2.2
+			ll.omni_range = 5.0
+			ll.position = Vector3(0, 1.6, 0.4)
+			n.add_child(ll)
 	if solid:
 		var fp := footprint(id, rot)
 		var body := StaticBody3D.new()

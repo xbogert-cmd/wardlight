@@ -360,6 +360,122 @@ static func _draw_knot(c: PixelCanvas, o: Dictionary) -> void:
 	c.outline(Color(INK), 0.7)
 
 
+# ---------------------------------------------------------------- the Deepwillow
+## The root-being under the lake: a vast old willow, fronds hanging to the
+## ground. Hollowed, its fronds are grey-violet with a pale mask pressed into
+## the trunk; the core frames split the bark open on a violet heart; spent,
+## it sags; healed, its fronds turn green-gold and fill with light.
+static func deepwillow() -> Dictionary:
+	var defs := [["idle", 4, 3.0, true], ["idle2", 4, 5.0, true], ["attack", 2, 6.0, false], ["hurt", 1, 10.0, false],
+		["core", 4, 6.0, false], ["spent", 2, 2.0, true], ["healed", 4, 3.0, true], ["death", 1, 1.0, false]]
+	var f := []
+	for i in 4:
+		f.append({"sway": [0.0, 1.0, 0.0, -1.0][i]})
+	for i in 4:
+		f.append({"sway": [0.0, 1.5, 0.0, -1.5][i], "core": 3})
+	for i in 2:
+		f.append({"sway": 0.0, "lean": 2 + i * 2})
+	f.append({"sway": -2.0, "lean": -2})
+	for i in 4:
+		f.append({"sway": 0.0, "core": i})
+	for i in 2:
+		f.append({"sway": i * 0.5, "core": 3, "dim": true})
+	for i in 4:
+		f.append({"sway": [0.0, 0.8, 0.0, -0.8][i], "healed": true})
+	f.append({"sway": 0.0, "dim": true})
+	return Sheets.sheet(f, Vector2i(168, 156), _draw_willow, defs)
+
+
+static func _draw_willow(c: PixelCanvas, o: Dictionary) -> void:
+	var healed: bool = o.get("healed", false)
+	var dim: bool = o.get("dim", false)
+	var bark := _c(["7a6a6a", "54464a", "32282e"]) if not healed else _c(["8a7458", "5e4c3a", "3a2e22"])
+	var frond := _c(["a898b8", "7a6a8a", "4a3e5a"]) if not healed else _c(["c8e890", "8ab860", "4a7a3a"])
+	if dim:
+		frond = _c(["7a7078", "5a5260", "3a3440"])
+	var sway: float = o.get("sway", 0.0)
+	var lean: float = o.get("lean", 0.0)
+	var core: int = o.get("core", -1)
+	var foot := 154.0
+	var cx := 84.0
+	# roots spreading at the base
+	for k in 7:
+		var dx := -40.0 + k * 13.3
+		c.stroke(Vector2(cx + dx * 0.3, foot - 12), Vector2(cx + dx, foot - 1), 3, bark[2], R.LIMB)
+	# the trunk: wide, gnarled, leaning a little
+	c.poly(PackedVector2Array([Vector2(cx - 24, foot), Vector2(cx - 15 + lean * 0.5, foot - 40), Vector2(cx - 13 + lean, 56),
+		Vector2(cx + 12 + lean, 56), Vector2(cx + 15 + lean * 0.5, foot - 40), Vector2(cx + 25, foot)]), bark[1], R.BODY)
+	for k in 5:
+		var y := 64.0 + k * 17.0
+		c.stroke(Vector2(cx - 12 + k % 2 * 6 + lean * 0.6, y), Vector2(cx - 6 + k % 2 * 8 + lean * 0.5, y + 12), 1, bark[2], R.BODY2)
+	# crown branches
+	for k in 5:
+		var a := PI + 0.35 + k * 0.6
+		c.stroke(Vector2(cx + lean, 60), Vector2(cx + lean, 60) + Vector2.from_angle(a) * 34.0, 3, bark[1], R.LIMB)
+	# the crown and its hanging fronds
+	c.ellipse(cx + lean, 38, 66, 26, frond[1], R.WING)
+	for k in 40:
+		var x := cx - 64.0 + k * 3.3 + lean
+		var top := 38.0 + 22.0 * sin(float(k) / 39.0 * PI) * 0.4 + 12.0
+		var edge := absf(k - 19.5) / 19.5
+		var len := 30.0 + (1.0 - edge) * 10.0 + edge * 40.0 + (k * 7 % 11)
+		var sw := sway * (0.5 + edge)
+		c.stroke(Vector2(x, top), Vector2(x + sw * 2.0, minf(top + len, foot - 18 + (k % 4) * 3)), 1, frond[k % 3], R.WING)
+	if healed:
+		for k in 16:
+			c.put(int(cx - 55 + k * 7 + (k * 13 % 5)), int(40 + (k * 17 % 50)), Color("fff8c0"), R.GLOW)
+	# the hollow: a pale mask pressed into the trunk, or split open on the core
+	var m := Vector2(cx + lean * 0.8, 92)
+	if not healed:
+		if core < 0:
+			var mk := _c(MASK)
+			c.ellipse(m.x, m.y, 8, 10, mk[1], R.MASK)
+			c.rect(int(m.x) - 5, int(m.y) - 3, 3, 3, Color(INK), R.EYE)
+			c.rect(int(m.x) + 2, int(m.y) - 3, 3, 3, Color(INK), R.EYE)
+			c.rect(int(m.x) - 1, int(m.y) + 4, 2, 3, Color(INK), R.EYE)
+			for k in 6:   # violet veins creeping out of it
+				var a := k * TAU / 6.0 + 0.3
+				c.stroke(m + Vector2.from_angle(a) * 9.0, m + Vector2.from_angle(a) * 20.0, 1, Color("8a5ac8"), R.GLOW)
+		else:
+			var open := 3.0 + core * 3.0
+			c.ellipse(m.x, m.y, open + 2, open * 1.4 + 3, Color("1a1024"), R.EYE)
+			if not dim:
+				c.ellipse(m.x, m.y, open, open * 1.3, Color("b890ff"), R.GLOW)
+				c.ellipse(m.x, m.y, open * 0.5, open * 0.6, Color("ffffff"), R.GLOW)
+			for k in 8:
+				var a := k * TAU / 8.0
+				c.stroke(m + Vector2.from_angle(a) * (open + 2), m + Vector2.from_angle(a) * (open + 12 + core * 2), 1, Color("b890ff") if not dim else Color("5a4a6a"), R.GLOW)
+	c.shade(R.BODY, bark[0], bark[2], 1)
+	c.shade(R.WING, frond[0], frond[2], 1)
+	c.shade(R.MASK, Color(MASK[0]), Color(MASK[2]), 1)
+	c.outline(Color(INK), 0.85)
+
+
+## A knot in the Deepwillow's bark: closed and dark, or open and glowing.
+static func deep_knot() -> Dictionary:
+	var defs := [["idle", 1, 1.0, true], ["closed", 1, 1.0, true], ["open", 2, 4.0, true], ["death", 3, 12.0, false]]
+	var f := [{"open": 0}, {"open": 0}, {"open": 1}, {"open": 2}, {"pop": 1}, {"pop": 2}, {"pop": 3}]
+	return Sheets.sheet(f, Vector2i(24, 24), _draw_deep_knot, defs)
+
+
+static func _draw_deep_knot(c: PixelCanvas, o: Dictionary) -> void:
+	if o.has("pop"):
+		var pp: int = o.pop
+		for k in 10:
+			var a := k * TAU / 10.0
+			c.put(int(12 + cos(a) * (3 + pp * 3)), int(12 + sin(a) * (3 + pp * 3)), Color("fff0c0", 1.0 - pp * 0.25), R.GLOW)
+		return
+	var op: int = o.open
+	c.ellipse(12, 12, 8, 7, Color("54464a"), R.BODY)
+	if op == 0:
+		c.ellipse(12, 12, 3, 2, Color("32282e"), R.BODY2)
+	else:
+		c.ellipse(12, 12, 4 + op, 3 + op, Color("f0b060"), R.GLOW)
+		c.ellipse(12, 12, 2, 2, Color("ffffff"), R.GLOW)
+	c.shade(R.BODY, Color("7a6a6a"), Color("32282e"), 1)
+	c.outline(Color(INK), 0.8)
+
+
 # ---------------------------------------------------------------- Spore
 static func spore() -> Dictionary:
 	var defs := [["idle", 2, 6.0, true], ["death", 3, 14.0, false]]

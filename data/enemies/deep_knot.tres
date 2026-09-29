@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://game/enemies/enemy_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"deep_knot"
+display_name = "Hollow knot"
+sheet = "deep_knot"
+origin = Vector2(12, 20)
+body_size = Vector2(16, 16)
+max_hp = 90.0
+damage = 0.0
+move_speed = 0.0
+poise = 999.0
+knock_resist = 1.0
+flinch_cooldown = 99.0
+motes = 2
+aggro_range = 0.0
+params = {
+"xp": 0,
+"coins": 0
+}

@@ -264,6 +264,21 @@ const DEMOS := {
 		[19.5, "tap", "interact"], [20.0, "next", ""], [20.3, "next", ""], [20.6, "next", ""], [20.9, "next", ""], [21.2, "state", "watch"],
 		[21.4, "tp", "-24.6,0.5"], [21.7, "tap", "interact"], [28.0, "tp", "-19.6,4.0"], [28.3, "tap", "interact"], [28.7, "next", ""], [29.0, "next", ""],
 		[29.3, "next", ""], [29.8, "state", "orla"], [30.0, "quit", ""]],
+	# Chapter 2 step 8: the Heart Isle, the Deepwillow's three layers, the cleansing and the ending
+	"deepwillow": [[0.2, "god", ""], [0.3, "quest", "dark_ward:-1"], [0.31, "quest", "hollowing:6"], [0.32, "flag", "shrine_chapel"],
+		[0.33, "flag", "shrine_mire"], [0.34, "flag", "shrine_grove"], [0.35, "flag", "herald_fled"], [0.36, "flag", "kess_joined"],
+		[0.37, "recruit", "tamsin"], [0.38, "recruit", "kess"], [0.5, "travel", "heart_isle:dock"],
+		[2.2, "shot", "d0_landing"], [2.4, "tp", "-6,2.5"], [2.9, "shot", "d1_path"], [3.2, "tp", "2,-3.5"],
+		[3.7, "next", ""], [4.0, "next", ""], [4.3, "next", ""], [4.6, "next", ""],
+		[4.8, "learn", ""], [4.85, "equip", "3:chain_current"], [4.9, "aim_enemy", ""], [5.0, "hold", "attack"], [5.0, "burst", "d2_layer1:600:6"],
+		[6.5, "break_knot", ""], [8.5, "break_knot", ""], [10.5, "break_knot", ""], [12.5, "break_knot", ""],
+		[13.5, "burst", "d3_flood:600:6"], [14.0, "tap", "spell_4"], [16.0, "tap", "spell_1"], [18.0, "tap", "spell_4"],
+		[20.5, "wound", "0.48"], [20.6, "burst", "d4_core:480:6"], [22.0, "tap", "spell_4"], [24.0, "tap", "spell_1"],
+		[27.5, "wound", "0.0"], [27.7, "release", "attack"], [28.4, "next", ""], [28.7, "next", ""],
+		[29.2, "tp", "2,-9.4"], [29.5, "shot", "d5_spent"], [29.7, "tap", "interact"], [29.8, "burst", "d6_cleanse:420:10"],
+		[34.6, "next", ""], [35.0, "next", ""], [35.4, "next", ""], [35.8, "next", ""], [36.2, "next", ""], [36.6, "next", ""],
+		[39.2, "next", ""], [39.6, "next", ""], [40.2, "shot", "d7_after"], [40.4, "state", "healed"], [40.5, "book", ""], [40.8, "key", "4194321"],
+		[40.9, "key", "4194321"], [41.0, "key", "4194321"], [41.1, "key", "4194321"], [41.3, "shot", "d8_book"], [41.5, "quit", ""]],
 	# the sanctuary camp with both companions resting, then one joins
 	"camp": [
 		[0.3, "recruit", "tamsin:rest"], [0.35, "recruit", "kess:rest"], [0.4, "travel", "sanctuary:start"],
@@ -430,6 +445,11 @@ func _run(s: Array) -> void:
 			get_tree().root.get_node("Main").inventory.open()
 		"give":
 			GameState.inv.add(StringName(s[2]))
+		"break_knot":
+			# the Deepwillow's open knot breaks
+			for n in Region.current.get_children():
+				if n is Deepwillow and (n as Deepwillow)._open >= 0:
+					(n as Deepwillow).knots[(n as Deepwillow)._open].take_hit(Damage.make(9999.0, _player(), &"storm"))
 		"equip":
 			# "slot:spell id" (unlocks it first)
 			var ep: PackedStringArray = (s[2] as String).split(":")
@@ -517,6 +537,9 @@ func _run(s: Array) -> void:
 			var pw := _player()
 			var tgt: Node3D = null
 			for e in SpellEffect.enemies():
+				if e.is_boss:   # a boss if there is one, else the nearest
+					tgt = e
+					break
 				if tgt == null or pw.global_position.distance_to(e.global_position) < pw.global_position.distance_to(tgt.global_position):
 					tgt = e
 			if tgt and tgt is Enemy:

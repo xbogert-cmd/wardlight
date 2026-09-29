@@ -120,5 +120,11 @@ Status: **Chapter 1 complete. Chapter 2 (The Hollowing) in progress: see `docs/s
   Quest gains "Relight the last lake shrine". `--demo=herald`.
 - [x] Step 7: Orla the mapmaker (after the Herald), boat to the Far Watch, climb the tower, the spyglass view
   east (grey land, a vast walker in the haze); reward on return. `--demo=farwatch`.
-- [ ] Step 8: Heart Isle, the Deepwillow, three new spells, ending (look + feel)
+- [x] Step 8 (built, awaiting look + feel review): the Heart Isle (sealed until three shrines; deep water all
+  round), the Deepwillow (four bark knots opened one at a time; then the tree itself with flood surges over the
+  clearing's edge (levitate or stay near the trunk) and root lines; at half health the hollow core tears free and
+  everything speeds up; spent, not killed: cleanse it), the ending (Chapter 2 complete; Reedfolk allies; the lake
+  light burns in Reedhollow). Three new spells in a fifth spellbook column: Boiling Spring, Chain Current,
+  Drowning Grasp (checked against the Warden: none an outlier). Home decor: reed boat, lake lamp.
+  `mus_deepwillow`. `--demo=deepwillow`; `--demo=dps_<school>_lake`.
 - [ ] Step 9: balance, `--demo=story2`, report, Mac build

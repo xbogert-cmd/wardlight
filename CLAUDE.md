@@ -24,8 +24,9 @@ integer scaling, nearest filtering. All art/audio/font is original and generated
 - Title: Wardlight. Git history stays in this repo only.
 
 ## Where things live
-- World: `game/world/region.gd` (base: terrain, props, exits, checkpoints) and one script per place
-  (`sanctuary`, `hearthmere`, `briarwood`, `old_ward`). World consequences go in `apply_state()`
+- World: `game/world/region.gd` (base: terrain, props, exits, checkpoints, lake landings) and one script per
+  place (`sanctuary`, `hearthmere`, `briarwood`, `old_ward`; Chapter 2: `fenway`, `reedhollow`, `far_watch`,
+  `heart_isle`, and the shrine areas on the shared `shrine_area.gd`: `sunken_chapel`, `mire`, `stilled_grove`). World consequences go in `apply_state()`
   (runs every visit; must be idempotent).
 - Progress: `GameState` autoload (flags, once-events, quests, unlocks, inventory, home, companion);
   `SaveSystem` autoload (versioned JSON, temp+verify+backup). Rewards use `GameState.once(id)`.

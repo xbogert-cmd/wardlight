@@ -30,6 +30,7 @@ const ENEMIES := {
 	&"lurker": [preload("res://game/enemies/lurker.gd"), preload("res://data/enemies/lurker.tres")],
 	&"moth": [preload("res://game/enemies/moth.gd"), preload("res://data/enemies/moth.tres")],
 	&"herald": [preload("res://game/enemies/herald.gd"), preload("res://data/enemies/herald.tres")],
+	&"deepwillow": [preload("res://game/enemies/deepwillow.gd"), preload("res://data/enemies/deepwillow.tres")],
 }
 
 var id := &"region"

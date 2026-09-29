@@ -119,7 +119,7 @@ func _input(e: InputEvent) -> void:
 			_choose(pick - 1)
 		KEY_E:
 			_choose(pick + 1)
-		KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6:
+		KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8:
 			_choose(k - KEY_1)
 		KEY_TAB:
 			_cycle_placed()
@@ -247,8 +247,8 @@ func _draw_ui() -> void:
 		var col := Color("f4d890") if sel else (Color("d8ccb4") if ok else Color("5a5060"))
 		canvas.draw_string(FONT, Vector2(x, 20), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 9, col)
 		canvas.draw_string(FONT, Vector2(x, 32), ("%d coins" % d.cost) if ok else "locked", HORIZONTAL_ALIGNMENT_LEFT, -1, 9, Color("a89060") if ok else Color("5a5060"))
-		x += FONT.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, 9).x + 18
-	canvas.draw_string(FONT, Vector2(30, 45), "Coins %d    Q/E or 1-6 choose   Arrows/mouse move   R rotate   Enter place   Tab pick placed   X remove   Esc done" % GameState.inv.coins,
+		x += FONT.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, 9).x + 12
+	canvas.draw_string(FONT, Vector2(30, 45), "Coins %d    Q/E or 1-8 choose   Arrows/mouse move   R rotate   Enter place   Tab pick placed   X remove   Esc done" % GameState.inv.coins,
 		HORIZONTAL_ALIGNMENT_LEFT, -1, 9, Color("8a7a60"))
 	if editing >= 0:
 		var e: Dictionary = GameState.placed[editing]

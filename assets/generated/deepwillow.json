@@ -1,0 +1,79 @@
+{
+	"anims": {
+		"attack": {
+			"fps": 6.0,
+			"frames": [
+				8,
+				9
+			],
+			"loop": false
+		},
+		"core": {
+			"fps": 6.0,
+			"frames": [
+				11,
+				12,
+				13,
+				14
+			],
+			"loop": false
+		},
+		"death": {
+			"fps": 1.0,
+			"frames": [
+				21
+			],
+			"loop": false
+		},
+		"healed": {
+			"fps": 3.0,
+			"frames": [
+				17,
+				18,
+				19,
+				20
+			],
+			"loop": true
+		},
+		"hurt": {
+			"fps": 10.0,
+			"frames": [
+				10
+			],
+			"loop": false
+		},
+		"idle": {
+			"fps": 3.0,
+			"frames": [
+				0,
+				1,
+				2,
+				3
+			],
+			"loop": true
+		},
+		"idle2": {
+			"fps": 5.0,
+			"frames": [
+				4,
+				5,
+				6,
+				7
+			],
+			"loop": true
+		},
+		"spent": {
+			"fps": 2.0,
+			"frames": [
+				15,
+				16
+			],
+			"loop": true
+		}
+	},
+	"cell": [
+		168,
+		156
+	],
+	"hframes": 8
+}

@@ -43,6 +43,8 @@ func _init() -> void:
 		_save_sheet("troll", Bosses.troll())
 		_save_sheet("guardian", Bosses.guardian())
 		_save_sheet("herald", Hollow.herald())
+		_save_sheet("deepwillow", Hollow.deepwillow())
+		_save_sheet("deep_knot", Hollow.deep_knot())
 	if want.call("npcs"):
 		for n in Npcs.CAST:
 			_save_sheet("npc_" + n, Npcs.build(Npcs.CAST[n]))

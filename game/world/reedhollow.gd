@@ -34,6 +34,7 @@ var walk_broken: Node3D
 var walk_mended: Node3D
 var walk_rect := Rect2()
 var platform_lamp: Dictionary
+var lake_ward: Dictionary        # the Deepwillow's light, lit when it is healed
 
 var folk: Array[Npc] = []        # Teodor and Mira
 var herald: Herald
@@ -109,7 +110,7 @@ func _build() -> void:
 	_dock(19.0)
 	_walkway()
 	# the lake light: Reedhollow's ward, fed by the Deepwillow (dim until the shrines burn)
-	ward_stone(4.0, -1.8, false, false)
+	lake_ward = ward_stone(4.0, -1.8, false, false)
 	for lx: float in [-19.0, -7.0, 5.5, 14.5, 23.0]:
 		lanterns.append(lantern_post(lx, -1.9, 1.0, false))
 	# low things only on the land south of the promenade (camera rule)
@@ -472,6 +473,10 @@ func _talk_elder() -> void:
 		GameState.set_flag(&"kess_joined")
 		SaveSystem.autosave()
 		return
+	if GameState.quest_done(Quests.HOLLOWING):
+		await Dialogue.i.talk([["Elder Rhosyn", "Hear that? The lake is singing again. The Deepwillow dreams sweetly, and it dreams of you."],
+			["Elder Rhosyn", "Reedhollow is your home whenever you want it, {name}. Whatever comes out of the east, the Reedfolk will stand with you."]])
+		return
 	var lines := ["The shrines, {name}. The Sunken Chapel, the Mire and the Stilled Grove. Any order will do.",
 		"One shrine burns again. I can feel the lake breathing easier.",
 		"Two shrines! The Heart Isle's seal is thinning. One more.",
@@ -521,6 +526,7 @@ func apply_state() -> void:
 		var here: bool = Quests.shrines_lit() > k
 		folk_later[k].visible = here
 		folk_later[k].enabled = here
+	set_ward(lake_ward, GameState.flag(&"deepwillow_healed"))
 	var lit := Quests.shrines_lit()
 	_show(walk_broken, lit < 2)
 	_show(walk_mended, lit >= 2)

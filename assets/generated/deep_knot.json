@@ -1,0 +1,40 @@
+{
+	"anims": {
+		"closed": {
+			"fps": 1.0,
+			"frames": [
+				1
+			],
+			"loop": true
+		},
+		"death": {
+			"fps": 12.0,
+			"frames": [
+				4,
+				5,
+				6
+			],
+			"loop": false
+		},
+		"idle": {
+			"fps": 1.0,
+			"frames": [
+				0
+			],
+			"loop": true
+		},
+		"open": {
+			"fps": 4.0,
+			"frames": [
+				2,
+				3
+			],
+			"loop": true
+		}
+	},
+	"cell": [
+		24,
+		24
+	],
+	"hframes": 8
+}

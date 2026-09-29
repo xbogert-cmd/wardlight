@@ -14,6 +14,7 @@ const REGIONS := {
 	&"mire": "res://game/world/mire.gd",
 	&"stilled_grove": "res://game/world/stilled_grove.gd",
 	&"far_watch": "res://game/world/far_watch.gd",
+	&"heart_isle": "res://game/world/heart_isle.gd",
 }
 const NAMES := {&"sanctuary": "The Sanctuary", &"hearthmere": "Hearthmere", &"briarwood": "Briarwood Road", &"old_ward": "The Old Ward",
 	&"fenway": "The Fenway", &"reedhollow": "Reedhollow", &"sunken_chapel": "The Sunken Chapel", &"mire": "The Mire",
