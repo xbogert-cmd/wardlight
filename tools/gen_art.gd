@@ -40,6 +40,7 @@ func _init() -> void:
 			_save_sheet("npc_" + n, Npcs.build(Npcs.CAST[n]))
 		_save_sheet("npc_fawn", Npcs.fawn())
 		_save_sheet("npc_tamsin", Npcs.shieldbearer())
+		_save_sheet("npc_kess", Npcs.scout())
 	if want.call("fx"):
 		for s in [16, 32, 64]:
 			Fx.glow(s).save_png(OUT + "glow%d.png" % s)

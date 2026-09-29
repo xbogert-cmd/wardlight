@@ -211,7 +211,7 @@ func _folk() -> void:
 				return
 			tamsin.visible = false
 			tamsin.enabled = false
-			get_tree().root.get_node("Main").sync_companion()
+			get_tree().root.get_node("Main").sync_party()
 			SaveSystem.autosave()
 	isolde = Npc.new()
 	isolde.sheet = "isolde"

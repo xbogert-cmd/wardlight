@@ -264,3 +264,92 @@ static func _draw_shieldbearer(c: PixelCanvas, o: Dictionary) -> void:
 	for pair: Array in [[P.SKIN, skin], [P.HAIR, hair], [P.TOP, cloak], [P.APRON, cloak], [P.ITEM, steel], [P.BOTTOM, steel]]:
 		c.shade(pair[0], pair[1][0], pair[1][2], 1)
 	c.outline(_c("0e0a14"), 0.85)
+
+
+# ---------------------------------------------------------------- Kess
+## Kess the scout: hooded, lighter than Tamsin, a short bow in the front hand
+## and a quiver on her back. Draw/shoot frames pull the string back to the
+## cheek (the tell), hop frames crouch and lift the feet.
+static func scout() -> Dictionary:
+	var defs := [["idle", 4, 5.0, true], ["walk", 6, 11.0, true], ["draw", 2, 8.0, false], ["shoot", 2, 10.0, false],
+		["hop", 2, 10.0, false], ["hurt", 1, 10.0, false], ["downed", 2, 3.0, true], ["rise", 2, 6.0, false]]
+	var f := []
+	for i in 4:
+		f.append({"bob": [0, 0, 1, 1][i]})
+	for i in 6:
+		f.append({"step": [3, 1, -2, -3, -1, 2][i], "bob": [0, 1, 0, 0, 1, 0][i]})
+	for i in 2:
+		f.append({"aim": true, "pull": [3, 6][i]})
+	for i in 2:
+		f.append({"aim": true, "pull": 0, "loose": i == 0})
+	for i in 2:
+		f.append({"bob": [3, 1][i], "lean": -3, "tuck": [3, 1][i]})
+	f.append({"lean": -3, "hurt": true})
+	for i in 2:
+		f.append({"downed": i})
+	for i in 2:
+		f.append({"bob": 4 - i * 3, "lean": -2})
+	return Sheets.sheet(f, Vector2i(48, 48), _draw_scout, defs)
+
+
+static func _draw_scout(c: PixelCanvas, o: Dictionary) -> void:
+	var skin := _ramp("b07a58")
+	var hair := _ramp("7a3424")
+	var hood := _ramp("4a6a3a")
+	var tunic := _ramp("2a5a5a")
+	var leather := _ramp("6a4a30")
+	var wood := _ramp("8a6a40")
+	var string_col := _c("d8d0b8")
+	if o.has("downed"):
+		c.poly(PackedVector2Array([Vector2(8, 46), Vector2(12, 41), Vector2(30, 40), Vector2(33, 46)]), hood[1], P.TOP)
+		c.ellipse(33, 43, 3.2, 3.2, skin[1], P.SKIN)
+		c.stroke(Vector2(12 + o.downed, 44), Vector2(26 + o.downed, 38), 1, wood[1], P.ITEM)
+		for pair: Array in [[P.TOP, hood], [P.SKIN, skin], [P.ITEM, wood]]:
+			c.shade(pair[0], pair[1][0], pair[1][2], 1)
+		c.outline(_c("0e0a14"), 0.85)
+		return
+	var bob: float = o.get("bob", 0)
+	var lean: float = o.get("lean", 0)
+	var st: float = o.get("step", 0)
+	var tuck: float = o.get("tuck", 0)
+	var u := Vector2(lean, bob)
+	# legs (tucked up while hopping)
+	c.stroke(Vector2(20, 34) + u * 0.4, Vector2(19 - st, 46 - tuck), 2, leather[2], P.BOTTOM)
+	c.stroke(Vector2(23, 34) + u * 0.4, Vector2(24 + st, 46 - tuck), 2, leather[1], P.BOTTOM)
+	# quiver on the back, fletchings showing
+	var q := Vector2(15, 21) + u
+	c.poly(PackedVector2Array([q, q + Vector2(3, -1), q + Vector2(5, 11), q + Vector2(2, 12)]), leather[1], P.APRON)
+	for k in 3:
+		c.put(int(q.x + k), int(q.y - 2 - k % 2), string_col, P.GLOW)
+	# short cloak behind
+	c.poly(PackedVector2Array([Vector2(17, 19) + u, Vector2(24, 19) + u, Vector2(22, 36) + u * 0.5, Vector2(14, 37) + u * 0.5]), hood[2], P.APRON)
+	# torso: teal tunic, leather belt
+	c.poly(PackedVector2Array([Vector2(18, 20) + u, Vector2(26, 20) + u, Vector2(26, 34) + u * 0.5, Vector2(17, 34) + u * 0.5]), tunic[1], P.TOP)
+	c.rect(int(17 + lean * 0.5), int(29 + bob * 0.5), 9, 2, leather[1], P.BOTTOM)
+	# head in a reed-green hood, a lock of red hair
+	var head := Vector2(23, 14) + u
+	c.ellipse(head.x, head.y, 3.4, 3.8, skin[1], P.SKIN)
+	c.poly(PackedVector2Array([head + Vector2(-5, 4), head + Vector2(-4, -4), head + Vector2(0, -6), head + Vector2(4, -4), head + Vector2(2, -2), head + Vector2(-1, -2), head + Vector2(-2, 5)]), hood[1], P.HAIR)
+	c.put(int(head.x) + 1, int(head.y) + 3, hair[1], P.EYE)
+	c.put(int(head.x) + 2, int(head.y) - 1, _c("1a1418"), P.EYE)
+	# the bow in the front hand; aiming holds it out level
+	var sh := Vector2(24, 22) + u
+	var aim: bool = o.get("aim", false)
+	var hand := sh + (Vector2(9, -1) if aim else Vector2(4, 8))
+	c.stroke(sh, hand, 2, tunic[2], P.TOP)
+	var top := hand + Vector2(-2, -9)
+	var bot := hand + Vector2(-2, 9)
+	c.stroke(top, hand + Vector2(1, 0), 1, wood[1], P.ITEM)
+	c.stroke(hand + Vector2(1, 0), bot, 1, wood[1], P.ITEM)
+	var pull: float = o.get("pull", 0)
+	var nock := Vector2(top.x - pull, hand.y)
+	c.stroke(top, nock, 1, string_col, P.ITEM2)
+	c.stroke(nock, bot, 1, string_col, P.ITEM2)
+	if aim and not o.get("loose", false):
+		# the arrow on the string, drawing arm back to the cheek
+		c.stroke(nock, hand + Vector2(5, 0), 1, wood[0], P.ITEM)
+		c.put(int(hand.x + 5), int(hand.y), _c("f0c850"), P.GLOW)
+		c.stroke(sh + Vector2(-1, 1), nock, 2, tunic[1], P.TOP)
+	for pair: Array in [[P.SKIN, skin], [P.HAIR, hood], [P.TOP, tunic], [P.APRON, hood], [P.ITEM, wood], [P.BOTTOM, leather]]:
+		c.shade(pair[0], pair[1][0], pair[1][2], 1)
+	c.outline(_c("0e0a14"), 0.85)

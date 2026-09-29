@@ -374,7 +374,7 @@ func _tamsin() -> void:
 		GameState.once(&"tamsin_recruited")
 		tamsin.visible = false
 		tamsin.enabled = false
-		get_tree().root.get_node("Main").sync_companion()
+		get_tree().root.get_node("Main").sync_party()
 		SaveSystem.autosave()
 
 

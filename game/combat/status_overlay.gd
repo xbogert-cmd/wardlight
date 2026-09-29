@@ -1,23 +1,27 @@
 class_name StatusOverlay
 extends Node3D
 ## Readable status marks on an actor: a violet eye-sigil above cursed
-## enemies, flickering flames on burning ones, root tendrils at the feet.
+## enemies, flickering flames on burning ones, root tendrils at the feet, a
+## gold arrowhead above ones Kess has marked.
 
 const PX := 1.0 / 24.0
 
 static var _curse_tex: Texture2D
 static var _root_tex: Texture2D
+static var _mark_tex: Texture2D
 
 var actor: Node3D
 var _t := 0.0
 var _curse: MeshInstance3D
 var _root: MeshInstance3D
+var _marked: MeshInstance3D
 
 
 func _ready() -> void:
 	_make_textures()
 	_curse = _mark(_curse_tex, true)
 	_root = _mark(_root_tex, false)
+	_marked = _mark(_mark_tex, true)
 	actor.statuses.changed.connect(_refresh)
 	_refresh()
 
@@ -47,6 +51,14 @@ static func _make_textures() -> void:
 				r.set_pixel(clampi(xx + 1, 0, 23), 11 - y, bark.darkened(0.3))
 		r.set_pixel(clampi(x + int(lean * h / 4.0), 0, 23), 11 - h, hex)
 	_root_tex = ImageTexture.create_from_image(r)
+	var arrow := ["#######", ".#OOO#.", "..#O#..", "...#..."]
+	var m := Image.create_empty(7, 4, false, Image.FORMAT_RGBA8)
+	for y in arrow.size():
+		for x in 7:
+			var ch: String = arrow[y][x]
+			if ch != ".":
+				m.set_pixel(x, y, Color("f0c870") if ch == "#" else Color("fff0c0"))
+	_mark_tex = ImageTexture.create_from_image(m)
 
 
 func _mark(tex: Texture2D, glow: bool) -> MeshInstance3D:
@@ -71,7 +83,8 @@ func _refresh() -> void:
 	var alive: bool = actor.is_alive()
 	_curse.visible = alive and actor.statuses.has(&"curse")
 	_root.visible = alive and actor.statuses.has(&"root")
-	set_process(_curse.visible or _root.visible or actor.statuses.has(&"burn"))
+	_marked.visible = alive and actor.statuses.has(&"mark")
+	set_process(_curse.visible or _root.visible or _marked.visible or actor.statuses.has(&"burn"))
 
 
 func _process(delta: float) -> void:
@@ -79,10 +92,13 @@ func _process(delta: float) -> void:
 	if not actor.is_alive():
 		_curse.visible = false
 		_root.visible = false
+		_marked.visible = false
 		return
 	var h: float = actor.height()
 	_curse.position = Vector3(0, h + 0.35 + roundf(sin(_t * 4.0)) * PX, 0)
 	_root.position = Vector3(0, 0.25, 0.02)
+	# above the curse sigil when both show, bobbing on the other beat
+	_marked.position = Vector3(0, h + (0.7 if _curse.visible else 0.35) + roundf(cos(_t * 4.0)) * PX, 0)
 	if actor.statuses.has(&"burn") and randf() < delta * 16.0:
 		var rr: float = actor.radius()
 		FX3.burst(actor.global_position + Vector3(randf_range(-rr, rr), randf_range(0.1, h), randf_range(-rr, rr) * 0.5), 1, Pal.school(&"fire"),

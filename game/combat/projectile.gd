@@ -56,7 +56,7 @@ func _build() -> void:
 	mat.set_shader_parameter(&"color", Color(ramp[2], 0.9))
 	_glow = MeshInstance3D.new()
 	var q := QuadMesh.new()
-	q.size = Vector2(tex.get_width(), tex.get_height()) * PX * (0.7 if style in [&"needle", &"ember"] else 1.0)
+	q.size = Vector2(tex.get_width(), tex.get_height()) * PX * (0.7 if style in [&"needle", &"ember"] else (0.4 if style == &"arrow" else 1.0))
 	_glow.mesh = q
 	_glow.material_override = mat
 	_glow.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
@@ -199,6 +199,9 @@ func _trail_fx() -> void:
 			FX3.burst(p, 1 if style == &"ember" else 2, ramp, Vector2(0.2, 1.2), Vector2(0.2, 0.45), {"gravity": -2.0, "drag": 3.0, "size": 1.0 if style == &"ember" else 2.0})
 			if _trail.size() > 2:
 				FX3.seg(_trail[2], p, ramp[2])
+		&"arrow":
+			FX3.seg(p - dir * 0.5, p + dir * 0.05, ramp[2])
+			FX3.seg(p - dir * 0.08 + Vector3(0, PX, 0), p + dir * 0.1, ramp[0])
 		&"needle":
 			FX3.seg(p - dir * 0.55, p + dir * 0.1, ramp[0])
 			FX3.seg(p - dir * 0.3 + Vector3(0, PX, 0), p + Vector3(0, PX, 0), Pal.SPECTRAL[1])

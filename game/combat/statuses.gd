@@ -5,11 +5,14 @@ extends Node
 ##   curse — hex mark: the bearer takes CURSE_MULT damage; enables Soul Echo,
 ##           Grave Current and Haunted Embers
 ##   root  — cannot move (bosses shrug it off faster via `root_resist`)
+##   mark  — Kess's arrow: the wizard's next spell hit deals MARK_MULT and
+##           uses it up (CastContext.hit)
 
 signal changed
 
 const BURN_TICK := 0.5
 const CURSE_MULT := 1.2
+const MARK_MULT := 1.25
 
 var owner_actor: Node3D
 var root_resist := 0.0

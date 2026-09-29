@@ -75,6 +75,10 @@ func hit(target_actor: Node3D, d: Damage) -> void:
 		_staff_identity(target_actor, d)
 	for s: Dictionary in d.statuses:
 		target_actor.statuses.apply(s.id, s.duration, s.get("power", 0.0), caster)
+	if not d.is_proc and not data.is_basic and target_actor.statuses.has(&"mark"):
+		target_actor.statuses.remove(&"mark")
+		d.amount *= Statuses.MARK_MULT
+		FX3.ring(target_actor.center(), 0.1, 0.9, 0.25, [Color("fff0c0"), Color("f0c870"), Color("a07840")], 1.0, false)
 	target_actor.take_hit(d)
 	Events.damage_dealt.emit(target_actor, d)
 	if d.is_proc:
