@@ -29,6 +29,8 @@ integer scaling, nearest filtering. All art/audio/font is original and generated
   (runs every visit; must be idempotent).
 - Progress: `GameState` autoload (flags, once-events, quests, unlocks, inventory, home, companion);
   `SaveSystem` autoload (versioned JSON, temp+verify+backup). Rewards use `GameState.once(id)`.
+- Companions: `game/companions/companion.gd` (shared base) with `shieldbearer.gd` (Tamsin) and
+  `scout.gd` (Kess); `GameState.party` (max 2) and `Main.sync_party()`.
 - Items: `game/items/items.gd` (definitions), `inventory.gd` (instances, equip, fusion).
 - UI: `game/ui/*` (HUD, dialogue, journal, map, inventory, fusion, build mode, menus, settings).
 - Scripted demos in `game/core/demo_driver.gd` (`story` plays the whole quest).

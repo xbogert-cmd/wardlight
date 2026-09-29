@@ -96,7 +96,10 @@ Status: **Chapter 1 complete. Chapter 2 (The Hollowing) in progress: see `docs/s
 - [x] Step 1: inventory tabs (Staffs / Robes / Relics), staff and robe tiers I–III (×1 / ×1.5 / ×2
   effect), the altar fuses any two alike items, pair markers and a one-time hint. The plain starter
   crook and robe can't be fused; a fused staff/robe stays worn; fusion keeps the better bonus.
-- [ ] Step 2: `Companion` base, party of two, Kess, sanctuary camp, save v2
+- [x] Step 2: `Companion` base (Tamsin's follow/downed/unstick shared), party of up to two
+  (`GameState.party`), Kess the scout (shoots the wizard's target, marking arrow every 6 s = +25% on
+  the next spell hit, hops back from close enemies), sanctuary companion camp, save version 2
+  (Chapter 1 saves migrate). Kess's recruitment scene, route hints and banter come with steps 3 and 5.
 - [ ] Step 3: opening, Fenway, Reedhollow, boat travel (look)
 - [ ] Step 4: Husk, Mire Lurker, Hollow Moth, hollowed variants (feel)
 - [ ] Step 5: Sunken Chapel, Mire, Stilled Grove, lost child (look)
