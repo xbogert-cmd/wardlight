@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://game/enemies/enemy_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"herald"
+display_name = "The Herald"
+sheet = "herald"
+origin = Vector2(32, 74)
+body_size = Vector2(20, 64)
+max_hp = 880.0
+damage = 20.0
+move_speed = 2.4
+poise = 999.0
+knock_resist = 0.9
+flinch_cooldown = 99.0
+motes = 10
+aggro_range = 8.0
+params = {
+"coins": 0,
+"xp": 0,
+"root_resist": 0.7,
+"slash_windup": 0.7,
+"seed_windup": 0.8,
+"recover": 0.7
+}

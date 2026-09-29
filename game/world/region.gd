@@ -29,11 +29,13 @@ const ENEMIES := {
 	&"husk": [preload("res://game/enemies/husk.gd"), preload("res://data/enemies/husk.tres")],
 	&"lurker": [preload("res://game/enemies/lurker.gd"), preload("res://data/enemies/lurker.tres")],
 	&"moth": [preload("res://game/enemies/moth.gd"), preload("res://data/enemies/moth.tres")],
+	&"herald": [preload("res://game/enemies/herald.gd"), preload("res://data/enemies/herald.tres")],
 }
 
 var id := &"region"
 var display_name := "Region"
 var music := "explore"
+var boss_music := "boss"
 var env_preset := &"night"
 var seed_value := 1
 # terrain grid (1 m cells)
@@ -175,7 +177,7 @@ func _boss_music() -> void:
 		if e.is_boss and e.is_alive() and e.get("engaged"):
 			fighting = true
 			break
-	Sfx.music("boss" if fighting else music)
+	Sfx.music(boss_music if fighting else music)
 
 
 ## Make `entry` the respawn point (checkpoint shrines call this).
@@ -331,6 +333,46 @@ func _environment() -> void:
 			moon.light_color = Color(0.72, 0.78, 1.0)
 			moon.light_energy = 0.5
 			moon.rotation_degrees = Vector3(-44, 40, 0)
+		&"chapel": # the Sunken Chapel: slate and moonlight, violet shadows
+			env.background_color = Color(0.04, 0.04, 0.08)
+			env.ambient_light_color = Color(0.3, 0.3, 0.46)
+			env.ambient_light_energy = 0.7
+			env.fog_light_color = Color(0.22, 0.2, 0.36)
+			env.fog_density = 0.008
+			moon.light_color = Color(0.74, 0.76, 1.0)
+			moon.light_energy = 0.5
+			moon.rotation_degrees = Vector3(-50, 30, 0)
+		&"mire":   # the Mire: sickly green fog
+			env.background_color = Color(0.04, 0.05, 0.035)
+			env.ambient_light_color = Color(0.32, 0.36, 0.28)
+			env.ambient_light_energy = 0.64
+			env.fog_light_color = Color(0.24, 0.28, 0.18)
+			env.fog_density = 0.01
+			env.fog_height = -0.4
+			env.fog_height_density = 0.2
+			moon.light_color = Color(0.82, 0.88, 0.72)
+			moon.light_energy = 0.4
+			moon.rotation_degrees = Vector3(-46, 25, 0)
+		&"grove":  # the Stilled Grove: pale grey, as if drained of colour
+			env.background_color = Color(0.07, 0.07, 0.08)
+			env.ambient_light_color = Color(0.4, 0.4, 0.42)
+			env.ambient_light_energy = 0.72
+			env.fog_light_color = Color(0.36, 0.36, 0.38)
+			env.fog_density = 0.012
+			env.adjustment_enabled = true
+			env.adjustment_saturation = 0.35
+			moon.light_color = Color(0.86, 0.88, 0.92)
+			moon.light_energy = 0.46
+			moon.rotation_degrees = Vector3(-48, 35, 0)
+		&"farwatch": # the Far Watch: a warm dusk horizon
+			env.background_color = Color(0.1, 0.06, 0.1)
+			env.ambient_light_color = Color(0.44, 0.32, 0.4)
+			env.ambient_light_energy = 0.72
+			env.fog_light_color = Color(0.46, 0.28, 0.3)
+			env.fog_density = 0.006
+			moon.light_color = Color(1.0, 0.7, 0.55)
+			moon.light_energy = 0.55
+			moon.rotation_degrees = Vector3(-30, 70, 0)
 		&"ruins":  # old ward: cold, misty, violet
 			env.background_color = Color(0.04, 0.035, 0.07)
 			env.ambient_light_color = Color(0.26, 0.24, 0.42)
@@ -395,8 +437,11 @@ func _water(s: Dictionary) -> void:
 	mat.shader = WATER_SHADER
 	mat.set_shader_parameter(&"tex", load(D + "water.png"))
 	mat.set_shader_parameter(&"flow", s.get("flow", Vector2(0.25, -0.55)))
+	var tint: Color = s.get("tint", Color.WHITE)
+	mat.set_shader_parameter(&"tint", Vector3(tint.r, tint.g, tint.b))
 	mi.material_override = mat
 	add_child(mi)
+	s["mesh"] = mi   # so a region can raise or drain its water later
 
 
 func _bounds_walls() -> void:
@@ -816,6 +861,32 @@ func give_decor(id: StringName, label: String) -> void:
 	GameState.inv.decor[id] = true
 	GameState.inv.changed.emit()
 	reward(["New for your home: " + label])
+
+
+## A lake landing (Chapter 2's boat stops), layout half: an inlet of lake
+## water west of `at` (where the pier meets land), the "dock" entry there.
+func landing_layout(at: Vector2) -> void:
+	streams.append({"pts": [at + Vector2(-10, 0), at + Vector2(-4.0, 0)], "width": 3.4, "depth": 1.1, "water_y": -0.55,
+		"cap": true, "flow": Vector2(0.05, -0.04)})
+	entries[&"dock"] = [Vector3(at.x + 1.2, 0, at.y), 1.0]
+	entries[&"start"] = entries[&"dock"]
+	respawn_entry = &"dock"
+
+
+## The landing's props: a short pier, a moored boat that sails back to Reedhollow.
+func landing_build(at: Vector2) -> void:
+	var end := at + Vector2(-4.5, 0)
+	bridge(at + Vector2(0.6, 0), end, 0.12, 1.8)
+	box(Vector3(2.2, 0.3, 2.6), Vector3(end.x - 0.6, -0.03, end.y), "wood.png")
+	var bp := Vector3(end.x - 0.6, -0.4, end.y + 2.0)
+	box(Vector3(3.0, 0.4, 0.95), bp, "wood.png", Vector3(0, 0.08, 0), false, Color(0.55, 0.42, 0.32))
+	box(Vector3(2.6, 0.1, 0.7), bp + Vector3(0, 0.2, 0), "wood.png", Vector3(0, 0.08, 0), false, Color(0.4, 0.3, 0.24))
+	var lamp := bill(load(D + "lantern.png"), bp + Vector3(1.1, 0.9, 0), 0.8)
+	lamp.mat.set_shader_parameter(&"emit", 1.0)
+	light(bp + Vector3(1.1, 1.0, 0.3), Color(1.0, 0.6, 0.3), 1.6, 4.0)
+	var it := Interactable.make(Vector3(end.x, 0.12, end.y), "Boat back to Reedhollow", 2.0, 1.6)
+	add_child(it)
+	it.activated.connect(func(_p: Player) -> void: exit_requested.emit(&"reedhollow", &"dock"))
 
 
 ## Contextual magic: lock the wizard in the raise/gather pose for `secs`,

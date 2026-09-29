@@ -23,10 +23,19 @@ const DATA := {
 			"Find out who has come to Hearthmere's square.",
 			"Take a waystone to the Fenway with Kess.",
 			"Follow the marsh road to Reedhollow.",
-			"Relight the three lake shrines.",
+			"Relight the lake shrines.",
 			"Defend Reedhollow.",
+			"Relight the last lake shrine.",
 			"Cross to the Heart Isle.",
 		],
+	},
+	&"lost_child": {
+		"title": "Lost in the Mire",
+		"steps": ["Find Pip, Wenna's son, somewhere in the Mire.", "Tell Wenna in Reedhollow that Pip is safe."],
+	},
+	&"far_watch": {
+		"title": "Beyond the East",
+		"steps": ["Find Orla's spyglass at the far watchtower (boat from Reedhollow).", "Bring the spyglass back to Orla in Reedhollow."],
 	},
 	&"fawn": {
 		"title": "Something in the Reeds",

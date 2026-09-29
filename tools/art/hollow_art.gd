@@ -201,6 +201,165 @@ static func _draw_moth(c: PixelCanvas, o: Dictionary) -> void:
 	c.outline(Color(INK), 0.8)
 
 
+# ---------------------------------------------------------------- the Herald
+## The Hollowing's gardener: tall and thin in a tattered violet-black robe,
+## a smooth pale mask split by one crack, pale branches budding from its
+## cowl, and a long pruning sickle. Blinking, it dissolves into dither.
+static func herald() -> Dictionary:
+	var defs := [["idle", 4, 4.0, true], ["walk", 4, 6.0, true], ["slash_windup", 2, 6.0, false], ["slash", 3, 14.0, false],
+		["recover", 2, 5.0, false], ["cast", 3, 6.0, false], ["blink_out", 4, 10.0, false], ["blink_in", 4, 10.0, false],
+		["hurt", 1, 10.0, false], ["death", 4, 6.0, false]]
+	var f := []
+	for i in 4:
+		f.append({"bob": [0, 0, 1, 1][i], "sway": [0, 1, 0, -1][i]})
+	for i in 4:
+		f.append({"bob": [0, 1, 0, 1][i], "sway": [2, 1, -2, -1][i], "lean": 1})
+	for i in 2:
+		f.append({"pose": "windup", "lean": -2 - i, "sway": -1})
+	for i in 3:
+		f.append({"pose": "slash", "lean": 3, "smear": i, "sway": 2})
+	for i in 2:
+		f.append({"pose": "slash", "lean": 2 - i, "sway": 1})
+	for i in 3:
+		f.append({"cast": i, "sway": 0})
+	for i in 4:
+		f.append({"fade": 0.2 + i * 0.25})
+	for i in 4:
+		f.append({"fade": 0.95 - i * 0.25})
+	f.append({"lean": -3, "sway": -2})
+	for i in 4:
+		f.append({"fade": 0.15 + i * 0.25, "lean": -2})
+	return Sheets.sheet(f, Vector2i(72, 76), _draw_herald, defs)
+
+
+static func _draw_herald(c: PixelCanvas, o: Dictionary) -> void:
+	var robe := _c(["4e3e62", "2e2440", "1a1426"])
+	var wood := _c(["e0d8c0", "b0a488", "6e6450"])
+	var steel := _c(["f0f0f8", "b0b0c8", "6a6a88"])
+	var bob: float = o.get("bob", 0)
+	var sway: float = o.get("sway", 0)
+	var lean: float = o.get("lean", 0)
+	var pose: String = o.get("pose", "")
+	var foot := 74.0
+	var cx := 32.0 + lean
+	# branches from the cowl, budding pale green
+	var crown := Vector2(cx - 1, 14 + bob)
+	for br: Array in [[Vector2(-4, -8), Vector2(-9, -12)], [Vector2(3, -9), Vector2(8, -13)], [Vector2(-1, -11), Vector2(-3, -16)]]:
+		var a: Vector2 = crown + br[0]
+		c.stroke(crown, a, 1, wood[1], R.LIMB)
+		c.stroke(a, crown + br[1], 1, wood[1], R.LIMB)
+		c.put(int(crown.x + br[1].x), int(crown.y + br[1].y), Color("c8f0a0"), R.GLOW)
+		c.put(int(a.x) + 1, int(a.y), Color("a8d880"), R.GLOW)
+	# back arm (raised with a glowing seed when casting)
+	var sh_b := Vector2(cx - 3, 27 + bob)
+	if o.has("cast"):
+		var hand_b := sh_b + Vector2(-3, -14)
+		c.stroke(sh_b, hand_b, 2, robe[2], R.BODY2)
+		c.ellipse(hand_b.x, hand_b.y - 1, 1.5 + o.cast * 0.6, 1.5 + o.cast * 0.6, Color("c8ff90"), R.GLOW)
+		c.put(int(hand_b.x), int(hand_b.y) - 2, Color("ffffff"), R.GLOW)
+	# robe: narrow shoulders, sweeping hem, roots stitched along it
+	var hem_l := Vector2(cx - 12 + sway * 0.5, foot)
+	var hem_r := Vector2(cx + 11 + sway, foot)
+	c.poly(PackedVector2Array([Vector2(cx - 6, 24 + bob), Vector2(cx + 6, 24 + bob), Vector2(cx + 8, 44 + bob), hem_r,
+		Vector2(cx + 5 + sway, foot - 2), Vector2(cx + 1 + sway, foot), Vector2(cx - 4, foot - 2), hem_l, Vector2(cx - 8, 44 + bob)]), robe[1], R.BODY)
+	for k in 5:
+		var x := int(hem_l.x + 3 + k * 4.5)
+		c.stroke(Vector2(x, foot - 1), Vector2(x + (k % 2) - 0.5, foot - 6 - k % 3), 1, wood[2], R.LIMB)
+	c.stroke(Vector2(cx - 1, 26 + bob), Vector2(cx - 1 + sway * 0.4, foot - 3), 1, robe[2], R.BODY2)
+	# cowl and mask
+	var head := Vector2(cx + 1, 18 + bob)
+	c.ellipse(head.x - 1, head.y, 6.0, 7.0, robe[2], R.BODY2)
+	c.ellipse(head.x + 1.5, head.y + 1, 3.6, 4.8, wood[0], R.MASK)
+	c.put(int(head.x), int(head.y), Color(INK), R.EYE)
+	c.put(int(head.x) + 3, int(head.y), Color(INK), R.EYE)
+	c.line(int(head.x) + 2, int(head.y) - 3, int(head.x) + 1, int(head.y) + 5, Color("3a2a3a"), R.EYE)
+	# front arm and the pruning sickle
+	var sh := Vector2(cx + 4, 28 + bob)
+	var hand: Vector2
+	var tip: Vector2
+	match pose:
+		"windup":
+			hand = sh + Vector2(-6, -10)
+			tip = hand + Vector2(-10, -22)
+		"slash":
+			hand = sh + Vector2(10, 4)
+			tip = hand + Vector2(24, -4)
+		_:
+			hand = sh + Vector2(5, 10)
+			tip = hand + Vector2(3, -34)
+	c.stroke(sh, hand, 2, robe[0], R.BODY)
+	var butt := hand - (tip - hand).normalized() * 12.0
+	c.stroke(butt, tip, 1, wood[2], R.LIMB)
+	var d := (tip - hand).normalized()
+	var n := Vector2(d.y, -d.x) * (1.0 if pose != "windup" else -1.0)
+	var blade := [tip, tip + n * 5 + d * 2, tip + n * 9 - d * 2, tip + n * 8 - d * 6, tip + n * 4 - d * 3]
+	for k in blade.size() - 1:
+		c.stroke(blade[k], blade[k + 1], 2 if k < 2 else 1, steel[1], R.WING)
+	c.rect(int(hand.x) - 1, int(hand.y) - 1, 3, 3, wood[0], R.MASK)
+	if pose == "slash" and o.has("smear"):
+		var sm: float = o.smear
+		for k in 7:
+			var a := -1.2 + k * 0.35 + sm * 0.2
+			var p := sh + Vector2.from_angle(a) * (22 + sm * 2)
+			c.put(int(p.x), int(p.y), Color("d8b8ff", 0.9 - k * 0.1), R.GLOW)
+	c.shade(R.BODY, robe[0], robe[2], 1)
+	c.shade(R.MASK, wood[0], wood[2], 1)
+	c.shade(R.WING, steel[0], steel[2], 1)
+	c.outline(Color(INK), 0.85)
+	# dissolving: dither the figure away into shadow
+	var fade: float = o.get("fade", 0.0)
+	if fade > 0.0:
+		for y in c.h:
+			for x in c.w:
+				if fposmod(sin(x * 12.9898 + y * 78.233) * 43758.5453, 1.0) < fade:
+					c.erase(x, y)
+
+
+# ---------------------------------------------------------------- Herald's seeds and tether
+## A hollow seed: a dark bulb with a pale crack that brightens as it swells.
+static func hollow_seed() -> Dictionary:
+	var defs := [["idle", 2, 3.0, true], ["death", 3, 14.0, false]]
+	var f := [{"r": 4.0}, {"r": 4.6}, {"r": 5.5, "pop": 1}, {"r": 7.0, "pop": 2}, {"r": 8.0, "pop": 3}]
+	return Sheets.sheet(f, Vector2i(20, 20), _draw_seed, defs)
+
+
+static func _draw_seed(c: PixelCanvas, o: Dictionary) -> void:
+	var r: float = o.r
+	if o.has("pop"):
+		for k in 10:
+			var a := k * TAU / 10.0
+			c.put(int(10 + cos(a) * r), int(12 + sin(a) * r * 0.7), Color("c8b0e8", 1.0 - o.pop * 0.25), R.GLOW)
+		return
+	c.ellipse(10, 13, r, r * 0.9, Color("3a2a44"), R.BODY)
+	c.stroke(Vector2(10, 13 - r), Vector2(10, 13 - r - 3), 1, Color("6a8a4a"), R.LIMB)
+	c.line(9, 10, 11, 16, Color("e8ffc0"), R.GLOW)
+	c.put(10, 12, Color("ffffff"), R.GLOW)
+	c.shade(R.BODY, Color("6a5480"), Color("1a1224"), 1)
+	c.outline(Color(INK), 0.7)
+
+
+## The tether's knot: a snarl of dark cords glowing violet where they cross.
+static func tether_knot() -> Dictionary:
+	var defs := [["idle", 2, 8.0, true], ["death", 3, 14.0, false]]
+	var f := [{"t": 0}, {"t": 1}, {"pop": 1}, {"pop": 2}, {"pop": 3}]
+	return Sheets.sheet(f, Vector2i(16, 16), _draw_knot, defs)
+
+
+static func _draw_knot(c: PixelCanvas, o: Dictionary) -> void:
+	if o.has("pop"):
+		for k in 8:
+			var a := k * TAU / 8.0
+			c.put(int(8 + cos(a) * (2 + o.pop * 2)), int(8 + sin(a) * (2 + o.pop * 2)), Color("d8b8ff", 1.0 - o.pop * 0.25), R.GLOW)
+		return
+	var tw: float = o.t
+	for k in 3:
+		var a := k * PI / 3.0 + tw * 0.3
+		c.stroke(Vector2(8, 8) - Vector2.from_angle(a) * 5, Vector2(8, 8) + Vector2.from_angle(a) * 5, 2, Color("2e2440"), R.BODY)
+	c.ellipse(8, 8, 2.0, 2.0, Color("b890ff"), R.GLOW)
+	c.put(8, 8, Color("ffffff"), R.GLOW)
+	c.outline(Color(INK), 0.7)
+
+
 # ---------------------------------------------------------------- Spore
 static func spore() -> Dictionary:
 	var defs := [["idle", 2, 6.0, true], ["death", 3, 14.0, false]]

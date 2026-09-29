@@ -14,9 +14,16 @@ const PLACES := {
 	&"old_ward": [Vector2(345, 70), "The Old Ward"],
 	&"fenway": [Vector2(290, 215), "The Fenway"],
 	&"reedhollow": [Vector2(370, 190), "Reedhollow"],
+	&"sunken_chapel": [Vector2(405, 120), "Sunken Chapel"],
+	&"mire": [Vector2(340, 235), "The Mire"],
+	&"stilled_grove": [Vector2(405, 225), "Stilled Grove"],
+	&"far_watch": [Vector2(385, 45), "The Far Watch"],
 }
+## Shrine areas show lit once their shrine burns.
+const SHRINE_OF := {&"sunken_chapel": &"shrine_chapel", &"mire": &"shrine_mire", &"stilled_grove": &"shrine_grove"}
 const ROADS := [[&"sanctuary", &"hearthmere"], [&"hearthmere", &"briarwood"], [&"fenway", &"reedhollow"]]
-const JOURNEYS := [[&"briarwood", &"old_ward"], [&"hearthmere", &"fenway"], [&"briarwood", &"fenway"]]
+const JOURNEYS := [[&"briarwood", &"old_ward"], [&"hearthmere", &"fenway"], [&"briarwood", &"fenway"],
+	[&"reedhollow", &"sunken_chapel"], [&"reedhollow", &"mire"], [&"reedhollow", &"stilled_grove"], [&"reedhollow", &"far_watch"]]
 
 var is_open := false
 var _t := 0.0
@@ -85,7 +92,8 @@ func _draw() -> void:
 		if not GameState.known.has(id):
 			continue
 		var p: Vector2 = o + PLACES[id][0]
-		var lit: bool = id == &"hearthmere" and GameState.flag(&"ward_restored") or id == &"sanctuary" or id == &"old_ward" and GameState.flag(&"ward_restored")
+		var lit: bool = id == &"hearthmere" and GameState.flag(&"ward_restored") or id == &"sanctuary" or id == &"old_ward" and GameState.flag(&"ward_restored") \
+				or GameState.flag(SHRINE_OF.get(id, &"none"))
 		draw_rect(Rect2(p - Vector2(4, 4), Vector2(8, 8)), Color("0c0812"))
 		draw_rect(Rect2(p - Vector2(3, 3), Vector2(6, 6)), Color("9ae8ff") if lit else Color("8a7a60"))
 		_t2(PLACES[id][1], p + Vector2(-30, 16), Color("f0e6d0") if id == here else Color("b8aa94"))

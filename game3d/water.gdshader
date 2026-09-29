@@ -5,6 +5,7 @@ render_mode diffuse_lambert, specular_disabled;
 uniform sampler2D tex : filter_nearest, repeat_enable;
 uniform vec2 flow = vec2(0.0, 0.6);
 uniform float density = 24.0;
+uniform vec3 tint = vec3(1.0);
 varying vec3 wpos;
 
 void vertex() {
@@ -15,6 +16,7 @@ void fragment() {
 	vec2 p = floor((wpos.xz + flow * TIME) * density);
 	if (abs(NORMAL.y) < 0.5) p = floor((vec2(wpos.x + wpos.z, wpos.y) + vec2(0.0, 2.2) * TIME) * density);
 	vec3 c = texture(tex, (p + 0.5) / 32.0).rgb;
+	c *= tint;
 	ALBEDO = c;
 	EMISSION = c * 0.25;
 }

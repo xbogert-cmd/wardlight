@@ -31,6 +31,8 @@ func _init() -> void:
 		_save_sheet("lurker", Hollow.lurker())
 		_save_sheet("moth", Hollow.moth())
 		_save_sheet("spore", Hollow.spore())
+		_save_sheet("hollow_seed", Hollow.hollow_seed())
+		_save_sheet("tether_knot", Hollow.tether_knot())
 	if want.call("bg"):
 		# parallax layers for the animated journey screen
 		for region in ["woods", "ruins", "lake"]:
@@ -40,6 +42,7 @@ func _init() -> void:
 	if want.call("bosses"):
 		_save_sheet("troll", Bosses.troll())
 		_save_sheet("guardian", Bosses.guardian())
+		_save_sheet("herald", Hollow.herald())
 	if want.call("npcs"):
 		for n in Npcs.CAST:
 			_save_sheet("npc_" + n, Npcs.build(Npcs.CAST[n]))

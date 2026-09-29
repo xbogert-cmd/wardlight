@@ -100,16 +100,25 @@ Status: **Chapter 1 complete. Chapter 2 (The Hollowing) in progress: see `docs/s
   (`GameState.party`), Kess the scout (shoots the wizard's target, marking arrow every 6 s = +25% on
   the next spell hit, hops back from close enemies), sanctuary companion camp, save version 2
   (Chapter 1 saves migrate). Kess's recruitment scene, route hints and banter come with steps 3 and 5.
-- [x] Step 3 (built, awaiting look review): Hearthmere opening (Kess arrives once Chapter 1 is done;
+- [x] Step 3 (look approved): Hearthmere opening (Kess arrives once Chapter 1 is done;
   she's a guest until Reedhollow), waystones to the Fenway (Hearthmere, Briarwood), the Fenway marsh road
   (enemies ×1.25), Reedhollow (lake to the north, stilt houses, dock, elder; deep water puts you back ashore),
   boat menu and boat journey (no stops until step 5), lake music, map places. `--demo=lake` plays it.
-- [x] Step 4 (built, awaiting feel review): Husk (lunge, spore patch slows 40% for 3 s), Mire Lurker (hidden
+- [x] Step 4 (feel approved): Husk (lunge, spore patch slows 40% for 3 s), Mire Lurker (hidden
   ripple, 0.8 s ring, 2 s exposed), Hollow Moth (hovers 1.8 m, keeps 6–9 m, homing spores that pop to any hit),
   hollowed variants (+20% speed, mask; hound double lunge, raider spin, hexer echo bolt, knot wider ring,
   sentinel second wider wave). First Husks on the Fenway road. `--demo=bestiary` records a clip per enemy.
-- [ ] Step 5: Sunken Chapel, Mire, Stilled Grove, lost child (look)
-- [ ] Step 6: attack on Reedhollow, the Herald (feel)
-- [ ] Step 7: far-watch teaser
+- [x] Step 5 (built, awaiting look review): shared `ShrineArea` (boat landing, guarded shrine, relight channel,
+  reward once). Sunken Chapel (flooded nave; ring the bell to drain it; Lakeweave Robe chest), the Mire (bog,
+  raise the stepping stones to rescue Pip; `lost_child`), the Stilled Grove (frozen figures, thaw the root wall,
+  colour returns when lit; Reedwhistle Staff chest). Shrine relics: Vesper Candle, Bogheart Pearl, Stillwater
+  Acorn (fusable, never random drops). Reedhollow recovers: walkway mended at two shrines, Corrin's shop at three,
+  Wenna and Pip. `--demo=shrines` tours it all.
+- [x] Step 6 (built, awaiting feel review): the second shrine sets Reedhollow on fire; the Herald on the sealed
+  square (blinks between shadow pools with a ring tell, arc slash, hollow seeds that sprout Husks after 6 s,
+  below half a tether on Tamsin/Kess broken by hitting its knot); at 30% it speaks and flees. `mus_herald`.
+  Quest gains "Relight the last lake shrine". `--demo=herald`.
+- [x] Step 7: Orla the mapmaker (after the Herald), boat to the Far Watch, climb the tower, the spyglass view
+  east (grey land, a vast walker in the haze); reward on return. `--demo=farwatch`.
 - [ ] Step 8: Heart Isle, the Deepwillow, three new spells, ending (look + feel)
 - [ ] Step 9: balance, `--demo=story2`, report, Mac build

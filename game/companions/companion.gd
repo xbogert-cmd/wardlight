@@ -24,6 +24,7 @@ var _last_pos := Vector3.ZERO
 var _calm_t := 0.0
 var _flash := 0.0
 var _target: Node3D
+var held_t := 0.0            # bound in place (the Herald's tether) while > 0
 
 
 static func make(cid: StringName) -> Companion:
@@ -132,6 +133,16 @@ func _physics_process(delta: float) -> void:
 	else:
 		velocity.y -= 22.0 * delta
 	(get_meta(&"talk") as Interactable).enabled = state != &"downed" and _target == null
+	if held_t > 0.0 and state != &"downed":
+		held_t -= delta
+		velocity.x = 0.0
+		velocity.z = 0.0
+		sprite.play(&"hurt")
+		if randf() < delta * 10.0:
+			FX3.burst(center(), 1, [Color("d8b8ff"), Color("8a5ac8")], Vector2(0.3, 1.0), Vector2(0.3, 0.5), {"gravity": -0.5})
+		Steps.move(self)
+		sprite.set_flip(facing < 0)
+		return
 	match state:
 		&"downed":
 			velocity.x = 0.0

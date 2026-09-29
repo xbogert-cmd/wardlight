@@ -613,6 +613,66 @@ func mus_boss() -> PackedFloat32Array:
 	return b
 
 
+## The Herald: a fast, uneasy 3/4 duel in E minor. A plucked riff that keeps
+## landing on the tritone, a tolling low bell each bar, a heartbeat drum.
+func mus_herald() -> PackedFloat32Array:
+	var bpm := 150.0
+	var beat := 60.0 / bpm
+	var bars := 16
+	var b := S.buf(bars * 3 * beat)
+	var roots := [40, 40, 43, 46, 40, 40, 36, 35]   # E E G Bb E E C B
+	var riff := [12, 15, 18, 15, 12, 11]           # ... b5 (the tritone) at the top
+	for bar in bars:
+		var t0 := bar * 3 * beat
+		var r: int = roots[bar % roots.size()]
+		for k in 6:
+			var n: int = r + riff[(k + bar) % riff.size()]
+			S.pluck(b, t0 + k * beat * 0.5, hz(n + 12), 0.35, 0.16, 0.994, 0.7)
+		S.tone(b, t0, 3 * beat, hz(r - 12), hz(r - 12), "saw", 0.1, 0.01, 0.6)
+		S.tone(b, t0, 2.5 * beat, hz(r + 7) * 1.003, hz(r + 7), "tri", 0.04, 0.2, 0.8)
+		if bar % 2 == 0:   # the bell
+			for h in [1.0, 2.76, 5.4]:
+				S.tone(b, t0, 2.8, hz(r + 12) * h, hz(r + 12) * h, "sine", 0.12 / h, 0.002, 2.4)
+		# heartbeat: two thumps on beat one, a rim tick on three
+		S.tone(b, t0, 0.25, 90, 38, "sine", 0.55, 0.002, 0.12)
+		S.tone(b, t0 + beat * 0.4, 0.2, 80, 36, "sine", 0.35, 0.002, 0.1)
+		S.noise(b, t0 + 2 * beat, 0.05, 0.12, 6000, 3000, 0.001, 0.03, 2500)
+	S.lowpass(b, 6500)
+	S.reverb(b, 0.3, 0.75, true)
+	S.normalize(b, 0.64)
+	return b
+
+
+## The Deepwillow: vast and sorrowful rather than evil. Slow 4/4 in D minor,
+## deep swelling pads, a choir-like line, and a drum like a heart under water.
+func mus_deepwillow() -> PackedFloat32Array:
+	var bpm := 96.0
+	var beat := 60.0 / bpm
+	var bars := 12
+	var b := S.buf(bars * 4 * beat)
+	var chords := [[38, 50, 53, 57], [34, 50, 53, 58], [36, 48, 52, 55], [33, 49, 52, 57]]  # Dm Bb C A
+	var line := [74, 72, 70, 69, 74, 77, 76, 73, 74, 72, 70, 69]
+	for bar in bars:
+		var t0 := bar * 4 * beat
+		var ch: Array = chords[bar % 4]
+		for n in ch:
+			for det in [-0.08, 0.08]:
+				S.tone(b, t0, 4.4 * beat, hz(n + det), hz(n + det), "tri", 0.045, 0.8, 1.2)
+		S.tone(b, t0, 4 * beat, hz(ch[0] - 12), hz(ch[0] - 12), "saw", 0.08, 0.3, 1.0)
+		var note: int = line[bar % line.size()]
+		for det in [-0.05, 0.05, 12.0]:
+			S.tone(b, t0 + beat, 2.8 * beat, hz(note + det), hz(note + det), "sine", 0.06 if det < 1.0 else 0.02, 0.5, 1.2)
+		for k in 4:
+			S.tone(b, t0 + k * beat, 0.4, 70, 30, "sine", 0.5 if k % 2 == 0 else 0.3, 0.004, 0.2)
+			S.noise(b, t0 + k * beat, 0.3, 0.05, 400, 150, 0.01, 0.25, 150)
+		if bar % 4 == 3:
+			S.noise(b, t0 + 2 * beat, 2 * beat, 0.05, 1200, 300, 1.0, 0.8, 400)
+	S.lowpass(b, 4800)
+	S.reverb(b, 0.45, 0.85, true)
+	S.normalize(b, 0.66)
+	return b
+
+
 func sfx_ward_light() -> PackedFloat32Array:
 	var b := S.buf(2.2)
 	for k in 4:

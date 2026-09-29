@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://game/enemies/enemy_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"tether_knot"
+display_name = "Herald's tether"
+sheet = "tether_knot"
+origin = Vector2(8, 12)
+body_size = Vector2(10, 10)
+max_hp = 30.0
+damage = 0.0
+move_speed = 0.0
+poise = 999.0
+knock_resist = 1.0
+flinch_cooldown = 99.0
+motes = 0
+aggro_range = 0.0
+params = {
+"xp": 0,
+"coins": 0
+}

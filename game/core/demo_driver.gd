@@ -44,6 +44,43 @@ static func _all_spells() -> Array:
 	return out
 
 
+## Chapter 2 step 5 look pass: Wenna's request, then each shrine area by boat
+## (arrival, its contextual magic, the shrine relit), then Reedhollow with
+## all three shrines burning.
+static func _shrines() -> Array:
+	var out: Array = [[0.2, "god", ""], [0.3, "quest", "dark_ward:-1"], [0.31, "quest", "hollowing:3"], [0.32, "flag", "ward_restored"],
+		[0.33, "flag", "kess_joined"], [0.335, "flag", "herald_fled"], [0.34, "recruit", "tamsin"], [0.35, "recruit", "kess"], [0.5, "travel", "reedhollow:square"],
+		[2.0, "tp", "2.2,3.3"], [2.3, "tap", "interact"], [2.7, "shot", "s00_wenna"], [2.9, "next", ""], [3.1, "next", ""], [3.3, "shot", "s01_reedhollow_dark"]]
+	var t := 3.6
+	var nexts := func(at: float, n: int) -> void:
+		for k in n:
+			out.append([at + k * 0.3, "next", ""])
+	# [boat choice, prefix, moment spot, moment look spot, extra shots]
+	for area: Array in [["0", "c", "1.0,-1.4", "1.0,1.0", 7.0], ["1", "m", "2.0,1.8", "2.0,1.2", 6.5], ["2", "g", "10.4,0.4", "8.5,0.5", 5.0]]:
+		out.append_array([[t, "tp", "19,-10.8"], [t + 0.3, "tap", "interact"], [t + 0.7, "pick", area[0]], [t + 1.7, "shot", area[1] + "0_boat"]])
+		t += 6.5
+		nexts.call(t, 3)
+		out.append_array([[t + 1.0, "shot", area[1] + "1_landing"], [t + 1.2, "tp", "-9,0.5"], [t + 1.8, "shot", area[1] + "2_path"],
+			[t + 2.0, "tp", "3,0"], [t + 2.6, "shot", area[1] + "3_middle"], [t + 2.8, "clear", ""], [t + 2.9, "tp", area[2]],
+			[t + 3.3, "shot", area[1] + "4_before"], [t + 3.4, "tap", "interact"], [t + 4.6, "burst", area[1] + "5_moment:90:15"]])
+		t += 3.4 + float(area[4])
+		nexts.call(t, 4)
+		out.append_array([[t + 1.2, "tp", area[3]], [t + 1.8, "shot", area[1] + "6_after"], [t + 2.0, "tp", "17,-1"], [t + 2.6, "shot", area[1] + "7_shrine"],
+			[t + 2.8, "clear", ""], [t + 2.9, "tp", "21,-1.2"], [t + 3.0, "tap", "interact"], [t + 4.8, "burst", area[1] + "8_lit:60:12"]])
+		t += 9.0
+		nexts.call(t, 4)
+		out.append_array([[t + 1.3, "state", area[1]], [t + 1.4, "tp", "-24.6,0.5"], [t + 1.7, "tap", "interact"]])
+		t += 8.0
+	t -= 0.5
+	out.append_array([[t, "tp", "2.2,3.3"], [t + 0.3, "tap", "interact"]])
+	nexts.call(t + 0.7, 3)
+	out.append_array([[t + 2.0, "shot", "s10_wenna_pip"], [t + 2.2, "tp", "-6.5,-2.0"], [t + 2.8, "shot", "s11_walkway"],
+		[t + 3.0, "tp", "10.5,4.2"], [t + 3.6, "shot", "s12_trader"], [t + 3.8, "tp", "0,1.0"], [t + 4.4, "shot", "s13_village_lit"],
+		[t + 4.5, "map", ""], [t + 4.8, "shot", "s14_map"], [t + 5.0, "state", "end"], [t + 5.2, "quit", ""]])
+	out.sort_custom(func(a: Array, b: Array) -> bool: return a[0] < b[0])
+	return out
+
+
 const DEMOS := {
 	# first look: walk in, lance a hound, gust, dodge
 	"look": [
@@ -201,6 +238,27 @@ const DEMOS := {
 	"lakelook": [[0.2, "god", ""], [0.3, "travel", "fenway:waystone"], [1.6, "freeze", ""], [1.7, "tp", "-6,-2"], [2.0, "shot", "l1_hut"], [2.2, "tp", "6,-4"], [2.5, "shot", "l2_mounds"],
 		[2.7, "tp", "4,3"], [3.0, "shot", "l3_boardwalk"], [3.2, "tp", "18,0"], [3.5, "shot", "l4_east"], [3.7, "travel", "reedhollow:west"],
 		[5.2, "tp", "-12,1"], [5.5, "shot", "l5_pier_w"], [5.7, "tp", "10,1"], [6.0, "shot", "l6_pier_e"], [6.2, "tp", "19,0.5"], [6.5, "shot", "l7_dock"], [6.7, "quit", ""]],
+	"mirelook": [[0.2, "god", ""], [0.3, "travel", "mire:dock"], [1.8, "freeze", ""], [1.9, "next", ""], [2.1, "next", ""], [2.3, "tp", "-9,0.5"],
+		[2.8, "shot", "ml1_path"], [2.9, "tp", "2,1.8"], [3.4, "shot", "ml2_bog"], [3.5, "quit", ""]],
+	# Chapter 2 step 6: the attack on Reedhollow and the Herald (feel review)
+	"herald": [[0.2, "god", ""], [0.3, "quest", "dark_ward:-1"], [0.31, "quest", "hollowing:4"], [0.32, "flag", "shrine_chapel"],
+		[0.33, "flag", "shrine_mire"], [0.34, "flag", "kess_joined"], [0.35, "recruit", "tamsin"], [0.36, "recruit", "kess"], [0.5, "travel", "reedhollow:dock"],
+		[2.0, "shot", "h0_arrive"], [2.2, "tp", "0,0.6"], [2.9, "next", ""], [3.2, "next", ""], [3.5, "next", ""], [3.8, "next", ""], [4.1, "next", ""],
+		[4.3, "learn", ""], [4.4, "aim_enemy", ""], [4.5, "hold", "attack"], [4.6, "burst", "h1_fight:600:5"], [6.0, "tap", "spell_1"], [8.0, "tap", "spell_4"],
+		[10.0, "tap", "dodge"], [11.0, "tap", "spell_1"], [13.0, "tap", "spell_2"], [14.5, "wound", "0.52"], [14.6, "burst", "h2_phase2:720:5"], [17.0, "tap", "spell_1"],
+		[20.0, "tap", "spell_4"], [23.0, "tap", "spell_1"], [26.5, "wound", "0.33"], [26.6, "burst", "h3_flee:300:6"], [27.0, "tap", "spell_1"], [27.4, "release", "attack"],
+		[28.6, "next", ""], [29.0, "next", ""], [29.4, "next", ""], [29.8, "next", ""], [30.2, "next", ""], [32.0, "next", ""], [32.4, "next", ""], [32.8, "next", ""],
+		[33.4, "shot", "h4_after"], [33.6, "state", "herald"], [33.7, "quit", ""]],
+	# Chapter 2 step 7: Orla's request, the far watchtower and the view east
+	"farwatch": [[0.2, "god", ""], [0.3, "quest", "dark_ward:-1"], [0.31, "quest", "hollowing:5"], [0.32, "flag", "herald_fled"], [0.33, "flag", "kess_joined"],
+		[0.34, "flag", "shrine_chapel"], [0.35, "flag", "shrine_mire"], [0.36, "recruit", "kess"], [0.5, "travel", "reedhollow:west"],
+		[2.0, "tp", "-19.6,4.0"], [2.3, "tap", "interact"], [2.6, "shot", "w0_orla"], [2.8, "next", ""], [3.1, "next", ""], [3.4, "next", ""],
+		[3.7, "tp", "19,-10.8"], [4.0, "tap", "interact"], [4.4, "shot", "w1_boats"], [4.5, "pick", "3"], [5.6, "shot", "w2_journey"],
+		[10.5, "shot", "w3_landing"], [10.7, "tp", "0,0"], [11.3, "shot", "w4_climb"], [11.5, "tp", "13.6,-4.2"], [12.1, "shot", "w5_tower"],
+		[12.3, "tap", "interact"], [12.7, "next", ""], [13.0, "next", ""], [14.0, "shot", "w6_view_a"], [17.0, "shot", "w7_view_b"],
+		[19.5, "tap", "interact"], [20.0, "next", ""], [20.3, "next", ""], [20.6, "next", ""], [20.9, "next", ""], [21.2, "state", "watch"],
+		[21.4, "tp", "-24.6,0.5"], [21.7, "tap", "interact"], [28.0, "tp", "-19.6,4.0"], [28.3, "tap", "interact"], [28.7, "next", ""], [29.0, "next", ""],
+		[29.3, "next", ""], [29.8, "state", "orla"], [30.0, "quit", ""]],
 	# the sanctuary camp with both companions resting, then one joins
 	"camp": [
 		[0.3, "recruit", "tamsin:rest"], [0.35, "recruit", "kess:rest"], [0.4, "travel", "sanctuary:start"],
@@ -247,7 +305,7 @@ func _ready() -> void:
 	for a in OS.get_cmdline_user_args():
 		if a.begins_with("--demo="):
 			var nm := a.trim_prefix("--demo=")
-			steps = _all_spells() if nm == "allspells" else _dps(nm.trim_prefix("dps_")) if nm.begins_with("dps_") else DEMOS.get(nm, [])
+			steps = _all_spells() if nm == "allspells" else _shrines() if nm == "shrines" else _dps(nm.trim_prefix("dps_")) if nm.begins_with("dps_") else DEMOS.get(nm, [])
 			if nm.begins_with("dps_"):
 				Events.damage_dealt.connect(func(_t: Node3D, d: Damage) -> void:
 					_tally[d.spell_id] = roundf(_tally.get(d.spell_id, 0.0) + d.amount))

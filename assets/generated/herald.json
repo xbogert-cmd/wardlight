@@ -1,0 +1,100 @@
+{
+	"anims": {
+		"blink_in": {
+			"fps": 10.0,
+			"frames": [
+				22,
+				23,
+				24,
+				25
+			],
+			"loop": false
+		},
+		"blink_out": {
+			"fps": 10.0,
+			"frames": [
+				18,
+				19,
+				20,
+				21
+			],
+			"loop": false
+		},
+		"cast": {
+			"fps": 6.0,
+			"frames": [
+				15,
+				16,
+				17
+			],
+			"loop": false
+		},
+		"death": {
+			"fps": 6.0,
+			"frames": [
+				27,
+				28,
+				29,
+				30
+			],
+			"loop": false
+		},
+		"hurt": {
+			"fps": 10.0,
+			"frames": [
+				26
+			],
+			"loop": false
+		},
+		"idle": {
+			"fps": 4.0,
+			"frames": [
+				0,
+				1,
+				2,
+				3
+			],
+			"loop": true
+		},
+		"recover": {
+			"fps": 5.0,
+			"frames": [
+				13,
+				14
+			],
+			"loop": false
+		},
+		"slash": {
+			"fps": 14.0,
+			"frames": [
+				10,
+				11,
+				12
+			],
+			"loop": false
+		},
+		"slash_windup": {
+			"fps": 6.0,
+			"frames": [
+				8,
+				9
+			],
+			"loop": false
+		},
+		"walk": {
+			"fps": 6.0,
+			"frames": [
+				4,
+				5,
+				6,
+				7
+			],
+			"loop": true
+		}
+	},
+	"cell": [
+		72,
+		76
+	],
+	"hframes": 8
+}

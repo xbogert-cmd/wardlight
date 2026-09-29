@@ -65,6 +65,20 @@ func test_shrine_relics_are_not_random_drops() -> void:
 	t.check(drops.has(&"moonstone"), "Chapter 1 relics still drop")
 
 
+func test_shrines_any_order_each_reward_once() -> void:
+	GameState.reset()
+	var got := ShrineArea.light_shrine(&"shrine_grove", &"stillwater")
+	t.eq(got.get("id"), &"stillwater", "the grove first: its relic")
+	t.eq(Quests.shrines_lit(), 1, "one shrine lit")
+	t.check(ShrineArea.light_shrine(&"shrine_grove", &"stillwater").is_empty(), "relighting gives nothing more")
+	ShrineArea.light_shrine(&"shrine_chapel", &"vesper_candle")
+	ShrineArea.light_shrine(&"shrine_mire", &"bogheart")
+	t.eq(Quests.shrines_lit(), 3, "all three, in any order")
+	t.eq(GameState.inv.items.filter(func(i: Dictionary) -> bool: return i.id == &"stillwater").size(), 1, "exactly one of each relic")
+	t.eq(GameState.inv.points, 3, "a point per shrine")
+	GameState.reset()
+
+
 func test_reedwhistle_slows() -> void:
 	GameState.reset()
 	_wear(&"reedwhistle", 3, "staff")

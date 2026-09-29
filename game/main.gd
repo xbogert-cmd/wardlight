@@ -10,6 +10,10 @@ const REGIONS := {
 	&"old_ward": "res://game/world/old_ward.gd",
 	&"fenway": "res://game/world/fenway.gd",
 	&"reedhollow": "res://game/world/reedhollow.gd",
+	&"sunken_chapel": "res://game/world/sunken_chapel.gd",
+	&"mire": "res://game/world/mire.gd",
+	&"stilled_grove": "res://game/world/stilled_grove.gd",
+	&"far_watch": "res://game/world/far_watch.gd",
 }
 const NAMES := {&"sanctuary": "The Sanctuary", &"hearthmere": "Hearthmere", &"briarwood": "Briarwood Road", &"old_ward": "The Old Ward",
 	&"fenway": "The Fenway", &"reedhollow": "Reedhollow", &"sunken_chapel": "The Sunken Chapel", &"mire": "The Mire",
